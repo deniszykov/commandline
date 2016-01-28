@@ -147,15 +147,18 @@ namespace System
 			var methodName = defaultMethodName;
 			if (arguments.ContainsKey("0"))
 			{
+				arguments = new CommandLineArguments(arguments);
 				methodName = TypeConvert.ToString(arguments["0"]);
 				// unshift positional parameters
 				arguments.Remove("0");
 				for (var i = 1; ; i++)
 				{
 					var value = default(object);
-					if (arguments.TryGetValue(i.ToString(), out value) == false)
+					var positional = i.ToString();
+					if (arguments.TryGetValue(positional, out value) == false)
 						break;
 					arguments[(i - 1).ToString()] = value;
+					arguments.Remove(positional);
 				}
 			}
 
@@ -163,7 +166,7 @@ namespace System
 			var allMethods = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 			foreach (var method in allMethods)
 			{
-				if (string.Equals(method.Name, methodName, StringComparison.OrdinalIgnoreCase) == false || !method.IsStatic || method.ReturnType != typeof(int))
+				if (string.Equals(method.Name, methodName, StringComparison.OrdinalIgnoreCase) == false || !method.IsStatic || method.ReturnType != typeof(int) || IsHidden(method))
 					continue;
 
 				candidate = method;
@@ -187,11 +190,11 @@ namespace System
 		}
 		private static bool TryBindParameter(ParameterInfo parameter, CommandLineArguments arguments, out object value)
 		{
-			if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position + 1).ToString(), out value))
+			if (parameter.ParameterType == typeof(CommandLineArguments))
+				value = new CommandLineArguments(arguments);
+			else if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position + 1).ToString(), out value))
 			{
-				if (parameter.ParameterType == typeof(CommandLineArguments))
-					value = new CommandLineArguments(arguments);
-				else if (parameter.ParameterType.IsArray)
+				if (parameter.ParameterType.IsArray)
 				{
 					var elemType = parameter.ParameterType.GetElementType();
 					Debug.Assert(elemType != null, "elemType != null");

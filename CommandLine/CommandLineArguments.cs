@@ -127,11 +127,15 @@ namespace System
 				if (argumentName != null)
 					yield return new KeyValuePair<string, object>(argumentName, argumentValue != null ? argumentValue.ToArray() : null);
 
+				argumentValue = null;
 				if (argument.StartsWith(CommandLine.ArgumentNamePrefix, StringComparison.Ordinal))
 					argumentName = argument.Substring(CommandLine.ArgumentNamePrefix.Length);
 				else if (argument.StartsWith(CommandLine.ArgumentNamePrefixShort))
 					argumentName = argument.Substring(CommandLine.ArgumentNamePrefixShort.Length);
 			}
+
+			if (!string.IsNullOrEmpty(argumentName))
+				yield return new KeyValuePair<string, object>(argumentName, argumentValue != null ? argumentValue.ToArray() : null);
 		}
 
 		public override string ToString()
