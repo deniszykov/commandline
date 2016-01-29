@@ -41,14 +41,14 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.TypeConvert, Version=1.0.0.3, Culture=neutral, PublicKeyToken=7fa17a4c44bad980, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.TypeConvert.1.0.0.3\lib\net35\System.TypeConvert.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TypeUtils, Version=1.0.0.2, Culture=neutral, PublicKeyToken=7fa17a4c44bad980, processorArchitecture=MSIL">
-      <HintPath>packages\TypeUtils.1.0.0.2\lib\net35\TypeUtils.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandLine.cs" />
