@@ -5,7 +5,7 @@ Tools for building console application.
 Installation
 ============
 ```
-Install-Package System.CommandLine 
+Install-Package ConsoleApp.CommandLine
 ```
 
 Quick Start
