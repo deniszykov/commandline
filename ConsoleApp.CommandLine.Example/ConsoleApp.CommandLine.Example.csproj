@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MyAppExample</RootNamespace>
-    <AssemblyName>CommandLine.Example</AssemblyName>
+    <AssemblyName>ConsoleApp.CommandLine.Example</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
