@@ -35,7 +35,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\CommandLine\sign.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\ConsoleApp.CommandLine\sign.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -53,13 +53,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\CommandLine\sign.snk">
+    <None Include="..\ConsoleApp.CommandLine\sign.snk">
       <Link>sign.snk</Link>
     </None>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommandLine\CommandLine.csproj">
+    <ProjectReference Include="..\ConsoleApp.CommandLine\ConsoleApp.CommandLine.csproj">
       <Project>{0cdae464-077f-4efc-81b0-6d19006e4043}</Project>
       <Name>CommandLine</Name>
     </ProjectReference>

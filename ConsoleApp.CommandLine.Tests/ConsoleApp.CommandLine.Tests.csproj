@@ -36,7 +36,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\CommandLine\sign.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\ConsoleApp.CommandLine\sign.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -68,7 +68,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\CommandLine\sign.snk">
+    <None Include="..\ConsoleApp.CommandLine\sign.snk">
       <Link>sign.snk</Link>
     </None>
     <None Include="packages.config" />
