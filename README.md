@@ -13,10 +13,10 @@ Quick Start
 #### Basics
 To start, you need to configure the entry point to the application. Where "ConsoleApp" will be your class with a command handler.
 ```csharp	
-		public static int Main()
-		{
-			CommandLine.Run<ConsoleApp>(CommandLine.Arguments, defaultMethodName: "SayHello")
-		}
+public static int Main()
+{
+	CommandLine.Run<ConsoleApp>(CommandLine.Arguments, defaultMethodName: "SayHello")
+}
 ```
 Then define class "ConsoleApp" as shown below
 ```csharp	
@@ -124,6 +124,7 @@ Not too much information :)
 You can decorate the method with **DescriptionAttribute** attributes to expand 'Help' information.
 ```csharp
 using System.ComponentModel;
+
 [Description("Display this help.")]
 public static int Help()
 {
