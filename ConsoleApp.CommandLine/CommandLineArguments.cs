@@ -19,8 +19,26 @@ namespace System
 	[Serializable]
 	public class CommandLineArguments : Dictionary<string, object>
 	{
+		public string this[int position]
+		{
+			get
+			{
+				return TypeConvert.ToString(this.GetValueOrDefault(position.ToString()));
+			}
+			set
+			{
+				if (string.IsNullOrEmpty(value)) throw new ArgumentException("Value can't be empty or null.", "value");
+				this[position.ToString()] = value;
+			}
+		}
+
 		public CommandLineArguments()
 			: base(StringComparer.Ordinal)
+		{
+
+		}
+		public CommandLineArguments(params string[] arguments)
+			: this((IEnumerable<string>)arguments)
 		{
 
 		}
@@ -43,7 +61,54 @@ namespace System
 
 		}
 
-		public object GetValueOrDefault(string key, object defaultValue = null)
+		public void Add(int position, string value)
+		{
+			if (position < 0) throw new ArgumentOutOfRangeException("position");
+			if (string.IsNullOrEmpty(value)) throw new ArgumentException("Value can't be empty or null.", "value");
+
+			this.Add(position.ToString(), value);
+		}
+		public void InsertAt(int position, string value)
+		{
+			if (position < 0) throw new ArgumentOutOfRangeException("position");
+			if (string.IsNullOrEmpty(value)) throw new ArgumentException("Value can't be empty or null.", "value");
+
+			var currentValue = default(object);
+			var positionKey = position.ToString();
+			var hasCurrent = this.TryGetValue(positionKey, out currentValue) && string.IsNullOrEmpty(TypeConvert.ToString(currentValue)) == false;
+			this[positionKey] = value;
+
+			while (hasCurrent)
+			{
+				value = TypeConvert.ToString(currentValue);
+				positionKey = (++position).ToString();
+				hasCurrent = this.TryGetValue(positionKey, out currentValue) && string.IsNullOrEmpty(TypeConvert.ToString(currentValue)) == false;
+				this[positionKey] = value;
+			}
+		}
+		public void RemoveAt(int position)
+		{
+			if (position < 0) throw new ArgumentOutOfRangeException("position");
+
+			var positionKey = position.ToString();
+			this.Remove(positionKey);
+			for (var i = position + 1; ; i++)
+			{
+				var value = default(object);
+				positionKey = i.ToString();
+				if (this.TryGetValue(positionKey, out value) == false)
+					break;
+				this[(i - 1).ToString()] = value;
+				this.Remove(positionKey);
+			}
+		}
+
+		public object GetValueOrDefault(string key)
+		{
+			var value = default(object);
+			return this.TryGetValue(key, out value) == false ? null : value;
+		}
+		public object GetValueOrDefault(string key, object defaultValue)
 		{
 			var value = defaultValue;
 			return this.TryGetValue(key, out value) == false ? defaultValue : value;

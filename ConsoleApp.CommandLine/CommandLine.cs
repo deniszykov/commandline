@@ -149,17 +149,7 @@ namespace System
 			{
 				arguments = new CommandLineArguments(arguments);
 				methodName = TypeConvert.ToString(arguments["0"]);
-				// unshift positional parameters
-				arguments.Remove("0");
-				for (var i = 1; ; i++)
-				{
-					var value = default(object);
-					var positional = i.ToString();
-					if (arguments.TryGetValue(positional, out value) == false)
-						break;
-					arguments[(i - 1).ToString()] = value;
-					arguments.Remove(positional);
-				}
+				arguments.RemoveAt(0);
 			}
 
 			var candidate = default(MethodInfo);
