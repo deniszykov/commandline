@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/deniszykov/commandline</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>added 'positional' method to CommandLineArguments</releaseNotes>
+    <releaseNotes>fixed problem with binding singular values to parameters</releaseNotes>
     <copyright>Copyright (c) Denis Zykov 2016</copyright>
     <tags>CommandLine, Console</tags>
   </metadata>

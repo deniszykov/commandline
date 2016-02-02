@@ -190,7 +190,7 @@ namespace System
 				positional = false;
 
 				if (argumentName != null)
-					yield return new KeyValuePair<string, object>(argumentName, argumentValue != null ? argumentValue.ToArray() : null);
+					yield return new KeyValuePair<string, object>(argumentName, GetNullOrFirstOrAll(argumentValue));
 
 				argumentValue = null;
 				if (argument.StartsWith(CommandLine.ArgumentNamePrefix, StringComparison.Ordinal))
@@ -200,7 +200,16 @@ namespace System
 			}
 
 			if (!string.IsNullOrEmpty(argumentName))
-				yield return new KeyValuePair<string, object>(argumentName, argumentValue != null ? argumentValue.ToArray() : null);
+				yield return new KeyValuePair<string, object>(argumentName, GetNullOrFirstOrAll(argumentValue));
+		}
+
+		private static object GetNullOrFirstOrAll(List<string> argumentValue)
+		{
+			if (argumentValue == null)
+				return null;
+			if (argumentValue.Count == 1)
+				return argumentValue[0];
+			return argumentValue.ToArray();
 		}
 
 		public override string ToString()
