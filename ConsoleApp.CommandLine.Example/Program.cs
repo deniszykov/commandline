@@ -9,7 +9,7 @@ namespace MyAppExample
 		[Browsable(false)] // hide it from CommandLine.Describe method
 		public static int Main()
 		{
-			var result = CommandLine.Run<Program>(CommandLine.Arguments, defaultMethodName: "Help");
+			var result = CommandLine.Run<Program>(CommandLine.Arguments, defaultCommandName: "Help");
 			Console.ReadKey();
 			return result;
 		}
