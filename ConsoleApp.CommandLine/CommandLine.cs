@@ -32,13 +32,20 @@ namespace System
 			Arguments = new CommandLineArguments(args.Skip(1));
 		}
 
-		public static int Run<T>(CommandLineArguments arguments, string defaultMethodName = null)
+		public static int Run<T>(CommandLineArguments arguments, string defaultCommandName = null)
 		{
+			if (arguments == null) throw new ArgumentNullException("arguments");
+
+			return Run(typeof(T), arguments, defaultCommandName);
+		}
+		public static int Run(Type type, CommandLineArguments arguments, string defaultCommandName = null)
+		{
+			if (type == null) throw new ArgumentNullException("type");
 			if (arguments == null) throw new ArgumentNullException("arguments");
 
 			try
 			{
-				var bindResult = BindMethod(typeof(T), defaultMethodName, arguments);
+				var bindResult = BindMethod(type, defaultCommandName, arguments);
 
 				if (bindResult.IsSuccess)
 				{
@@ -49,12 +56,12 @@ namespace System
 					if (bindResult.Candidate == null)
 					{
 						Console.Error.WriteLine($"Unknown command '{bindResult.MethodName}'.");
-						Describe<T>();
+						Describe(type);
 					}
 					else
 					{
 						Console.Error.WriteLine($"Invalid parameters for '{bindResult.Candidate.Name}'.");
-						Describe<T>(bindResult.Candidate.Name);
+						Describe(type, bindResult.Candidate.Name);
 					}
 				}
 				return 1;
@@ -66,16 +73,22 @@ namespace System
 				return DotNetExceptionExitCode;
 			}
 		}
-		public static int Describe<T>(string methodToDescribe = null)
+		public static int Describe<T>(string commandToDescribe = null)
 		{
 			var type = typeof(T);
-			var fullDescription = string.IsNullOrEmpty(methodToDescribe) == false;
+			return Describe(type, commandToDescribe);
+		}
+		public static int Describe(Type type, string commandToDescribe = null)
+		{
+			if (type == null) throw new ArgumentNullException("type");
+
+			var fullDescription = string.IsNullOrEmpty(commandToDescribe) == false;
 			var result = new StringBuilder();
 			var description = type.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
 			if (description != null) result.AppendLine(description.Description).AppendLine();
 
-			if (string.IsNullOrEmpty(methodToDescribe))
-				result.AppendLine("Actions:");
+			if (string.IsNullOrEmpty(commandToDescribe))
+				result.AppendLine("Commands:");
 			foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
 			{
 				if (!method.IsStatic || method.ReturnType != typeof(int))
@@ -84,7 +97,7 @@ namespace System
 				if (IsHidden(method))
 					continue;
 
-				if (string.IsNullOrEmpty(methodToDescribe) == false && !string.Equals(method.Name, methodToDescribe, StringComparison.OrdinalIgnoreCase))
+				if (string.IsNullOrEmpty(commandToDescribe) == false && !string.Equals(method.Name, commandToDescribe, StringComparison.OrdinalIgnoreCase))
 					continue;
 
 				result.AppendFormat("  {0} ", method.Name.ToUpper());
@@ -182,7 +195,7 @@ namespace System
 		{
 			if (parameter.ParameterType == typeof(CommandLineArguments))
 				value = new CommandLineArguments(arguments);
-			else if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position + 1).ToString(), out value))
+			else if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position).ToString(), out value))
 			{
 				if (parameter.ParameterType.IsArray)
 				{
