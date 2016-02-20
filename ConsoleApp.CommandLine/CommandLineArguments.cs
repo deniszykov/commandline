@@ -19,6 +19,30 @@ namespace System
 	[Serializable]
 	public class CommandLineArguments : Dictionary<string, object>
 	{
+		private class IntAsStringComparer : IComparer<string>
+		{
+			public static readonly IntAsStringComparer Default = new IntAsStringComparer();
+
+			public int Compare(string x, string y)
+			{
+				int xInt = 0, yInt = 0;
+				bool xIsInt = false, yIsInt = false;
+				if (x != null && x.All(char.IsDigit) && int.TryParse(x, out xInt))
+					xIsInt = true;
+				if (y != null && y.All(char.IsDigit) && int.TryParse(y, out yInt))
+					yIsInt = true;
+
+				if (xIsInt && yIsInt)
+					return xInt.CompareTo(yInt);
+				else if (xIsInt)
+					return -1;
+				else if (yIsInt)
+					return 1;
+				else
+					return StringComparer.Ordinal.Compare(x ?? string.Empty, y ?? string.Empty);
+			}
+		}
+
 		public string this[int position]
 		{
 			get
@@ -130,31 +154,32 @@ namespace System
 						count += 1 + ((string[])kv.Value).Length;
 				}
 				else
-					count++;
+				{
+					if (kv.Value is string)
+						count += 1;
+					else if (kv.Value is string[])
+						count += ((string[])kv.Value).Length;
+				}
 			}
+
 			var array = new string[count];
 			var index = 0;
-			foreach (var kv in this.OrderByDescending(kv => kv.Key))
+			foreach (var kv in this.OrderBy(kv => kv.Key, IntAsStringComparer.Default))
 			{
+				var valueString = kv.Value as string;
+				var valueArray = kv.Value as string[];
+
 				if (!int.TryParse(kv.Key, out position))
-				{
 					array[index++] = string.Concat(CommandLine.ArgumentNamePrefix, kv.Key);
 
-					var valueString = kv.Value as string;
-					var valueArray = kv.Value as string[];
-					if (valueString != null)
-					{
-						array[index++] = valueString;
-					}
-					else if (valueArray != null)
-					{
-						Array.Copy(valueArray, 0, array, index, valueArray.Length);
-						index += valueArray.Length;
-					}
-				}
-				else
+				if (valueString != null)
 				{
-					array[index++] = kv.Key;
+					array[index++] = valueString;
+				}
+				else if (valueArray != null)
+				{
+					Array.Copy(valueArray, 0, array, index, valueArray.Length);
+					index += valueArray.Length;
 				}
 			}
 

@@ -27,9 +27,9 @@ namespace MyAppExample
 		}
 
 		[Description("Display this help.")]
-		public static int Help(string actionToDescribe = null)
+		public static int Help(string commandToDescribe = null)
 		{
-			return CommandLine.Describe<Program>(actionToDescribe);
+			return CommandLine.Describe<Program>(commandToDescribe);
 		}
 	}
 }
