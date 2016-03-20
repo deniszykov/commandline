@@ -147,18 +147,18 @@ namespace System
 				if (!int.TryParse(kv.Key, out position))
 				{
 					if (kv.Value == null)
-						count++;
-					else if (kv.Value is string)
-						count += 2;
+						count++; // only parameter name
 					else if (kv.Value is string[])
-						count += 1 + ((string[])kv.Value).Length;
+						count += 1 + ((string[])kv.Value).Length; // parameter name + values
+					else
+						count += 2; // parameter name + value
 				}
 				else
 				{
-					if (kv.Value is string)
-						count += 1;
-					else if (kv.Value is string[])
-						count += ((string[])kv.Value).Length;
+					if (kv.Value is string[])
+						count += ((string[])kv.Value).Length; // only values
+					else if (kv.Value != null) 
+						count += 1; // only value
 				}
 			}
 
@@ -166,20 +166,19 @@ namespace System
 			var index = 0;
 			foreach (var kv in this.OrderBy(kv => kv.Key, IntAsStringComparer.Default))
 			{
-				var valueString = kv.Value as string;
 				var valueArray = kv.Value as string[];
 
 				if (!int.TryParse(kv.Key, out position))
 					array[index++] = string.Concat(CommandLine.ArgumentNamePrefix, kv.Key);
 
-				if (valueString != null)
-				{
-					array[index++] = valueString;
-				}
-				else if (valueArray != null)
+				if (valueArray != null)
 				{
 					Array.Copy(valueArray, 0, array, index, valueArray.Length);
 					index += valueArray.Length;
+				}
+				else if (kv.Value != null)
+				{
+					array[index++] = TypeConvert.ToString(kv.Value);
 				}
 			}
 
