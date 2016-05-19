@@ -12,15 +12,17 @@ Quick Start
 ============
 #### Basics
 To start, you need to configure the entry point to the application. Where "ConsoleApp" will be your class with a command handler.
-```csharp	
+```csharp
+using System
+
 public static int Main()
 {
-	CommandLine.Run<ConsoleApp>(CommandLine.Arguments, defaultMethodName: "SayHello")
+	CommandLine.Run<Program>(CommandLine.Arguments, defaultMethodName: "SayHello")
 }
 ```
 Then define class "ConsoleApp" as shown below
 ```csharp	
-class ConsoleApp
+class Program
 {
 	public static int SayHello()
 	{
@@ -29,14 +31,14 @@ class ConsoleApp
 	}
 }
 ```
-CommandLine.Run uses reflection to find command methods. So they should be **static** and return **int** [Exit Code](https://en.wikipedia.org/wiki/Exit_status)
+CommandLine.Run uses reflection to find methods. So they should be **static** and return **int** (used for [Exit Code](https://en.wikipedia.org/wiki/Exit_status))
 
 Now you can test your application
 ```bash
 myapp.exe SayHello 
 #>Hello!
 myapp.exe 
-#>Hello! too because 'defaultMethodName' is set to 'SayHello'
+#>Hello! - Too because 'defaultMethodName' is set to 'SayHello'
 ```
 #### Parameter bindings
 You can add parameters to your command which is automatically binds by name or position
@@ -69,7 +71,7 @@ myapp.exe SayHello --names Mike Jake
 ```
 Unfortunately an array parameter can be only named, I will revisit it in future :)
 
-You can have a flag parameter also. It's presence is considered to be "True" and absence is "False".
+You can have a flag(true/false) parameter. It's presence is considered to be "True" and absence is "False".
 ```csharp
 public static int ShowFlag(bool myFlag)
 {
@@ -88,23 +90,27 @@ myapp.exe ShowFlag
 ####Hierarchical commands
 Suppose you want to build a complex menu where commands are grouped by purpose.
 
+Example:
+```bash
+myapp.exe Account Show --id 0a0e0000000
+```
+
 Each group must be defined as command with one **CommandLineArguments** argument.
 ```csharp
 public static int Account(CommandLineArguments arguments)
 {
 	return CommandLine.Run<AccountCommands>(arguments);
 }
-public static int Product(CommandLineArguments arguments)
+
+class AccountCommands
 {
-	return CommandLine.Run<ProductCommands>(arguments);
+	public static int Show()
+	{
+		// ...
+	}
 }
 ```
 Where AccountCommands is class with list of commands as described in "Basics". 
-
-Testing Hierarchical commands
-```bash
-myapp.exe Account Show --id 0a0e0000000
-```
 
 ####Generating help page
 Your console application can generate help for the user. This requires to define *Help* method with following code inside
