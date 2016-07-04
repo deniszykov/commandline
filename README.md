@@ -19,7 +19,7 @@ class Program
 {
 	public static int Main()
 	{
-		CommandLine.Run<Program>(CommandLine.Arguments, defaultCommandName: "SayHello")
+		return CommandLine.Run<Program>(CommandLine.Arguments, defaultCommandName: "SayHello")
 	}	
 	public static int SayHello()
 	{
