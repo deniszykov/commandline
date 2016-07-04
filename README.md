@@ -15,15 +15,12 @@ To start, you need to configure the entry point to the application. Where "Conso
 ```csharp
 using System
 
-public static int Main()
-{
-	CommandLine.Run<Program>(CommandLine.Arguments, defaultCommandName: "SayHello")
-}
-```
-Then define class "ConsoleApp" as shown below
-```csharp	
 class Program
 {
+	public static int Main()
+	{
+		CommandLine.Run<Program>(CommandLine.Arguments, defaultCommandName: "SayHello")
+	}	
 	public static int SayHello()
 	{
 		Console.WriteLine("Hello!");
@@ -31,7 +28,7 @@ class Program
 	}
 }
 ```
-CommandLine.Run uses reflection to find methods. So they should be **static** and return **int** (used for [Exit Code](https://en.wikipedia.org/wiki/Exit_status))
+CommandLine.Run relies on reflection to find methods. So they should be **static** and return **int** which is [Exit Code](https://en.wikipedia.org/wiki/Exit_status)
 
 Now you can test your application
 ```bash
