@@ -17,7 +17,7 @@ using System
 
 public static int Main()
 {
-	CommandLine.Run<Program>(CommandLine.Arguments, defaultMethodName: "SayHello")
+	CommandLine.Run<Program>(CommandLine.Arguments, defaultCommandName: "SayHello")
 }
 ```
 Then define class "ConsoleApp" as shown below
@@ -38,7 +38,7 @@ Now you can test your application
 myapp.exe SayHello 
 #>Hello!
 myapp.exe 
-#>Hello! - Too because 'defaultMethodName' is set to 'SayHello'
+#>Hello! - Too because 'defaultCommandName' is set to 'SayHello'
 ```
 #### Parameter bindings
 You can add parameters to your command which is automatically binds by name or position
