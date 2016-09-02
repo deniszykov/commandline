@@ -64,7 +64,7 @@ public static int SayHello(string[] names)
 Testing array parameter
 ```bash
 myapp.exe SayHello --names Mike Jake
-#>Hello Jake!
+#>Hello Mike, Jake!
 ```
 Unfortunately an array parameter can be only named, I will revisit it in future :)
 
