@@ -84,15 +84,15 @@ myapp.exe ShowFlag
 #>Flag is not set
 ```
 
-####Hierarchical commands
-Suppose you want to build a complex menu where commands are grouped by purpose.
+#### Сommands hierarchy
+Suppose you want to build a complex API where commands are grouped by purpose. 
 
 Example:
 ```bash
-myapp.exe Account Show --id 0a0e0000000
+myfinance.exe Account Show --id 0a0e0000000
 ```
 
-Each group must be defined as command with one **CommandLineArguments** argument.
+Each group must be defined as method(command) with **one** CommandLineArguments argument.
 ```csharp
 public static int Account(CommandLineArguments arguments)
 {
@@ -107,9 +107,9 @@ class AccountCommands
 	}
 }
 ```
-Where AccountCommands is class with list of commands as described in "Basics". 
+where AccountCommands is class with list of commands as described in "Basics". 
 
-####Generating help page
+#### Generating help page
 Your console application can generate help for the user. This requires to define *Help* method with following code inside
 ```csharp
 public static int Help()
