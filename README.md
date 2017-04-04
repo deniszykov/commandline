@@ -10,7 +10,7 @@ Install-Package ConsoleApp.CommandLine
 
 Quick Start
 ============
-#### Basics
+# Basics
 To start, you need to configure the entry point to the application. Where "ConsoleApp" will be your class with a command handler.
 ```csharp
 using System
@@ -30,7 +30,7 @@ class Program
 ```
 CommandLine.Run relies on reflection to find methods. So they should be **static** and return **int** which is [Exit Code](https://en.wikipedia.org/wiki/Exit_status)
 
-Now you can test your application
+Now you can test your application:
 ```bash
 myapp.exe SayHello 
 #>Hello!
@@ -39,7 +39,7 @@ myapp.exe SAYHELLO
 myapp.exe 
 #>Hello! - Too because 'defaultCommandName' is set to 'SayHello'
 ```
-#### Parameter bindings
+## Parameter bindings
 ### Positional and named parameters
 You can add parameters to your command which is automatically binds by name or position
 ```csharp
@@ -49,7 +49,7 @@ public static int SayHello(string name)
 	return 0;
 }
 ```
-Test:
+Testing:
 ```bash
 myapp.exe SayHello Mike 
 #>Hello Mike!
@@ -66,7 +66,7 @@ public static int SayHello(string[] names)
 	return 0;
 }
 ```
-Test:
+Testing:
 ```bash
 myapp.exe SayHello --names Mike Jake
 #>Hello Mike, Jake!
@@ -82,7 +82,7 @@ public static int ShowOptionalParameter(int myOptionalParam = 100)
 	return 0;
 }
 ```
-Test:
+Testing:
 ```bash
 myapp.exe ShowOptionalParameter --myOptionalParam 200
 #>My optional parameter is 200
@@ -101,7 +101,7 @@ public static int ShowFlag(bool myFlag)
 	return 0;
 }
 ```
-Test:
+Testing:
 ```bash
 myapp.exe ShowFlag --myFlag
 #>Flag is set
@@ -109,7 +109,7 @@ myapp.exe ShowFlag
 #>Flag is not set
 ```
 
-#### Сommands hierarchy
+# Сommands Hierarchy
 Suppose you want to build a complex API where commands are grouped by purpose. 
 
 Example:
@@ -134,15 +134,15 @@ class AccountCommands
 ```
 where AccountCommands is class with list of commands as described in "Basics". 
 
-#### Generating help page
-Your console application can generate help for the user. This requires to define *Help* method with following code inside
+# Commands Description
+Your command line application can generate help for the user. This requires to define *Help* method with following code inside
 ```csharp
 public static int Help()
 {
 	return CommandLine.Describe<ConsoleApp>();
 }
 ```
-Testing help
+Testing:
 ```bash
 myapp.exe Help
 >	HELP
@@ -159,14 +159,14 @@ public static int Help()
 	return CommandLine.Describe<ConsoleApp>();
 }
 ```
-Testing help with custom description
+Testing:
 ```bash
 myapp.exe Help
 >	HELP - Display this help.
 ```
 You can add these attributes to the methods, parameters and classes. All of them are involved in the generation of reference.
 
-#### Handling Errors
+# Handling Errors
 To catch and handle binding or execution errors you could subscribe on **CommandLine.UnhandledException** method.
 ```csharp
 CommandLine.UnhandledException += (sender, args) => Console.WriteLine(args.ExceptionObject.ToString());
