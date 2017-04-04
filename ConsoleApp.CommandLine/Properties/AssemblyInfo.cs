@@ -4,8 +4,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Command-line Utilities")]
-[assembly: AssemblyDescription("Tools for building console application.")]
+[assembly: AssemblyTitle("Command Line Application Helpers")]
+[assembly: AssemblyDescription("Tools for building simple console application.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Denis Zykov")]
 [assembly: AssemblyProduct("ConsoleApp.CommandLine")]
@@ -31,6 +31,6 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.1.0")]
-[assembly: AssemblyFileVersion("1.0.1.0")]
-[assembly: AssemblyInformationalVersionAttribute("1.0.1")]
+[assembly: AssemblyVersion("1.1.0.0")]
+[assembly: AssemblyFileVersion("1.1.0.0")]
+[assembly: AssemblyInformationalVersion("1.1.0")]

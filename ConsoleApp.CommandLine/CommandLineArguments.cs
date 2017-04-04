@@ -72,7 +72,30 @@ namespace System
 			if (arguments == null) throw new ArgumentException("arguments");
 
 			foreach (var kv in ParseArguments(arguments))
-				this.Add(kv.Key, kv.Value);
+			{
+				var currentValue = default(object);
+				if (this.TryGetValue(kv.Key, out currentValue))
+				{
+					if (kv.Value == null)
+						continue;
+
+					// try to combine with existing value
+					if (currentValue == null)
+						this[kv.Key] = currentValue = new List<string>();
+					else if (currentValue is List<string> == false)
+						this[kv.Key] = currentValue = new List<string> { TypeConvert.ToString(currentValue) };
+
+					var currentList = (List<string>)currentValue;
+					if (kv.Value is List<string>)
+						currentList.AddRange((List<string>)kv.Value);
+					else
+						currentList.Add(TypeConvert.ToString(kv.Value));
+				}
+				else
+				{
+					this.Add(kv.Key, kv.Value);
+				}
+			}
 		}
 		public CommandLineArguments(IDictionary<string, object> argumentsDictionary)
 			: base(argumentsDictionary, StringComparer.Ordinal)
@@ -157,7 +180,7 @@ namespace System
 				{
 					if (kv.Value is string[])
 						count += ((string[])kv.Value).Length; // only values
-					else if (kv.Value != null) 
+					else if (kv.Value != null)
 						count += 1; // only value
 				}
 			}
