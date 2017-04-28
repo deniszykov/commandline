@@ -58,7 +58,7 @@ myapp.exe SayHello --name Jake
 ```
 
 ### List  parameters
-You can add array parameter to collect multiple values as shown below
+You can add array parameter to collect multiple values as shown below:
 ```csharp
 public static int SayHello(string[] names)
 {
@@ -71,7 +71,7 @@ Testing:
 myapp.exe SayHello --names Mike Jake
 #>Hello Mike, Jake!
 ```
-Unfortunately an list parameter can be only named, I will revisit it in future :)
+Parameter accepting multiple values can be only named.
 
 ### Optional parameters
 You can make any parameter optional by specifying default value.
@@ -108,6 +108,14 @@ myapp.exe ShowFlag --myFlag
 myapp.exe ShowFlag
 #>Flag is not set
 ```
+### Supported Parameter Types
+* Primitive types (int, byte, char ...)
+* BCL types (String, DateTime, Decimal)
+* Nullable types
+* Enum types
+* Types with [TypeConverterAttribute](https://msdn.microsoft.com/en-us/library/system.componentmodel.typeconverterattribute(v=vs.110).aspx) (Point, Guid, Version, TimeSpan ...)
+* Types with Parse(string value) method (IpAddress, Guid ...)
+* Types with explicit/implicit conversion from string
 
 # Сommands Hierarchy
 Suppose you want to build a complex API where commands are grouped by purpose. 
