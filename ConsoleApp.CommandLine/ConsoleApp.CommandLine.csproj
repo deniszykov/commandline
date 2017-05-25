@@ -45,8 +45,8 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TypeConvert, Version=1.0.0.9, Culture=neutral, PublicKeyToken=7fa17a4c44bad980, processorArchitecture=MSIL">
-      <HintPath>..\packages\TypeConvert.1.0.0.9\lib\net35\TypeConvert.dll</HintPath>
+    <Reference Include="TypeConvert, Version=1.0.0.10, Culture=neutral, PublicKeyToken=7fa17a4c44bad980, processorArchitecture=MSIL">
+      <HintPath>..\packages\TypeConvert.1.0.0.10\lib\net35\TypeConvert.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
