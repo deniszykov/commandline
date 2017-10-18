@@ -23,15 +23,28 @@ namespace System
         public const string ArgumentNamePrefix = "--";
         public const string ArgumentNamePrefixShort = "-";
 
-        public static readonly CommandLineArguments Arguments;
-        public static event UnhandledExceptionEventHandler UnhandledException;
-        public static bool DescribeOnBindFailure = true;
+        private static CommandLineArguments applicationArguments;
 
-        static CommandLine()
+        /// <summary>
+        /// Lazy initialized application startup parameters. Executable name as first parameter is substituted.
+        /// </summary>
+        public static CommandLineArguments Arguments
         {
-            var args = Environment.GetCommandLineArgs();
-            Arguments = new CommandLineArguments(args.Skip(1));
+            get
+            {
+                if (applicationArguments == null)
+                    applicationArguments = new CommandLineArguments(Environment.GetCommandLineArgs().Skip(1));
+                return applicationArguments;
+            }
         }
+        /// <summary>
+        /// Exception handling for <see cref="Run"/> method.
+        /// </summary>
+        public static event UnhandledExceptionEventHandler UnhandledException;
+        /// <summary>
+        /// Try to describe API into default output when bind error occurs (command name mistype or wrong arguments).
+        /// </summary>
+        public static bool DescribeOnBindFailure = true;
 
         public static int Run<T>(CommandLineArguments arguments, string defaultCommandName = null)
         {
@@ -167,18 +180,37 @@ namespace System
             if (type == null) throw new ArgumentNullException("type");
             if (arguments == null) throw new ArgumentNullException("arguments");
 
-            var methodName = defaultMethodName;
-            if (arguments.ContainsKey("0"))
-            {
-                arguments = new CommandLineArguments(arguments);
-                methodName = TypeConvert.ToString(arguments["0"]);
-                arguments.RemoveAt(0);
-            }
-
-            var candidate = default(MethodInfo);
             var allMethods = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             Array.Sort(allMethods, (x, y) => y.GetParameters().Length.CompareTo(x.GetParameters().Length));
-            foreach (var method in allMethods)
+
+            if (arguments.ContainsKey("0"))
+            {
+                var newArguments = new CommandLineArguments(arguments);
+                var methodName = TypeConvert.ToString(newArguments["0"]);
+                newArguments.RemoveAt(0);
+                var result = BindMethod(allMethods, methodName, newArguments);
+                if (result.IsSuccess)
+                    return result;
+            }
+
+            if (string.IsNullOrEmpty(defaultMethodName) == false)
+            {
+                var result = BindMethod(allMethods, defaultMethodName, arguments);
+                if (result.IsSuccess)
+                    return result;
+            }
+
+            return new MethodBindResult("<no name specified>", default(MethodInfo));
+        }
+        private static MethodBindResult BindMethod(MethodInfo[] methods, string methodName, CommandLineArguments arguments)
+        {
+            if (methods == null) throw new ArgumentNullException("methods");
+            if (methodName == null) throw new ArgumentNullException("methodName");
+            if (arguments == null) throw new ArgumentNullException("arguments");
+
+
+            var candidate = default(MethodInfo);
+            foreach (var method in methods)
             {
                 if (string.Equals(method.Name, methodName, StringComparison.OrdinalIgnoreCase) == false || !method.IsStatic || method.ReturnType != typeof(int) || IsHidden(method))
                     continue;
@@ -188,10 +220,17 @@ namespace System
                 var methodArgs = new object[parameters.Length];
                 foreach (var parameter in parameters)
                 {
-                    var value = default(object);
-                    if (TryBindParameter(parameter, arguments, out value) == false)
+                    try
+                    {
+                        var value = default(object);
+                        if (TryBindParameter(parameter, arguments, out value) == false)
+                            goto nextMethod;
+                        methodArgs[parameter.Position] = value;
+                    }
+                    catch
+                    {
                         goto nextMethod;
-                    methodArgs[parameter.Position] = value;
+                    }
                 }
 
                 return new MethodBindResult(method, methodArgs);

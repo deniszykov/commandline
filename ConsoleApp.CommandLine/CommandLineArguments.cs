@@ -213,19 +213,17 @@ namespace System
 			if (arguments == null) throw new ArgumentException("arguments");
 
 			var positional = true;
+			var forcePositional = false;
+			var noHyphenParameters = false;
 			var position = -1;
 			var argumentName = default(string);
 			var argumentValue = default(List<string>);
 			foreach (var argument in arguments)
 			{
-				position++;
-
-				if (string.IsNullOrEmpty(argument) ||
-					(argument.StartsWith(CommandLine.ArgumentNamePrefix, StringComparison.Ordinal) == false &&
-						argument.StartsWith(CommandLine.ArgumentNamePrefixShort, StringComparison.Ordinal) == false))
+				if (forcePositional || IsArgumentName(argument, noHyphenParameters) == false)
 				{
-					if (positional)
-						yield return new KeyValuePair<string, object>(position.ToString(), argument);
+					if (positional || forcePositional)
+						yield return new KeyValuePair<string, object>((++position).ToString(), argument);
 					else if (argumentValue == null)
 						argumentValue = new List<string> { argument };
 					else
@@ -234,16 +232,34 @@ namespace System
 					continue;
 				}
 
-				positional = false;
 
+				// save previous argument
 				if (argumentName != null)
 					yield return new KeyValuePair<string, object>(argumentName, GetNullOrFirstOrAll(argumentValue));
 
 				argumentValue = null;
+				argumentName = null;
+
+				if (argument == CommandLine.ArgumentNamePrefix)
+				{
+					forcePositional = true;
+					continue;
+				}
+				else if (argument == CommandLine.ArgumentNamePrefixShort)
+				{
+					noHyphenParameters = !noHyphenParameters;
+					continue;
+				}
+
 				if (argument.StartsWith(CommandLine.ArgumentNamePrefix, StringComparison.Ordinal))
 					argumentName = argument.Substring(CommandLine.ArgumentNamePrefix.Length);
 				else if (argument.StartsWith(CommandLine.ArgumentNamePrefixShort))
 					argumentName = argument.Substring(CommandLine.ArgumentNamePrefixShort.Length);
+				else
+					throw new InvalidOperationException(string.Format("Argument name should start with '{0}' or '{1}' symbols. " +
+						"This is arguments parser error and should be reported to application developer.", CommandLine.ArgumentNamePrefix, CommandLine.ArgumentNamePrefixShort));
+
+				positional = false;
 			}
 
 			if (!string.IsNullOrEmpty(argumentName))
@@ -257,6 +273,29 @@ namespace System
 			if (argumentValue.Count == 1)
 				return argumentValue[0];
 			return argumentValue.ToArray();
+		}
+		private static bool IsStartsAsNumber(string value)
+		{
+			if (string.IsNullOrEmpty(value))
+				return false;
+
+			if (value.Length > 1 && value[0] == '-' && char.IsDigit(value[1]))
+				return true;
+			else if (value.Length > 0)
+				return char.IsDigit(value[0]);
+			else
+				return false;
+		}
+		private static bool IsArgumentName(string value, bool noHyphenParameters)
+		{
+			if (string.IsNullOrEmpty(value))
+				return false;
+
+			if (IsStartsAsNumber(value))
+				return false;
+
+			return value.StartsWith(CommandLine.ArgumentNamePrefix, StringComparison.Ordinal) ||
+				(noHyphenParameters == false && value.StartsWith(CommandLine.ArgumentNamePrefixShort, StringComparison.Ordinal));
 		}
 
 		public override string ToString()

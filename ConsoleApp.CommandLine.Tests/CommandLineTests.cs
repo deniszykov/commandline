@@ -1,7 +1,6 @@
 ﻿using System;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace ConsoleApp.CommandLine.Tests
 {
@@ -13,6 +12,17 @@ namespace ConsoleApp.CommandLine.Tests
             public static int IntParameter(int param1)
             {
                 Assert.Equal(1, param1);
+                return 0;
+            }
+            public static int IntNegativeParameter(int param1)
+            {
+                Assert.Equal(-1, param1);
+                return 0;
+            }
+            public static int IntNegativeStringParameter(int param1, string param2)
+            {
+                Assert.Equal(-1, param1);
+                Assert.Equal("-param2", param2);
                 return 0;
             }
             public static int BoolParameter(bool param1)
@@ -28,6 +38,11 @@ namespace ConsoleApp.CommandLine.Tests
             public static int StringParameter(string param1)
             {
                 Assert.Equal("param", param1);
+                return 0;
+            }
+            public static int StringHyphenParameter(string param1)
+            {
+                Assert.Equal("-param", param1);
                 return 0;
             }
             public static int StringNullParameter(string param1 = null)
@@ -102,10 +117,13 @@ namespace ConsoleApp.CommandLine.Tests
         [Theory]
         [InlineData(new string[0], "NoParameters")]
         [InlineData(new[] { "--param1", "1" }, "IntParameter")]
+        [InlineData(new[] { "--param1", "-1" }, "IntNegativeParameter")]
+        [InlineData(new[] { "--", "-1" }, "IntNegativeParameter")]
         [InlineData(new[] { "--param1", "true" }, "BoolParameter")]
         [InlineData(new string[0], "BoolFalseParameter")]
         [InlineData(new[] { "--param1", "false" }, "BoolFalseParameter")]
         [InlineData(new[] { "--param1", "param" }, "StringParameter")]
+        [InlineData(new[] { "-", "-param" }, "StringHyphenParameter")]
         [InlineData(new string[0], "StringNullParameter")]
         [InlineData(new[] { "--param1" }, "StringNullParameter")]
         [InlineData(new[] { "--param1", "param0", "param1" }, "StringArrayTwoParameter")]
@@ -123,6 +141,14 @@ namespace ConsoleApp.CommandLine.Tests
         [InlineData(new[] { "--param1", "Two" }, "FlagsTwoParameter")]
         [InlineData(new[] { "--param1" }, "FlagsZeroParameter")]
         [InlineData(new string[0], "FlagsZeroParameter")]
+        [InlineData(new[] { "--", "-1", "-param2" }, "IntNegativeStringParameter")]
+        [InlineData(new[] { "-", "-1", "-param2" }, "IntNegativeStringParameter")]
+        [InlineData(new[] { "--param1", "-1", "-", "--param2", "-param2" }, "IntNegativeStringParameter")]
+        [InlineData(new[] { "-1", "-", "--param2", "-param2" }, "IntNegativeStringParameter")]
+        [InlineData(new[] { "-1", "--", "-param2" }, "IntNegativeStringParameter")]
+        [InlineData(new[] { "--", "-1", "-param2", "--" }, "IntNegativeStringParameter")]
+        [InlineData(new[] { "--", "-1", "-param2", "-" }, "IntNegativeStringParameter")]
+        [InlineData(new[] { "-", "--", "-1", "-param2", "-" }, "IntNegativeStringParameter")]
         public void BindTest(string[] commandLineArguments, string method)
         {
             System.CommandLine.UnhandledException += (sender, args) => output.WriteLine(args.ExceptionObject.ToString());

@@ -108,6 +108,23 @@ myapp.exe ShowFlag --myFlag
 myapp.exe ShowFlag
 #>Flag is not set
 ```
+
+### Parameters values starting with hyphen(-) symbol
+Negative numbers (such as -1000) are interpreted as values by default. But strings like "-a", "-hello" are interpreted as named parameters. 
+To stop this behavior you could start parameters with bare hyphen parameter. 
+```bash
+myapp.exe - --message -hello --class -a
+```
+### Enforcing positional parameters
+You could pass bare double hyphen(--) and anything after it will be threated as positional parameters.
+```bash
+myapp.exe --type message -- value1 value2 value3
+```
+No special symbols are interpeted after double hyphen(--) even another double hypthen.
+```bash
+myapp.exe --type message -- -value1 --value2 --value3-- --
+```
+
 ### Supported Parameter Types
 * Primitive types (int, byte, char ...)
 * BCL types (String, DateTime, Decimal)
