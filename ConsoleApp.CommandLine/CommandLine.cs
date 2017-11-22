@@ -47,8 +47,10 @@ namespace System
         /// Try to describe API into default output when bind error occurs (command name mistype or wrong arguments).
         /// </summary>
         public static bool DescribeOnBindFailure = true;
-
-		public static int BindFailureExitCode = 1;
+        /// <summary>
+        /// Exit code used on 'soft' binding failure when command description is displayed.
+        /// </summary>
+        public static int BindFailureExitCode = 1;
 
         public static int Run<T>(CommandLineArguments arguments, string defaultCommandName = null)
         {
@@ -248,153 +250,153 @@ namespace System
                     methodArguments[i] = parameterBindings[i].Value;
 
                 return new MethodBindResult(method, methodArguments);
-        }
-        private static ParameterBindResult BindParameter(ParameterInfo parameter, CommandLineArguments arguments)
-        {
-            var expectedType = parameter.ParameterType;
-            var value = default(object);
-            try
+            }
+            private static ParameterBindResult BindParameter(ParameterInfo parameter, CommandLineArguments arguments)
             {
-                if (expectedType == typeof(CommandLineArguments))
+                var expectedType = parameter.ParameterType;
+                var value = default(object);
+                try
                 {
-                    value = new CommandLineArguments(arguments);
-                }
-                else if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position).ToString(), out value))
-                {
-                    if (expectedType.IsArray)
+                    if (expectedType == typeof(CommandLineArguments))
                     {
-                        var elemType = expectedType.GetElementType();
-                        Debug.Assert(elemType != null, "elemType != null");
-                        if (value is IList<string>)
+                        value = new CommandLineArguments(arguments);
+                    }
+                    else if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position).ToString(), out value))
+                    {
+                        if (expectedType.IsArray)
+                        {
+                            var elemType = expectedType.GetElementType();
+                            Debug.Assert(elemType != null, "elemType != null");
+                            if (value is IList<string>)
+                            {
+                                var valuesStr = (IList<string>)value;
+                                var values = Array.CreateInstance(elemType, valuesStr.Count);
+                                for (var i = 0; i < valuesStr.Count; i++)
+                                {
+                                    value = valuesStr[i]; // used on failure in exception block
+                                    values.SetValue(TypeConvert.Convert(typeof(string), elemType, valuesStr[i]), i);
+                                }
+                                value = values;
+                            }
+                            else if (value != null)
+                            {
+                                var values = Array.CreateInstance(elemType, 1);
+                                values.SetValue(TypeConvert.Convert(value.GetType(), elemType, value), 0);
+                                value = values;
+                            }
+                            else
+                            {
+                                var values = Array.CreateInstance(elemType, 0);
+                                value = values;
+                            }
+                        }
+                        else if (expectedType == typeof(bool) && value == null)
+                        {
+                            value = true;
+                        }
+                        else if (value == null)
+                        {
+                            value = parameter.IsOptional ? parameter.DefaultValue : expectedType.IsValueType ? TypeActivator.CreateInstance(expectedType) : null;
+                        }
+                        else if (expectedType.IsEnum && value is IList<string>)
                         {
                             var valuesStr = (IList<string>)value;
-                            var values = Array.CreateInstance(elemType, valuesStr.Count);
+                            var values = new object[valuesStr.Count];
                             for (var i = 0; i < valuesStr.Count; i++)
                             {
                                 value = valuesStr[i]; // used on failure in exception block
-                                values.SetValue(TypeConvert.Convert(typeof(string), elemType, valuesStr[i]), i);
+                                values[i] = TypeConvert.Convert(typeof(string), expectedType, value);
                             }
-                            value = values;
+
+                            if (IsSigned(Enum.GetUnderlyingType(expectedType)))
+                            {
+                                var combinedValue = 0L;
+                                foreach (var enumValue in values)
+                                {
+                                    value = enumValue; // used on failure in exception block
+                                    combinedValue |= (long)TypeConvert.Convert(expectedType, typeof(long), value);
+                                }
+
+                                value = Enum.ToObject(expectedType, combinedValue);
+                            }
+                            else
+                            {
+                                var combinedValue = 0UL;
+                                foreach (var enumValue in values)
+                                {
+                                    value = enumValue; // used on failure in exception block
+                                    combinedValue |= (ulong)TypeConvert.Convert(expectedType, typeof(ulong), enumValue);
+                                }
+
+                                value = Enum.ToObject(expectedType, combinedValue);
+                            }
                         }
-                        else if (value != null)
+                        else if (value is IList<string> && expectedType.IsAssignableFrom(typeof(IList<string>)) == false)
                         {
-                            var values = Array.CreateInstance(elemType, 1);
-                            values.SetValue(TypeConvert.Convert(value.GetType(), elemType, value), 0);
-                            value = values;
+                            throw new FormatException(string.Format("Parameter has {0} values while only one is expected.", ((IList<string>)value).Count));
                         }
                         else
                         {
-                            var values = Array.CreateInstance(elemType, 0);
-                            value = values;
+                            value = TypeConvert.Convert(value.GetType(), expectedType, value);
                         }
                     }
-                    else if (expectedType == typeof(bool) && value == null)
+                    else if (parameter.IsOptional)
                     {
-                        value = true;
+                        value = parameter.DefaultValue;
                     }
-                    else if (value == null)
+                    else if (expectedType == typeof(bool))
                     {
-                        value = parameter.IsOptional ? parameter.DefaultValue : expectedType.IsValueType ? TypeActivator.CreateInstance(expectedType) : null;
-                    }
-                    else if (expectedType.IsEnum && value is IList<string>)
-                    {
-                        var valuesStr = (IList<string>)value;
-                        var values = new object[valuesStr.Count];
-                        for (var i = 0; i < valuesStr.Count; i++)
-                        {
-                            value = valuesStr[i]; // used on failure in exception block
-                            values[i] = TypeConvert.Convert(typeof(string), expectedType, value);
-                        }
-
-                        if (IsSigned(Enum.GetUnderlyingType(expectedType)))
-                        {
-                            var combinedValue = 0L;
-                            foreach (var enumValue in values)
-                            {
-                                value = enumValue; // used on failure in exception block
-                                combinedValue |= (long)TypeConvert.Convert(expectedType, typeof(long), value);
-                            }
-
-                            value = Enum.ToObject(expectedType, combinedValue);
-                        }
-                        else
-                        {
-                            var combinedValue = 0UL;
-                            foreach (var enumValue in values)
-                            {
-                                value = enumValue; // used on failure in exception block
-                                combinedValue |= (ulong)TypeConvert.Convert(expectedType, typeof(ulong), enumValue);                                
-                            }
-
-                            value = Enum.ToObject(expectedType, combinedValue);
-                        }
-                    }
-                    else if (value is IList<string> && expectedType.IsAssignableFrom(typeof(IList<string>)) == false)
-                    {
-                        throw new FormatException(string.Format("Parameter has {0} values while only one is expected.", ((IList<string>)value).Count));
+                        value = false;
                     }
                     else
                     {
-                        value = TypeConvert.Convert(value.GetType(), expectedType, value);
+                        throw new InvalidOperationException("Missing parameter value.");
                     }
                 }
-                else if (parameter.IsOptional)
+                catch (Exception bindingError)
                 {
-                    value = parameter.DefaultValue;
+                    return new ParameterBindResult(parameter, bindingError, value);
                 }
-                else if (expectedType == typeof(bool))
-                {
-                    value = false;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Missing parameter value.");
-                }
+
+                return new ParameterBindResult(parameter, null, value);
             }
-            catch (Exception bindingError)
+            private static bool IsSigned(Type type)
             {
-                return new ParameterBindResult(parameter, bindingError, value);
+                if (type == null) throw new ArgumentNullException("type");
+
+                return type == typeof(sbyte) || type == typeof(short) || type == typeof(int) || type == typeof(long);
             }
-
-            return new ParameterBindResult(parameter, null, value);
-        }
-        private static bool IsSigned(Type type)
-        {
-            if (type == null) throw new ArgumentNullException("type");
-
-            return type == typeof(sbyte) || type == typeof(short) || type == typeof(int) || type == typeof(long);
-        }
-        private static void AppendPadded(StringBuilder builder, string text)
-        {
-            if (builder == null) throw new ArgumentNullException("builder");
-            if (text == null) throw new ArgumentNullException("text");
-
-            var padding = GetPadding(builder);
-            var chunkSize = Console.WindowWidth - padding - Environment.NewLine.Length;
-            for (var c = 0; c < text.Length; c += chunkSize)
+            private static void AppendPadded(StringBuilder builder, string text)
             {
-                if (c > 0)
-                    builder.Append(' ', padding);
-                builder.Append(text, c, Math.Min(text.Length - c, chunkSize));
-                builder.AppendLine();
+                if (builder == null) throw new ArgumentNullException("builder");
+                if (text == null) throw new ArgumentNullException("text");
+
+                var padding = GetPadding(builder);
+                var chunkSize = Console.WindowWidth - padding - Environment.NewLine.Length;
+                for (var c = 0; c < text.Length; c += chunkSize)
+                {
+                    if (c > 0)
+                        builder.Append(' ', padding);
+                    builder.Append(text, c, Math.Min(text.Length - c, chunkSize));
+                    builder.AppendLine();
+                }
             }
-        }
-        private static int GetPadding(StringBuilder builder)
-        {
-            if (builder == null) throw new ArgumentNullException("builder");
+            private static int GetPadding(StringBuilder builder)
+            {
+                if (builder == null) throw new ArgumentNullException("builder");
 
-            var padding = 0;
-            while (padding + 1 < builder.Length && builder[builder.Length - 1 - padding] != '\n')
-                padding++;
+                var padding = 0;
+                while (padding + 1 < builder.Length && builder[builder.Length - 1 - padding] != '\n')
+                    padding++;
 
-            return padding;
-        }
-        private static bool IsHidden(ICustomAttributeProvider provider)
-        {
-            if (provider == null) throw new ArgumentNullException("provider");
+                return padding;
+            }
+            private static bool IsHidden(ICustomAttributeProvider provider)
+            {
+                if (provider == null) throw new ArgumentNullException("provider");
 
-            var browsableAttrs = provider.GetCustomAttributes(typeof(BrowsableAttribute), true).Cast<BrowsableAttribute>();
-            return browsableAttrs.Any(a => a.Browsable == false);
+                var browsableAttrs = provider.GetCustomAttributes(typeof(BrowsableAttribute), true).Cast<BrowsableAttribute>();
+                return browsableAttrs.Any(a => a.Browsable == false);
+            }
         }
     }
-}
