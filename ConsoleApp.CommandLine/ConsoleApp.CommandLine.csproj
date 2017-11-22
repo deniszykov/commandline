@@ -52,7 +52,9 @@
   <ItemGroup>
     <Compile Include="CommandLine.cs" />
     <Compile Include="CommandLineArguments.cs" />
+    <Compile Include="CommandLineException.cs" />
     <Compile Include="MethodBindResult.cs" />
+    <Compile Include="ParameterBindResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

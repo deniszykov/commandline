@@ -8,6 +8,8 @@
 	License: https://opensource.org/licenses/MIT
 */
 
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -46,6 +48,8 @@ namespace System
         /// </summary>
         public static bool DescribeOnBindFailure = true;
 
+		public static int BindFailureExitCode = 1;
+
         public static int Run<T>(CommandLineArguments arguments, string defaultCommandName = null)
         {
             if (arguments == null) throw new ArgumentNullException("arguments");
@@ -67,32 +71,40 @@ namespace System
                 }
                 else
                 {
-                    if (DescribeOnBindFailure)
+                    var bestMatchMethod = (from bindingKeyValue in bindResult.FailedMethodBindings
+                                           let parameters = bindingKeyValue.Value
+                                           let method = bindingKeyValue.Key
+                                           orderby parameters.Count(parameter => parameter.IsSuccess) descending
+                                           select method).FirstOrDefault();
+
+                    var error = default(CommandLineException);
+                    if (bestMatchMethod == null)
                     {
-                        if (bindResult.Candidate == null)
-                        {
-                            Console.Error.WriteLine("Unknown command '{0}'.", bindResult.MethodName);
-                            Describe(type);
-                        }
-                        else
-                        {
-                            Console.Error.WriteLine("Invalid parameters for '{0}'.", bindResult.Candidate);
-                            Describe(type, bindResult.Candidate.Name);
-                        }
+                        error = CommandLineException.CommandNotFound(bindResult.MethodName);
                     }
                     else
                     {
-                        if (bindResult.Candidate == null) throw new InvalidOperationException(string.Format("Unknown command '{0}'.", bindResult.MethodName));
-                        else throw new InvalidOperationException(string.Format("Invalid parameters for '{0}'.", bindResult.Candidate));
+                        error = CommandLineException.InvalidCommandParameters(bestMatchMethod, bindResult.FailedMethodBindings[bestMatchMethod]);
+                    }
+
+                    if (DescribeOnBindFailure)
+                    {
+                        Console.Error.WriteLine("Error: " + error.Message + Environment.NewLine);
+                        Describe(type);
+                    }
+                    else
+                    {
+                        throw error;
                     }
                 }
 
-                return 1;
+                return BindFailureExitCode;
             }
             catch (Exception exception)
             {
                 var handler = UnhandledException ?? DefaultUnhandledExceptionHandler;
                 handler(null, new UnhandledExceptionEventArgs(exception, isTerminating: true));
+
                 return DotNetExceptionExitCode;
             }
         }
@@ -215,113 +227,136 @@ namespace System
                 if (string.Equals(method.Name, methodName, StringComparison.OrdinalIgnoreCase) == false || !method.IsStatic || method.ReturnType != typeof(int) || IsHidden(method))
                     continue;
 
-                candidate = method;
                 var parameters = method.GetParameters();
-                var methodArgs = new object[parameters.Length];
+                var parameterBindings = new ParameterBindResult[parameters.Length];
+                var isSuccessfulBinding = true;
                 foreach (var parameter in parameters)
                 {
-                    try
-                    {
-                        var value = default(object);
-                        if (TryBindParameter(parameter, arguments, out value) == false)
-                            goto nextMethod;
-                        methodArgs[parameter.Position] = value;
-                    }
-                    catch
-                    {
-                        goto nextMethod;
-                    }
+                    var bindResult = BindParameter(parameter, arguments);
+                    parameterBindings[parameter.Position] = bindResult;
+                    isSuccessfulBinding = isSuccessfulBinding && bindResult.IsSuccess;
                 }
 
-                return new MethodBindResult(method, methodArgs);
+                if (isSuccessfulBinding == false)
+                {
+                    failedMethods.Add(method, parameterBindings);
+                    continue;
+                }
 
-                nextMethod:
-                ;
-            }
+                var methodArguments = new object[parameters.Length];
+                for (var i = 0; i < parameters.Length; i++)
+                    methodArguments[i] = parameterBindings[i].Value;
 
-            return new MethodBindResult(methodName, candidate);
+                return new MethodBindResult(method, methodArguments);
         }
-        private static bool TryBindParameter(ParameterInfo parameter, CommandLineArguments arguments, out object value)
+        private static ParameterBindResult BindParameter(ParameterInfo parameter, CommandLineArguments arguments)
         {
             var expectedType = parameter.ParameterType;
-            if (expectedType == typeof(CommandLineArguments))
+            var value = default(object);
+            try
             {
-                value = new CommandLineArguments(arguments);
-            }
-            else if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position).ToString(), out value))
-            {
-                if (expectedType.IsArray)
+                if (expectedType == typeof(CommandLineArguments))
                 {
-                    var elemType = expectedType.GetElementType();
-                    Debug.Assert(elemType != null, "elemType != null");
-                    if (value is string[])
+                    value = new CommandLineArguments(arguments);
+                }
+                else if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position).ToString(), out value))
+                {
+                    if (expectedType.IsArray)
                     {
-                        var oldArr = value as string[];
-                        var newArr = Array.CreateInstance(elemType, oldArr.Length);
-                        for (var v = 0; v < oldArr.Length; v++) newArr.SetValue(TypeConvert.Convert(typeof(string), elemType, oldArr[v]), v);
-
-                        value = newArr;
+                        var elemType = expectedType.GetElementType();
+                        Debug.Assert(elemType != null, "elemType != null");
+                        if (value is IList<string>)
+                        {
+                            var valuesStr = (IList<string>)value;
+                            var values = Array.CreateInstance(elemType, valuesStr.Count);
+                            for (var i = 0; i < valuesStr.Count; i++)
+                            {
+                                value = valuesStr[i]; // used on failure in exception block
+                                values.SetValue(TypeConvert.Convert(typeof(string), elemType, valuesStr[i]), i);
+                            }
+                            value = values;
+                        }
+                        else if (value != null)
+                        {
+                            var values = Array.CreateInstance(elemType, 1);
+                            values.SetValue(TypeConvert.Convert(value.GetType(), elemType, value), 0);
+                            value = values;
+                        }
+                        else
+                        {
+                            var values = Array.CreateInstance(elemType, 0);
+                            value = values;
+                        }
                     }
-                    else if (value != null)
+                    else if (expectedType == typeof(bool) && value == null)
                     {
-                        var newArr = Array.CreateInstance(elemType, 1);
-                        newArr.SetValue(TypeConvert.Convert(value.GetType(), elemType, value), 0);
-                        value = newArr;
+                        value = true;
+                    }
+                    else if (value == null)
+                    {
+                        value = parameter.IsOptional ? parameter.DefaultValue : expectedType.IsValueType ? TypeActivator.CreateInstance(expectedType) : null;
+                    }
+                    else if (expectedType.IsEnum && value is IList<string>)
+                    {
+                        var valuesStr = (IList<string>)value;
+                        var values = new object[valuesStr.Count];
+                        for (var i = 0; i < valuesStr.Count; i++)
+                        {
+                            value = valuesStr[i]; // used on failure in exception block
+                            values[i] = TypeConvert.Convert(typeof(string), expectedType, value);
+                        }
+
+                        if (IsSigned(Enum.GetUnderlyingType(expectedType)))
+                        {
+                            var combinedValue = 0L;
+                            foreach (var enumValue in values)
+                            {
+                                value = enumValue; // used on failure in exception block
+                                combinedValue |= (long)TypeConvert.Convert(expectedType, typeof(long), value);
+                            }
+
+                            value = Enum.ToObject(expectedType, combinedValue);
+                        }
+                        else
+                        {
+                            var combinedValue = 0UL;
+                            foreach (var enumValue in values)
+                            {
+                                value = enumValue; // used on failure in exception block
+                                combinedValue |= (ulong)TypeConvert.Convert(expectedType, typeof(ulong), enumValue);                                
+                            }
+
+                            value = Enum.ToObject(expectedType, combinedValue);
+                        }
+                    }
+                    else if (value is IList<string> && expectedType.IsAssignableFrom(typeof(IList<string>)) == false)
+                    {
+                        throw new FormatException(string.Format("Parameter has {0} values while only one is expected.", ((IList<string>)value).Count));
                     }
                     else
                     {
-                        var newArr = Array.CreateInstance(elemType, 0);
-                        value = newArr;
+                        value = TypeConvert.Convert(value.GetType(), expectedType, value);
                     }
                 }
-                else if (expectedType == typeof(bool) && value == null)
+                else if (parameter.IsOptional)
                 {
-                    value = true;
+                    value = parameter.DefaultValue;
                 }
-                else if (value == null)
+                else if (expectedType == typeof(bool))
                 {
-                    value = parameter.IsOptional ? parameter.DefaultValue : expectedType.IsValueType ? TypeActivator.CreateInstance(expectedType) : null;
-                }
-                else if (expectedType.IsEnum && value is string[])
-                {
-                    var valuesStr = (string[])value;
-                    var values = Array.ConvertAll(valuesStr, v => TypeConvert.Convert(typeof(string), expectedType, v));
-                    if (IsSigned(Enum.GetUnderlyingType(expectedType)))
-                    {
-                        var combinedValue = 0L;
-                        foreach (var v in values)
-                            combinedValue |= (long)TypeConvert.Convert(expectedType, typeof(long), v);
-
-                        value = Enum.ToObject(expectedType, combinedValue);
-                    }
-                    else
-                    {
-                        var combinedValue = 0UL;
-                        foreach (var v in values)
-                            combinedValue |= (ulong)TypeConvert.Convert(expectedType, typeof(ulong), v);
-
-                        value = Enum.ToObject(expectedType, combinedValue);
-                    }
+                    value = false;
                 }
                 else
                 {
-                    value = TypeConvert.Convert(value.GetType(), expectedType, value);
+                    throw new InvalidOperationException("Missing parameter value.");
                 }
             }
-            else if (parameter.IsOptional)
+            catch (Exception bindingError)
             {
-                value = parameter.DefaultValue;
-            }
-            else if (expectedType == typeof(bool))
-            {
-                value = false;
-            }
-            else
-            {
-                return false;
+                return new ParameterBindResult(parameter, bindingError, value);
             }
 
-            return true;
+            return new ParameterBindResult(parameter, null, value);
         }
         private static bool IsSigned(Type type)
         {
