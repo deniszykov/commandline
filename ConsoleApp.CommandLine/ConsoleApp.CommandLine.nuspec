@@ -11,8 +11,21 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes>
-		added non-generic Run and Describe methods
-		fixed bug with positional parameters binding
+# 1.1.3
+- refactored error messages fo parameters binding failure cases.
+- added CommandLineException to signal binding failures.
+ - fixed few array parameter binding bugs
+# 1.1.2
+- added bare double hyphen to enforce positional parameters
+- added bare single hyphen to disable hyphen interpretation in values
+- added special treatment for negative numbers
+- added CommandLine.DescribeOnBindFailure which controls reaction on method binding failure (true to run CommandLine.Describe(), false to throw exception).
+- added enum flags binding subroutine, now "--flag Flag1 Flag2 Flag3" arguments are supported.
+- changed method binding order to from most parameters to less (original was chaotic), binding strategy is still - "first match".
+- added non-generic Run and Describe methods
+- fixed bug with positional parameters binding
+# 1.0.0
+- initial release
 	</releaseNotes>
     <copyright>Copyright (c) Denis Zykov 2016</copyright>
     <tags>CommandLine, Console</tags>
