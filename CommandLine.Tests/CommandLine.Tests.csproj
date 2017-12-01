@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
+        <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">2.0.3</RuntimeFrameworkVersion>
+        <Authors>Denis Zykov</Authors>
+        <Version>0.0.0</Version>
+        <PackageId>ConsoleApp.CommandLine.Tests</PackageId>
+        <Product>ConsoleApp.CommandLine.Tests</Product>
+        <Description>Tests.</Description>
+        <Company />
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>../CommandLine/sign.snk</AssemblyOriginatorKeyFile>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+        <ApplicationIcon />
+        <OutputTypeEx>library</OutputTypeEx>
+        <OutputType>Library</OutputType>
+        <StartupObject />
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <FileVersion>0.0.0.0</FileVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <Optimize>False</Optimize>
+        <DefineConstants>RELEASE</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="xunit" Version="2.3.1" />
+        <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\CommandLine\sign.snk" Link="sign.snk" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\CommandLine\CommandLine.csproj" />
+    </ItemGroup>
+</Project>
