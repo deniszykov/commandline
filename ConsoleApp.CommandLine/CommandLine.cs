@@ -92,7 +92,7 @@ namespace System
             catch (Exception exception)
             {
                 var handler = UnhandledException ?? DefaultUnhandledExceptionHandler;
-                handler(null, new UnhandledExceptionEventArgs(exception, isTerminating: true));
+                handler(null, new ExceptionEventArgs(exception, isTerminating: true));
                 return DotNetExceptionExitCode;
             }
         }
@@ -171,7 +171,7 @@ namespace System
             return 0;
         }
 
-        private static void DefaultUnhandledExceptionHandler(object source, UnhandledExceptionEventArgs eventArgs)
+        private static void DefaultUnhandledExceptionHandler(object source, ExceptionEventArgs eventArgs)
         {
             Console.Error.WriteLine(eventArgs.ExceptionObject);
         }
