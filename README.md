@@ -113,7 +113,7 @@ myapp.exe ShowFlag
 
 ### Parameters values starting with hyphen(-) symbol
 Negative numbers (such as -1000) are interpreted as values by default. But strings like "-a", "-hello" are interpreted as named parameters. 
-To stop this behavior you could start parameters with bare hyphen parameter. 
+To stop this interpretation you could place bare hyphen: 
 ```bash
 myapp.exe - --message -hello --class -a
 ```
@@ -122,7 +122,7 @@ You could pass bare double hyphen(--) and anything after it will be threated as 
 ```bash
 myapp.exe --type message -- value1 value2 value3
 ```
-No special symbols are interpeted after double hyphen(--) even another double hypthen.
+No special symbols are interpeted after double hyphen(--) even another double hypthen:
 ```bash
 myapp.exe --type message -- -value1 --value2 --value3-- --
 ```
@@ -196,5 +196,5 @@ You can add these attributes to the methods, parameters and classes. All of them
 # Handling Errors
 To catch and handle binding or execution errors you could subscribe on **CommandLine.UnhandledException** method.
 ```csharp
-CommandLine.UnhandledException += (sender, args) => Console.WriteLine(args.ExceptionObject.ToString());
+CommandLine.UnhandledException += (sender, args) => Console.WriteLine(args.Exception.ToString());
 ```
