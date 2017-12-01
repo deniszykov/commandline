@@ -10,13 +10,14 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
 namespace System
 {
+#if !NETSTANDARD13
 	[Serializable]
+#endif
 	public class CommandLineArguments : Dictionary<string, object>
 	{
 		private class IntAsStringComparer : IComparer<string>
@@ -102,12 +103,13 @@ namespace System
 		{
 			if (argumentsDictionary == null) throw new ArgumentException("argumentsDictionary");
 		}
-		protected CommandLineArguments(SerializationInfo info, StreamingContext context)
+#if !NETSTANDARD13
+		protected CommandLineArguments(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
 		{
 
 		}
-
+#endif
 		public void Add(int position, string value)
 		{
 			if (position < 0) throw new ArgumentOutOfRangeException("position");
@@ -171,15 +173,15 @@ namespace System
 				{
 					if (kv.Value == null)
 						count++; // only parameter name
-					else if (kv.Value is string[])
-						count += 1 + ((string[])kv.Value).Length; // parameter name + values
+					else if (kv.Value is IList<string>)
+						count += 1 + ((IList<string>)kv.Value).Count; // parameter name + values
 					else
 						count += 2; // parameter name + value
 				}
 				else
 				{
-					if (kv.Value is string[])
-						count += ((string[])kv.Value).Length; // only values
+					if (kv.Value is IList<string>)
+						count += ((IList<string>)kv.Value).Count; // only values
 					else if (kv.Value != null)
 						count += 1; // only value
 				}
@@ -189,15 +191,15 @@ namespace System
 			var index = 0;
 			foreach (var kv in this.OrderBy(kv => kv.Key, IntAsStringComparer.Default))
 			{
-				var valueArray = kv.Value as string[];
+				var valuesList = kv.Value as IList<string>;
 
 				if (!int.TryParse(kv.Key, out position))
 					array[index++] = string.Concat(CommandLine.ArgumentNamePrefix, kv.Key);
 
-				if (valueArray != null)
+				if (valuesList != null)
 				{
-					Array.Copy(valueArray, 0, array, index, valueArray.Length);
-					index += valueArray.Length;
+					valuesList.CopyTo(array, index);
+					index += valuesList.Count;
 				}
 				else if (kv.Value != null)
 				{

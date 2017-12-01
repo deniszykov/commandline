@@ -151,7 +151,7 @@ namespace ConsoleApp.CommandLine.Tests
         [InlineData(new[] { "-", "--", "-1", "-param2", "-" }, "IntNegativeStringParameter")]
         public void BindTest(string[] commandLineArguments, string method)
         {
-            System.CommandLine.UnhandledException += (sender, args) => output.WriteLine(args.ExceptionObject.ToString());
+            System.CommandLine.UnhandledException += (sender, args) => output.WriteLine(args.Exception.ToString());
             System.CommandLine.DescribeOnBindFailure = false;
 
             var exitCode = System.CommandLine.Run<Api>(new CommandLineArguments(commandLineArguments), method);

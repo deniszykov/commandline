@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-namespace MyAppExample
+namespace ConsoleApp.CommandLine.Example
 {
 	public class MathCommands
 	{
@@ -23,7 +23,7 @@ namespace MyAppExample
 		[Description("Display this help.")]
 		public static int Help(string commandToDescribe = null)
 		{
-			return CommandLine.Describe<Program>(commandToDescribe);
+			return System.CommandLine.Describe<Program>(commandToDescribe);
 		}
 	}
 }

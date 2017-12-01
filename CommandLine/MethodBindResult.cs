@@ -9,28 +9,35 @@
 */
 
 // ReSharper disable once CheckNamespace
+
+using System.Collections.Generic;
 using System.Reflection;
 
+// ReSharper disable once CheckNamespace
 namespace System
 {
 	internal class MethodBindResult
 	{
+		private static readonly Dictionary<MethodInfo, ParameterBindResult[]> EmptyFailedMethodBindings = new Dictionary<MethodInfo, ParameterBindResult[]>();
 
 		public bool IsSuccess { get { return this.Method != null; } }
 		public MethodInfo Method { get; private set; }
 		public object[] Arguments { get; private set; }
-		public MethodInfo Candidate { get; private set; }
+		public Dictionary<MethodInfo, ParameterBindResult[]> FailedMethodBindings { get; private set; }
 		public string MethodName { get; private set; }
 
-		public MethodBindResult(string methodName, MethodInfo candidate)
+		public MethodBindResult(string methodName, Dictionary<MethodInfo, ParameterBindResult[]> failedMethodBindings)
 		{
+			if (methodName == null) throw new ArgumentNullException("methodName");
+			if (failedMethodBindings == null) throw new ArgumentNullException("failedMethodBindings");
+
 			this.MethodName = methodName;
-			this.Candidate = candidate;
+			this.FailedMethodBindings = failedMethodBindings;
 		}
 		public MethodBindResult(MethodInfo method, object[] arguments)
 		{
 			this.MethodName = method.Name;
-			this.Candidate = method;
+			this.FailedMethodBindings = EmptyFailedMethodBindings;
 			this.Method = method;
 			this.Arguments = arguments;
 		}
@@ -38,9 +45,7 @@ namespace System
 		public override string ToString()
 		{
 			if (this.IsSuccess)
-				return string.Format("Successfull binding to method {0} and {1} arguments", this.Method, this.Arguments.Length);
-			else if (this.Candidate != null)
-				return string.Format("Failure binding to method {0} because of parameters.", this.Method);
+				return string.Format("Successful binding to method {0} and {1} arguments", this.Method, this.Arguments.Length);
 			else
 				return string.Format("Failure binding to method {0} ", this.MethodName);
 		}
