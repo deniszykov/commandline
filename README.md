@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/deniszykov/commandline.svg?branch=master)](https://travis-ci.org/deniszykov/commandline)
+
 Introduction
 ============
 Tools for building console application.
