@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0</TargetFrameworks>
         <Authors>Denis Zykov</Authors>
-        <Version>1.2.1</Version>
+        <Version>1.2.2</Version>
         <PackageId>ConsoleApp.CommandLine</PackageId>
         <Product>ConsoleApp.CommandLine</Product>
         <Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
@@ -17,10 +17,14 @@
         <StartupObject />
         <OutputTypeEx>library</OutputTypeEx>
         <OutputType>Library</OutputType>
-        <AssemblyVersion>1.2.1.0</AssemblyVersion>
-        <FileVersion>1.2.1.0</FileVersion>
-        <PackageReleaseNotes># 1.2.1
-embedded TypeConvert dependency
+        <AssemblyVersion>1.2.2.0</AssemblyVersion>
+        <FileVersion>1.2.2.0</FileVersion>
+        <PackageReleaseNotes>
+# 1.2.2
+- returned original library name ConsoleApp.CommandLine.dll 
+
+# 1.2.1
+- embedded TypeConvert dependency
 
 # 1.2.0
 - CommandLine.UnhandledException type changed to ExceptionEventHandler
@@ -50,6 +54,8 @@ embedded TypeConvert dependency
         <PackageProjectUrl>https://github.com/deniszykov/commandline</PackageProjectUrl>
         <RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
         <PackageLicenseUrl>https://raw.githubusercontent.com/deniszykov/commandline/master/LICENSE</PackageLicenseUrl>
+        <AssemblyName>ConsoleApp.CommandLine</AssemblyName>
+        <RootNamespace>System.CommandLine</RootNamespace>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <Optimize>False</Optimize>
