@@ -3,22 +3,26 @@
     <PropertyGroup>
         <TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0</TargetFrameworks>
         <Authors>Denis Zykov</Authors>
-        <Version>1.2.0</Version>
+        <Version>1.2.1</Version>
         <PackageId>ConsoleApp.CommandLine</PackageId>
         <Product>ConsoleApp.CommandLine</Product>
         <Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
         <Company />
         <SignAssembly>True</SignAssembly>
         <AssemblyOriginatorKeyFile>sign.snk</AssemblyOriginatorKeyFile>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
         <ApplicationIcon />
         <StartupObject />
         <OutputTypeEx>library</OutputTypeEx>
         <OutputType>Library</OutputType>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <FileVersion>1.2.0.0</FileVersion>
-        <PackageReleaseNotes># 1.2.0
+        <AssemblyVersion>1.2.1.0</AssemblyVersion>
+        <FileVersion>1.2.1.0</FileVersion>
+        <PackageReleaseNotes># 1.2.1
+embedded TypeConvert dependency
+
+# 1.2.0
 - CommandLine.UnhandledException type changed to ExceptionEventHandler
 - added custom description attributes as replacement to System.ComponentModel attributes: HelpTextAttribute and HiddenAttribute
 - added support of .NET Standard platform
@@ -58,7 +62,9 @@
         <None Include="sign.snk" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="TypeConvert" Version="1.1.0" />
+        <PackageReference Include="TypeConvert" Version="1.2.0">
+          <PrivateAssets>All</PrivateAssets>
+        </PackageReference>
     </ItemGroup>
     <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
         <DefineConstants>$(DefineConstants);NETSTANDARD;NETSTANDARD13;</DefineConstants>
@@ -75,4 +81,30 @@
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
         <DefineConstants>$(DefineConstants);NET35</DefineConstants>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ILRepack" Version="2.1.0-beta1">
+            <PrivateAssets>All</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <Target Name="Repack" AfterTargets="BuiltProjectOutputGroup" Condition="' $(TargetFramework)'!='' ">
+        <GetFrameworkPath>
+            <Output TaskParameter="Path" PropertyName="FrameworkPath" />
+        </GetFrameworkPath>
+        <ItemGroup>
+            <NetPlatformFolders Include="$(NuGetPackageFolders.Split(';'))"></NetPlatformFolders>
+        </ItemGroup>
+        <PropertyGroup>
+            <ILRepack Condition="'$(ILRepack)' == ''">$(NuGetPackageRoot)ilrepack\2.1.0-beta1\tools\ILRepack.exe</ILRepack>
+            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net45'">v4,$(FrameworkPath)</ILRepackTargetPlatform>
+            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net35'">v2</ILRepackTargetPlatform>
+            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netcoreapp2.0' or '$(TargetFramework)' == 'netstandard2.0'">v4,$(FrameworkPath)</ILRepackTargetPlatform>
+            <WSLSignKey>$(ProjectDir)sign.snk</WSLSignKey>
+            <IlRepackLibs>@(NetPlatformFolders->'"/lib:%(FullPath)\netstandard.library\2.0.0\build\netstandard2.0\ref"', ' ')</IlRepackLibs>
+        </PropertyGroup>
+        
+        <Exec Command="&quot;$(ILRepack)&quot; /target:library &quot;/targetplatform:$(ILRepackTargetPlatform)&quot; $(IlRepackLibs) &quot;/keyfile:$(WSLSignKey)&quot; /internalize /xmldocs /union /parallel &quot;/out:$(TargetPath)&quot; &quot;$(TargetPath)&quot; &quot;$(TargetDir)TypeConvert.dll&quot;" WorkingDirectory="$(ProjectDir)" />
+        <Delete Files="$(TargetDir)TypeConvert.dll" />
+    </Target>
 </Project>

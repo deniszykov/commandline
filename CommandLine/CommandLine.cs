@@ -25,8 +25,8 @@ namespace System
         public const string ArgumentNamePrefix = "--";
         public const string ArgumentNamePrefixShort = "-";
 
-        private static CommandLineArguments applicationArguments;
 #if !NETSTANDARD13
+        private static CommandLineArguments applicationArguments;
         /// <summary>
         /// Lazy initialized application startup parameters. Executable name as first parameter is substituted.
         /// </summary>
