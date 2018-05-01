@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0</TargetFrameworks>
         <Authors>Denis Zykov</Authors>
-        <Version>1.2.2</Version>
+        <Version>1.2.3</Version>
         <PackageId>ConsoleApp.CommandLine</PackageId>
         <Product>ConsoleApp.CommandLine</Product>
         <Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
@@ -17,9 +17,11 @@
         <StartupObject />
         <OutputTypeEx>library</OutputTypeEx>
         <OutputType>Library</OutputType>
-        <AssemblyVersion>1.2.2.0</AssemblyVersion>
-        <FileVersion>1.2.2.0</FileVersion>
-        <PackageReleaseNotes>
+        <AssemblyVersion>1.2.3.0</AssemblyVersion>
+        <FileVersion>1.2.3.0</FileVersion>
+        <PackageReleaseNotes># 1.2.3
+updated references for .NET Core Targets and .NET Standard
+
 # 1.2.2
 - returned original library name ConsoleApp.CommandLine.dll 
 
@@ -94,7 +96,7 @@
         </PackageReference>
     </ItemGroup>
 
-    <Target Name="Repack" AfterTargets="BuiltProjectOutputGroup" Condition="' $(TargetFramework)'!='' ">
+    <Target Name="Repack" AfterTargets="BuiltProjectOutputGroup" Condition="' $(TargetFramework)' != '' AND '$(GeneratePackageOnBuild)' == 'true' ">
         <GetFrameworkPath>
             <Output TaskParameter="Path" PropertyName="FrameworkPath" />
         </GetFrameworkPath>
@@ -103,14 +105,16 @@
         </ItemGroup>
         <PropertyGroup>
             <ILRepack Condition="'$(ILRepack)' == ''">$(NuGetPackageRoot)ilrepack\2.1.0-beta1\tools\ILRepack.exe</ILRepack>
-            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net45'">v4,$(FrameworkPath)</ILRepackTargetPlatform>
+            <ILRepack Condition="'$(ILRepack)' == ''">$(NuGetPackageRoot)ilrepack\2.1.0-beta1\tools\ILRepack.exe</ILRepack>
             <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net35'">v2</ILRepackTargetPlatform>
-            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netcoreapp2.0' or '$(TargetFramework)' == 'netstandard2.0'">v4,$(FrameworkPath)</ILRepackTargetPlatform>
-            <WSLSignKey>$(ProjectDir)sign.snk</WSLSignKey>
-            <IlRepackLibs>@(NetPlatformFolders->'"/lib:%(FullPath)\netstandard.library\2.0.0\build\netstandard2.0\ref"', ' ')</IlRepackLibs>
+            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net45'">v4,$(FrameworkPath)</ILRepackTargetPlatform>
+            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netcoreapp2.0' or '$(TargetFramework)' == 'netstandard2.0'">v4</ILRepackTargetPlatform>
+            <IlRepackLibs Condition="'$(TargetFramework)' == 'netstandard2.0'">@(NetPlatformFolders->'"/lib:%(FullPath)\netstandard.library\2.0.0\build\netstandard2.0\ref"', ' ')</IlRepackLibs>
+            <IlRepackLibs Condition="'$(TargetFramework)' == 'netcoreapp2.0'">@(NetPlatformFolders->'"/lib:%(FullPath)\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0"', ' ')</IlRepackLibs>
+            <IlRepackSignKey>$(ProjectDir)sign.snk</IlRepackSignKey>
         </PropertyGroup>
         
-        <Exec Command="&quot;$(ILRepack)&quot; /target:library &quot;/targetplatform:$(ILRepackTargetPlatform)&quot; $(IlRepackLibs) &quot;/keyfile:$(WSLSignKey)&quot; /internalize /xmldocs /union /parallel &quot;/out:$(TargetPath)&quot; &quot;$(TargetPath)&quot; &quot;$(TargetDir)TypeConvert.dll&quot;" WorkingDirectory="$(ProjectDir)" />
+        <Exec Command="&quot;$(ILRepack)&quot; /target:library &quot;/targetplatform:$(ILRepackTargetPlatform)&quot; $(IlRepackLibs) &quot;/keyfile:$(IlRepackSignKey)&quot; /internalize /xmldocs /union /parallel &quot;/out:$(TargetPath)&quot; &quot;$(TargetPath)&quot; &quot;$(TargetDir)TypeConvert.dll&quot;" WorkingDirectory="$(ProjectDir)" />
         <Delete Files="$(TargetDir)TypeConvert.dll" />
     </Target>
 </Project>
