@@ -16,7 +16,7 @@ namespace System
 {
 	internal class MethodBindResult
 	{
-		private static readonly Dictionary<MethodInfo, ParameterBindResult[]> EmptyFailedMethodBindings = new Dictionary<MethodInfo, ParameterBindResult[]>();
+		public static readonly Dictionary<MethodInfo, ParameterBindResult[]> EmptyFailedMethodBindings = new Dictionary<MethodInfo, ParameterBindResult[]>();
 
 		public bool IsSuccess { get { return this.Method != null; } }
 		public MethodInfo Method { get; private set; }

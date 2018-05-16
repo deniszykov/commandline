@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0</TargetFrameworks>
         <Authors>Denis Zykov</Authors>
-        <Version>1.2.3</Version>
+        <Version>1.2.4</Version>
         <PackageId>ConsoleApp.CommandLine</PackageId>
         <Product>ConsoleApp.CommandLine</Product>
         <Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
@@ -11,16 +11,23 @@
         <SignAssembly>True</SignAssembly>
         <AssemblyOriginatorKeyFile>sign.snk</AssemblyOriginatorKeyFile>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+        <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>		
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <ApplicationIcon />
+        <ApplicationIcon />		
         <StartupObject />
+        <AssemblyName>ConsoleApp.CommandLine</AssemblyName>
+        <RootNamespace>System.CommandLine</RootNamespace>
+		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
         <OutputTypeEx>library</OutputTypeEx>
         <OutputType>Library</OutputType>
         <AssemblyVersion>1.2.3.0</AssemblyVersion>
         <FileVersion>1.2.3.0</FileVersion>
-        <PackageReleaseNotes># 1.2.3
-updated references for .NET Core Targets and .NET Standard
+        <PackageReleaseNotes># 1.2.4
+- fixed binding error when no default action is specified
+- added XML documentation file to package
+
+# 1.2.3
+- updated references for .NET Core Targets and .NET Standard
 
 # 1.2.2
 - returned original library name ConsoleApp.CommandLine.dll 
@@ -56,8 +63,6 @@ updated references for .NET Core Targets and .NET Standard
         <PackageProjectUrl>https://github.com/deniszykov/commandline</PackageProjectUrl>
         <RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
         <PackageLicenseUrl>https://raw.githubusercontent.com/deniszykov/commandline/master/LICENSE</PackageLicenseUrl>
-        <AssemblyName>ConsoleApp.CommandLine</AssemblyName>
-        <RootNamespace>System.CommandLine</RootNamespace>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <Optimize>False</Optimize>
