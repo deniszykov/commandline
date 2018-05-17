@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0</TargetFrameworks>
         <Authors>Denis Zykov</Authors>
-        <Version>1.2.4</Version>
+        <Version>1.2.5</Version>
         <PackageId>ConsoleApp.CommandLine</PackageId>
         <Product>ConsoleApp.CommandLine</Product>
         <Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
@@ -20,9 +20,15 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
         <OutputTypeEx>library</OutputTypeEx>
         <OutputType>Library</OutputType>
-        <AssemblyVersion>1.2.3.0</AssemblyVersion>
-        <FileVersion>1.2.3.0</FileVersion>
-        <PackageReleaseNotes># 1.2.4
+        <AssemblyVersion>1.2.5.0</AssemblyVersion>
+        <FileVersion>1.2.5.0</FileVersion>
+        <PackageReleaseNotes># 1.2.5
+- added WriteWholeErrorMessageOnBindFailure option for debugging purpose (it writes descriptive error message to stderr stream)
+- added DescribeExitCode option for controlling exit code of Describe method
+- tuned error messages when no command is specified or wrong parameters are passed
+- tuned Describe method for better description text (friendly type names, nullable types support etc...)
+
+# 1.2.4
 - fixed binding error when no default action is specified
 - added XML documentation file to package
 
@@ -59,7 +65,7 @@
 - initial release</PackageReleaseNotes>
         <Copyright>(c) Denis Zykov 2017</Copyright>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>commandline console terminal</PackageTags>
+        <PackageTags>commandline;console;terminal</PackageTags>
         <PackageProjectUrl>https://github.com/deniszykov/commandline</PackageProjectUrl>
         <RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
         <PackageLicenseUrl>https://raw.githubusercontent.com/deniszykov/commandline/master/LICENSE</PackageLicenseUrl>

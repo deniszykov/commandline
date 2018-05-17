@@ -24,6 +24,7 @@ namespace System
 		public const int DotNetExceptionExitCode = -2147023895;
 		public const string ArgumentNamePrefix = "--";
 		public const string ArgumentNamePrefixShort = "-";
+		public const string UnknownMethodName = "<no name specified>";
 
 #if !NETSTANDARD13
 		private static CommandLineArguments applicationArguments;
@@ -49,9 +50,17 @@ namespace System
 		/// </summary>
 		public static bool DescribeOnBindFailure = true;
 		/// <summary>
-		/// Exit code used on 'soft' binding failure when command description is displayed.
+		/// Output whole error message to stderr when bind error occurs (command name mistype or wrong arguments).
+		/// </summary>
+		public static bool WriteWholeErrorMessageOnBindFailure = false;
+		/// <summary>
+		/// Exit code returned when unable to find command and help text is displayed instead.
 		/// </summary>
 		public static int BindFailureExitCode = 1;
+		/// <summary>
+		/// Exit code used by Describe method as return value.
+		/// </summary>
+		public static int DescribeExitCode = 0;
 
 		public static int Run<T>(CommandLineArguments arguments, string defaultCommandName = null)
 		{
@@ -92,8 +101,34 @@ namespace System
 
 					if (DescribeOnBindFailure)
 					{
-						Console.Error.WriteLine("Error: " + error.Message + Environment.NewLine);
-						Describe(type);
+						if (bindResult.MethodName == UnknownMethodName)
+						{
+							Console.WriteLine(" Error:");
+							Console.WriteLine("  No command is specified.");
+							Console.WriteLine();
+
+							if (WriteWholeErrorMessageOnBindFailure)
+							{
+								Console.Error.WriteLine(error);
+								Console.Error.WriteLine();
+							}
+
+							Describe(type);
+						}
+						else
+						{
+							Console.WriteLine(" Error:");
+							Console.WriteLine(string.Format("  Invalid parameters specified for '{0}' command.", bindResult.MethodName));
+							Console.WriteLine();
+
+							if (WriteWholeErrorMessageOnBindFailure)
+							{
+								Console.Error.WriteLine(error);
+								Console.Error.WriteLine();
+							}
+
+							Describe(type, bindResult.MethodName);
+						}
 					}
 					else
 					{
@@ -120,46 +155,49 @@ namespace System
 		{
 			if (type == null) throw new ArgumentNullException("type");
 
-			var fullDescription = string.IsNullOrEmpty(commandToDescribe) == false;
+			if (string.IsNullOrEmpty(commandToDescribe) == false)
+			{
+				Console.WriteLine(GetCommandDescription(type, commandToDescribe));
+			}
+			else
+			{
+				Console.WriteLine(GetTypeDescription(type, includeTypeHelpText: true));
+			}
+
+			return DescribeExitCode;
+		}
+		private static string GetTypeDescription(Type type, bool includeTypeHelpText)
+		{
+			if (type == null) throw new ArgumentNullException("type");
+
 			var result = new StringBuilder();
+			var basePadding = 1;
 
-			var descriptionText = default(string);
-			var helpText = type.GetTypeInfo().GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
-			if (helpText != null)
+			if (includeTypeHelpText)
 			{
-				descriptionText = helpText.Description;
-			}
+				var descriptionText = default(string);
+				var helpText = type.GetTypeInfo().GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
+				if (helpText != null)
+				{
+					descriptionText = helpText.Description;
+				}
 #if !NETSTANDARD13
-			var description = type.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
-			if (description != null)
-			{
-				descriptionText = descriptionText ?? description.Description;
-			}
+				var description = type.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
+				if (description != null)
+				{
+					descriptionText = descriptionText ?? description.Description;
+				}
 #endif
-			result.AppendLine(descriptionText).AppendLine();
+				result.Append(' ', basePadding).AppendLine(descriptionText).AppendLine();
+			}
+			result.Append(' ', basePadding).AppendLine("Commands:");
 
-
-			if (string.IsNullOrEmpty(commandToDescribe))
-				result.AppendLine("Commands:");
 			foreach (var method in type.GetTypeInfo().GetAllMethods().Where(IsValidCommandSignature))
 			{
 				if (IsHidden(method))
 					continue;
 
-				if (string.IsNullOrEmpty(commandToDescribe) == false && !string.Equals(method.Name, commandToDescribe, StringComparison.OrdinalIgnoreCase))
-					continue;
-
 				result.AppendFormat("  {0} ", method.Name.ToUpper());
-				var basePadding = GetPadding(result);
-
-				if (fullDescription)
-				{
-					var paramsArr = method.GetParameters().Where(p => !IsHidden(p)).Select(parameter => string.Format(parameter.IsOptional ? "[--{0} <{0}>] " : "--{0} <{0}> ", parameter.Name)).ToArray();
-					var paramsDesc = string.Concat(paramsArr);
-					AppendPadded(result, paramsDesc);
-					result.AppendLine();
-					result.Append(' ', basePadding);
-				}
 
 				var methodDescriptionText = default(string);
 				var methodHelpText = method.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
@@ -171,14 +209,65 @@ namespace System
 					methodDescriptionText = methodDescriptionText ?? methodDescription.Description;
 #endif
 				if (string.IsNullOrEmpty(methodDescriptionText) == false)
-					AppendPadded(result, methodDescriptionText);
+					AppendLinePadded(result, methodDescriptionText);
 				else
 					result.AppendLine();
+			}
 
-				if (!fullDescription)
+			return result.ToString();
+		}
+		private static string GetCommandDescription(Type type, string commandName)
+		{
+			if (type == null) throw new ArgumentNullException("type");
+			if (commandName == null) throw new ArgumentNullException("commandName");
+
+			var result = new StringBuilder();
+			var basePadding = 1;
+
+			foreach (var method in type.GetTypeInfo().GetAllMethods().Where(IsValidCommandSignature))
+			{
+				if (string.Equals(method.Name, commandName, StringComparison.OrdinalIgnoreCase) == false)
 					continue;
 
+				if (IsHidden(method))
+					continue;
+
+				result.Append(' ', basePadding).AppendLine("Command:");
+				result.Append(' ', basePadding + 1).Append(method.Name.ToUpper()).Append(" ");
+
+				var paramsArr = method.GetParameters().Where(p => !IsHidden(p)).Select(parameter => string.Format(parameter.IsOptional ? "[--{0} <{1}>] " : "--{0} <{1}> ", parameter.Name, GetParameterTypeFriendlyName(parameter))).ToArray();
+				var paramsDesc = string.Concat(paramsArr);
+				AppendLinePadded(result, paramsDesc);
 				result.AppendLine();
+
+				var methodDescriptionText = default(string);
+				var methodHelpText = method.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
+				if (methodHelpText != null)
+					methodDescriptionText = methodHelpText.Description;
+#if !NETSTANDARD13
+				var methodDescription = method.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
+				if (methodDescription != null)
+					methodDescriptionText = methodDescriptionText ?? methodDescription.Description;
+#endif
+				methodDescriptionText = (methodDescriptionText ?? string.Empty).Trim();
+
+				if (string.IsNullOrEmpty(methodDescriptionText) == false)
+				{
+					result.Append(' ', basePadding).AppendLine("Description:");
+					result.Append(' ', basePadding + 1);
+
+					if (methodDescriptionText.EndsWith(".", StringComparison.OrdinalIgnoreCase) == false)
+						methodDescriptionText += ".";
+
+					AppendLinePadded(result, methodDescriptionText);
+				}
+				else
+				{
+					result.AppendLine();
+				}
+
+				result.AppendLine();
+				result.Append(' ', basePadding).AppendLine("Parameters:");
 				foreach (var parameter in method.GetParameters())
 				{
 					if (IsHidden(parameter))
@@ -187,11 +276,12 @@ namespace System
 					if (parameter.ParameterType == typeof(CommandLineArguments))
 						continue;
 
-					var parameterType = parameter.ParameterType.Name;
+					var parameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+					var parameterTypeName = parameterType.Name;
 					var options = "";
 					var defaultValue = "";
-					if (parameter.ParameterType.GetTypeInfo().IsEnum) options = " Options: " + string.Join(", ", Enum.GetNames(parameter.ParameterType)) + ".";
-					if (parameter.IsOptional && parameter.DefaultValue != null) defaultValue = " By default is '" + Convert.ToString(parameter.DefaultValue) + "'.";
+					if (parameterType.GetTypeInfo().IsEnum) options = " Options are " + string.Join(", ", Enum.GetNames(parameterType)) + ".";
+					if (parameter.IsOptional && parameter.DefaultValue != null) defaultValue = " Default value is '" + TypeConvert.Convert(parameter.DefaultValue.GetType(), parameterType, parameter.DefaultValue) + "'.";
 
 					var paramDescriptionText = default(string);
 					var paramHelpText = parameter.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
@@ -203,14 +293,18 @@ namespace System
 						paramDescriptionText = paramDescriptionText ?? paramDescription.Description;
 #endif
 
+					paramDescriptionText = (paramDescriptionText ?? string.Empty).Trim();
+
+					if (paramDescriptionText.Length > 0 && paramDescriptionText.EndsWith(".", StringComparison.OrdinalIgnoreCase) == false)
+						paramDescriptionText += ".";
+
 					result.Append(' ', basePadding + 2);
 					result.Append(parameter.Name.ToUpperInvariant()).Append(" ");
-					AppendPadded(result, string.Format("({0}) {1}{2}{3}", parameterType, paramDescriptionText ?? string.Empty, defaultValue, options));
+					AppendLinePadded(result, string.Format("({0}) {1}{2}{3}", parameterTypeName, paramDescriptionText ?? string.Empty, defaultValue, options));
 				}
 			}
 
-			Console.WriteLine(result);
-			return 0;
+			return result.ToString();
 		}
 
 		private static void DefaultUnhandledExceptionHandler(object source, ExceptionEventArgs eventArgs)
@@ -231,6 +325,7 @@ namespace System
 			allMethods.Sort((x, y) => y.GetParameters().Length.CompareTo(x.GetParameters().Length));
 
 			var methodName = default(string);
+			var bestMatchResult = default(MethodBindResult);
 			if (arguments.ContainsKey("0"))
 			{
 				var newArguments = new CommandLineArguments(arguments);
@@ -239,6 +334,8 @@ namespace System
 				var result = BindMethod(allMethods, methodName, newArguments);
 				if (result.IsSuccess)
 					return result;
+
+				bestMatchResult = result;
 			}
 
 			if (string.IsNullOrEmpty(defaultMethodName) == false)
@@ -247,14 +344,18 @@ namespace System
 				var result = BindMethod(allMethods, defaultMethodName, arguments);
 				if (result.IsSuccess)
 					return result;
+
+				bestMatchResult = bestMatchResult ?? result;
 			}
 
 			if (string.IsNullOrEmpty(methodName))
 			{
-				methodName = "<no name specified>";
+				methodName = UnknownMethodName;
 			}
 
-			return new MethodBindResult(methodName, MethodBindResult.EmptyFailedMethodBindings);
+			bestMatchResult = bestMatchResult ?? new MethodBindResult(methodName, MethodBindResult.EmptyFailedMethodBindings);
+
+			return bestMatchResult;
 		}
 		private static MethodBindResult BindMethod(List<MethodInfo> methods, string methodName, CommandLineArguments arguments)
 		{
@@ -290,6 +391,7 @@ namespace System
 				var methodArguments = new object[parameters.Length];
 				for (var i = 0; i < parameters.Length; i++)
 					methodArguments[i] = parameterBindings[i].Value;
+
 				return new MethodBindResult(method, methodArguments);
 			}
 
@@ -402,6 +504,9 @@ namespace System
 				return new ParameterBindResult(parameter, bindingError, value);
 			}
 
+			if (value != null && value.GetType() != parameter.ParameterType)
+				value = TypeConvert.Convert(value.GetType(), parameter.ParameterType, value);
+
 			return new ParameterBindResult(parameter, null, value);
 		}
 		private static bool IsSigned(Type type)
@@ -410,7 +515,7 @@ namespace System
 
 			return type == typeof(sbyte) || type == typeof(short) || type == typeof(int) || type == typeof(long);
 		}
-		private static void AppendPadded(StringBuilder builder, string text)
+		private static void AppendLinePadded(StringBuilder builder, string text)
 		{
 			if (builder == null) throw new ArgumentNullException("builder");
 			if (text == null) throw new ArgumentNullException("text");
@@ -434,6 +539,39 @@ namespace System
 				padding++;
 
 			return padding;
+		}
+		private static string GetParameterTypeFriendlyName(ParameterInfo parameter)
+		{
+			if (parameter == null) throw new ArgumentNullException("parameter");
+
+			var parameterType = parameter.ParameterType;
+			parameterType = Nullable.GetUnderlyingType(parameterType) ?? parameterType;
+
+			if (parameterType == typeof(int) || parameterType == typeof(sbyte) || parameterType == typeof(short) || parameterType == typeof(long) ||
+				parameterType == typeof(uint) || parameterType == typeof(byte) || parameterType == typeof(ushort) || parameterType == typeof(ulong))
+			{
+				return "Integer";
+			}
+			else if (parameterType == typeof(double) || parameterType == typeof(float) || parameterType == typeof(decimal))
+			{
+				return "Number";
+			}
+			else if (parameterType == typeof(string))
+			{
+				return "Text";
+			}
+			else if (parameterType == typeof(char))
+			{
+				return "Symbol";
+			}
+			else if (parameterType == typeof(bool))
+			{
+				return "true/false";
+			}
+			else
+			{
+				return parameterType.Name;
+			}
 		}
 
 		private static bool IsValidCommandSignature(MethodInfo method)

@@ -37,7 +37,7 @@ namespace System
 
 			return type;
 		}
-		
+
 		public static IEnumerable<MethodInfo> GetAllMethods(this Type type)
 		{
 			if (type == null) throw new ArgumentNullException("type");
