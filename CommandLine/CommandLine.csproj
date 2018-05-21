@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0</TargetFrameworks>
         <Authors>Denis Zykov</Authors>
-        <Version>1.2.5</Version>
+        <Version>1.2.6</Version>
         <PackageId>ConsoleApp.CommandLine</PackageId>
         <Product>ConsoleApp.CommandLine</Product>
         <Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
@@ -20,9 +20,13 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
         <OutputTypeEx>library</OutputTypeEx>
         <OutputType>Library</OutputType>
-        <AssemblyVersion>1.2.5.0</AssemblyVersion>
-        <FileVersion>1.2.5.0</FileVersion>
-        <PackageReleaseNotes># 1.2.5
+        <AssemblyVersion>1.2.6.0</AssemblyVersion>
+        <FileVersion>1.2.6.0</FileVersion>
+        <PackageReleaseNotes># 1.2.6
+- TypeConvert package update
+- documentation update
+
+# 1.2.5
 - added WriteWholeErrorMessageOnBindFailure option for debugging purpose (it writes descriptive error message to stderr stream)
 - added DescribeExitCode option for controlling exit code of Describe method
 - tuned error messages when no command is specified or wrong parameters are passed
@@ -81,7 +85,7 @@
         <None Include="sign.snk" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="TypeConvert" Version="1.2.0">
+        <PackageReference Include="TypeConvert" Version="2.0.0">
           <PrivateAssets>All</PrivateAssets>
         </PackageReference>
     </ItemGroup>

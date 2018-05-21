@@ -14,19 +14,32 @@ using System.Text;
 // ReSharper disable once CheckNamespace
 namespace System
 {
+	/// <summary>
+	/// Exception occurred while executing command during <see cref="CommandLine.Run"/>.
+	/// There is extra information in <see cref="Exception.Data"/> dictionary under "method", "methodToken" and "bindingErrors" keys.
+	/// </summary>
 #if !NETSTANDARD13
 	[Serializable]
 #endif
 	public sealed class CommandLineException : Exception
 	{
+		/// <summary>
+		/// Create new instance of <see cref="CommandLineException"/>.
+		/// </summary>
 		public CommandLineException(string message) : base(message)
 		{
 		}
 
+		/// <summary>
+		/// Create new instance of <see cref="CommandLineException"/>.
+		/// </summary>
 		public CommandLineException(string message, Exception innerException) : base(message, innerException)
 		{
 		}
 #if !NETSTANDARD13
+		/// <summary>
+		/// Create new instance of <see cref="CommandLineException"/>.
+		/// </summary>
 		private CommandLineException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context)
 		{
 		}

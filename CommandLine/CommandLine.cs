@@ -19,11 +19,27 @@ using System.Text;
 // ReSharper disable once CheckNamespace
 namespace System
 {
+	/// <summary>
+	/// Utility class for building command-line styled applications.
+	/// Provides action routing and parameters parsing features for called code.
+	/// </summary>
 	public static class CommandLine
 	{
+		/// <summary>
+		/// Exit code used when unhandled .NET Exception occurred during command execution.
+		/// </summary>
 		public const int DotNetExceptionExitCode = -2147023895;
+		/// <summary>
+		/// Prefix of command's argument.
+		/// </summary>
 		public const string ArgumentNamePrefix = "--";
+		/// <summary>
+		/// Prefix of short name of command's argument.
+		/// </summary>
 		public const string ArgumentNamePrefixShort = "-";
+		/// <summary>
+		/// Method name used as placeholder for missing command name in exception text and <see cref="MethodBindResult.MethodName"/> property.
+		/// </summary>
 		public const string UnknownMethodName = "<no name specified>";
 
 #if !NETSTANDARD13
@@ -62,12 +78,26 @@ namespace System
 		/// </summary>
 		public static int DescribeExitCode = 0;
 
+		/// <summary>
+		/// Run command on <typeparamref name="T"/> and return exit code of executed command.
+		/// </summary>
+		/// <typeparam name="T">Type to look for commands on.</typeparam>
+		/// <param name="arguments">List of command line arguments. First positional parameter is treated as command's name.</param>
+		/// <param name="defaultCommandName">Default command name if no command name is specified as first parameter of <paramref name="arguments"/>.</param>
+		/// <returns>Exit code of command-or-<see cref="DotNetExceptionExitCode"/> if exception happened-or-<see cref="BindFailureExitCode"/> if command not found and description is shown.</returns>
 		public static int Run<T>(CommandLineArguments arguments, string defaultCommandName = null)
 		{
 			if (arguments == null) throw new ArgumentNullException("arguments");
 
 			return Run(typeof(T), arguments, defaultCommandName);
 		}
+		/// <summary>
+		/// Run command on <paramref name="type"/> and return exit code of executed command.
+		/// </summary>
+		/// <param name="type">Type to look for commands on.</param>
+		/// <param name="arguments">List of command line arguments. First positional parameter is treated as command's name.</param>
+		/// <param name="defaultCommandName">Default command name if no command name is specified as first parameter of <paramref name="arguments"/>.</param>
+		/// <returns>Exit code of command-or-<see cref="DotNetExceptionExitCode"/> if exception happened-or-<see cref="BindFailureExitCode"/> if command not found and description is shown.</returns>
 		public static int Run(Type type, CommandLineArguments arguments, string defaultCommandName = null)
 		{
 			if (type == null) throw new ArgumentNullException("type");
@@ -146,11 +176,23 @@ namespace System
 				return DotNetExceptionExitCode;
 			}
 		}
+		/// <summary>
+		/// Write description of available commands on type into <see cref="Console.Out"/>-or-Write detailed description of <paramref name="commandToDescribe"/> into <see cref="Console.Out"/>.
+		/// </summary>
+		/// <typeparam name="T">Type to look for commands on.</typeparam>
+		/// <param name="commandToDescribe">Optional command name for detailed description.</param>
+		/// <returns><see cref="DescribeExitCode"/></returns>
 		public static int Describe<T>(string commandToDescribe = null)
 		{
 			var type = typeof(T);
 			return Describe(type, commandToDescribe);
 		}
+		/// <summary>
+		/// Write description of available commands on type into <see cref="Console.Out"/>-or-Write detailed description of <paramref name="commandToDescribe"/> into <see cref="Console.Out"/>.
+		/// </summary>
+		/// <param name="type">Type to look for commands on.</param>
+		/// <param name="commandToDescribe">Optional command name for detailed description.</param>
+		/// <returns><see cref="DescribeExitCode"/></returns>
 		public static int Describe(Type type, string commandToDescribe = null)
 		{
 			if (type == null) throw new ArgumentNullException("type");
@@ -166,6 +208,7 @@ namespace System
 
 			return DescribeExitCode;
 		}
+
 		private static string GetTypeDescription(Type type, bool includeTypeHelpText)
 		{
 			if (type == null) throw new ArgumentNullException("type");
@@ -281,7 +324,7 @@ namespace System
 					var options = "";
 					var defaultValue = "";
 					if (parameterType.GetTypeInfo().IsEnum) options = " Options are " + string.Join(", ", Enum.GetNames(parameterType)) + ".";
-					if (parameter.IsOptional && parameter.DefaultValue != null) defaultValue = " Default value is '" + TypeConvert.Convert(parameter.DefaultValue.GetType(), parameterType, parameter.DefaultValue) + "'.";
+					if (parameter.IsOptional && parameter.DefaultValue != null) defaultValue = " Default value is '" + TypeConvert.Convert(parameter.DefaultValue, parameterType) + "'.";
 
 					var paramDescriptionText = default(string);
 					var paramHelpText = parameter.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
@@ -420,14 +463,14 @@ namespace System
 							for (var i = 0; i < valuesStr.Count; i++)
 							{
 								value = valuesStr[i]; // used on failure in exception block
-								values.SetValue(TypeConvert.Convert(typeof(string), elemType, valuesStr[i]), i);
+								values.SetValue(TypeConvert.Convert(valuesStr[i], elemType), i);
 							}
 							value = values;
 						}
 						else if (value != null)
 						{
 							var values = Array.CreateInstance(elemType, 1);
-							values.SetValue(TypeConvert.Convert(value.GetType(), elemType, value), 0);
+							values.SetValue(TypeConvert.Convert(value, elemType), 0);
 							value = values;
 						}
 						else
@@ -451,7 +494,7 @@ namespace System
 						for (var i = 0; i < valuesStr.Count; i++)
 						{
 							value = valuesStr[i]; // used on failure in exception block
-							values[i] = TypeConvert.Convert(typeof(string), expectedType, value);
+							values[i] = TypeConvert.Convert(value, expectedType);
 						}
 
 						if (IsSigned(Enum.GetUnderlyingType(expectedType)))
@@ -460,7 +503,7 @@ namespace System
 							foreach (var enumValue in values)
 							{
 								value = enumValue; // used on failure in exception block
-								combinedValue |= (long)TypeConvert.Convert(expectedType, typeof(long), value);
+								combinedValue |= (long)TypeConvert.Convert(value, typeof(long));
 							}
 
 							value = Enum.ToObject(expectedType, combinedValue);
@@ -471,7 +514,7 @@ namespace System
 							foreach (var enumValue in values)
 							{
 								value = enumValue; // used on failure in exception block
-								combinedValue |= (ulong)TypeConvert.Convert(expectedType, typeof(ulong), enumValue);
+								combinedValue |= (ulong)TypeConvert.Convert(enumValue, typeof(ulong));
 							}
 
 							value = Enum.ToObject(expectedType, combinedValue);
@@ -483,7 +526,7 @@ namespace System
 					}
 					else
 					{
-						value = TypeConvert.Convert(value.GetType(), expectedType, value);
+						value = TypeConvert.Convert(value, expectedType);
 					}
 				}
 				else if (parameter.IsOptional)
@@ -505,7 +548,7 @@ namespace System
 			}
 
 			if (value != null && value.GetType() != parameter.ParameterType)
-				value = TypeConvert.Convert(value.GetType(), parameter.ParameterType, value);
+				value = TypeConvert.Convert(value, parameter.ParameterType);
 
 			return new ParameterBindResult(parameter, null, value);
 		}

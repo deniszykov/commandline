@@ -11,5 +11,8 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+	/// <summary>
+	/// Event handler for command line exception.
+	/// </summary>
 	public delegate void ExceptionEventHandler(object sender, ExceptionEventArgs e);
 }

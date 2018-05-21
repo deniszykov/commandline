@@ -11,6 +11,9 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+	/// <summary>
+	/// Attribute used to hide member from <see cref="CommandLine.Describe"/> method.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
 	public sealed class HiddenAttribute : Attribute
 	{

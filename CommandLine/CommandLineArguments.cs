@@ -15,6 +15,9 @@ using System.Text;
 // ReSharper disable once CheckNamespace
 namespace System
 {
+	/// <summary>
+	/// Dictionary of command line arguments. Provides parsing/formatting features and by name access to parsed arguments.
+	/// </summary>
 #if !NETSTANDARD13
 	[Serializable]
 #endif
@@ -44,6 +47,11 @@ namespace System
 			}
 		}
 
+		/// <summary>
+		/// Get positional argument.
+		/// </summary>
+		/// <param name="position">Zero-based position of argument.</param>
+		/// <returns>Value of positional argument.</returns>
 		public string this[int position]
 		{
 			get
@@ -57,16 +65,26 @@ namespace System
 			}
 		}
 
+		/// <summary>
+		/// Creates new empty instance of <see cref="CommandLineArguments"/>.
+		/// </summary>
 		public CommandLineArguments()
 			: base(StringComparer.Ordinal)
 		{
 
 		}
+
+		/// <summary>
+		/// Creates new instance of <see cref="CommandLineArguments"/> with <paramref name="arguments"/>.
+		/// </summary>
 		public CommandLineArguments(params string[] arguments)
 			: this((IEnumerable<string>)arguments)
 		{
 
 		}
+		/// <summary>
+		/// Creates new instance of <see cref="CommandLineArguments"/> with <paramref name="arguments"/>.
+		/// </summary>
 		public CommandLineArguments(IEnumerable<string> arguments)
 			: this()
 		{
@@ -98,18 +116,27 @@ namespace System
 				}
 			}
 		}
+		/// <summary>
+		/// Creates new instance of <see cref="CommandLineArguments"/> with <paramref name="argumentsDictionary"/>.
+		/// </summary>
 		public CommandLineArguments(IDictionary<string, object> argumentsDictionary)
 			: base(argumentsDictionary, StringComparer.Ordinal)
 		{
 			if (argumentsDictionary == null) throw new ArgumentException("argumentsDictionary");
 		}
 #if !NETSTANDARD13
+		/// <summary>
+		/// Creates new instance of <see cref="CommandLineArguments"/> for <see cref="System.Runtime.Serialization.Formatter"/>.
+		/// </summary>
 		protected CommandLineArguments(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
 		{
 
 		}
 #endif
+		/// <summary>
+		/// Add new positional argument.
+		/// </summary>
 		public void Add(int position, string value)
 		{
 			if (position < 0) throw new ArgumentOutOfRangeException("position");
@@ -117,6 +144,9 @@ namespace System
 
 			this.Add(position.ToString(), value);
 		}
+		/// <summary>
+		/// Insert new positional argument and "push" other positional argument forward.
+		/// </summary>
 		public void InsertAt(int position, string value)
 		{
 			if (position < 0) throw new ArgumentOutOfRangeException("position");
@@ -135,6 +165,9 @@ namespace System
 				this[positionKey] = value;
 			}
 		}
+		/// <summary>
+		/// Remove positional argument and "pull" other positional arguments backward.
+		/// </summary>
 		public void RemoveAt(int position)
 		{
 			if (position < 0) throw new ArgumentOutOfRangeException("position");
@@ -151,18 +184,26 @@ namespace System
 				this.Remove(positionKey);
 			}
 		}
-
+		/// <summary>
+		/// Get value of positional argument by name or null if it is missing.
+		/// </summary>
 		public object GetValueOrDefault(string key)
 		{
 			var value = default(object);
 			return this.TryGetValue(key, out value) == false ? null : value;
 		}
+		/// <summary>
+		/// Get value of positional argument by name or <paramref name="defaultValue"/> if it is missing.
+		/// </summary>
 		public object GetValueOrDefault(string key, object defaultValue)
 		{
 			var value = defaultValue;
 			return this.TryGetValue(key, out value) == false ? defaultValue : value;
 		}
 
+		/// <summary>
+		/// Transform <see cref="CommandLineArguments"/> to list of string chunks. Chunks should be escaped(quoted) before combining them into one string.
+		/// </summary>
 		public string[] ToArray()
 		{
 			var count = 0;
@@ -210,6 +251,9 @@ namespace System
 			return array;
 		}
 
+		/// <summary>
+		/// Parse list of arguments into <see cref="CommandLineArguments"/>. Chunks should be un-escaped(un-quoted).
+		/// </summary>
 		private static IEnumerable<KeyValuePair<string, object>> ParseArguments(IEnumerable<string> arguments)
 		{
 			if (arguments == null) throw new ArgumentException("arguments");
@@ -300,6 +344,9 @@ namespace System
 				(noHyphenParameters == false && value.StartsWith(CommandLine.ArgumentNamePrefixShort, StringComparison.Ordinal));
 		}
 
+		/// <summary>
+		/// Transform <see cref="CommandLineArguments"/> via <see cref="ToArray"/> into string chunks and apply basic escaping and joining with SPACE character.
+		/// </summary>
 		public override string ToString()
 		{
 			var arguments = this.ToArray();
