@@ -87,14 +87,11 @@ namespace System
 			// Author: @MarcStan
 			// fix when output is redirected, assume we can print any length and redirected
 			// output takes care of formatting
-			try
-			{
-				DescribeConsoleWindowWidth = Console.WindowWidth;
-			}
-			catch
-			{
+			try { DescribeConsoleWindowWidth = Console.WindowWidth; }
+			catch { /*ignore error*/ }
+
+			if (DescribeConsoleWindowWidth <= 0)
 				DescribeConsoleWindowWidth = int.MaxValue;
-			}
 		}
 
 		/// <summary>
@@ -585,11 +582,21 @@ namespace System
 			var padding = GetPadding(builder);
 			var windowWidth = DescribeConsoleWindowWidth;
 			var chunkSize = windowWidth - padding - Environment.NewLine.Length;
-			for (var c = 0; c < text.Length; c += chunkSize)
+
+			if (chunkSize <= 0)
 			{
-				if (c > 0)
+				builder.AppendLine(text);
+				return;
+			}
+
+			for (var position = 0; position < text.Length; position += chunkSize)
+			{
+				if (position > 0)
+				{
 					builder.Append(' ', padding);
-				builder.Append(text, c, Math.Min(text.Length - c, chunkSize));
+				}
+
+				builder.Append(text, position, Math.Min(text.Length - position, chunkSize));
 				builder.AppendLine();
 			}
 		}
