@@ -564,7 +564,11 @@ namespace System
 			if (text == null) throw new ArgumentNullException("text");
 
 			var padding = GetPadding(builder);
-			var chunkSize = Console.WindowWidth - padding - Environment.NewLine.Length;
+			// fix when output is redirected, assume we can print any length and redirected
+			// output takes care of formatting
+			const int maxWidth = int.MaxValue;
+			var windowWidth = ConsoleEx.IsConsoleSizeZero ? maxWidth : Console.WindowWidth;
+			var chunkSize = windowWidth - padding - Environment.NewLine.Length;
 			for (var c = 0; c < text.Length; c += chunkSize)
 			{
 				if (c > 0)
