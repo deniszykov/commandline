@@ -62,11 +62,11 @@ namespace System
 		/// </summary>
 		public static event ExceptionEventHandler UnhandledException;
 		/// <summary>
-		/// Try to describe API into default output when bind error occurs (command name mistype or wrong arguments).
+		/// Try to describe API into <see cref="Console.Out"/> when bind error occurs (command name mistype or wrong arguments).
 		/// </summary>
 		public static bool DescribeOnBindFailure = true;
 		/// <summary>
-		/// Output whole error message to stderr when bind error occurs (command name mistype or wrong arguments).
+		/// Output whole error message to <see cref="Console.Error"/> when bind error occurs (command name mistype or wrong arguments).
 		/// </summary>
 		public static bool WriteWholeErrorMessageOnBindFailure = false;
 		/// <summary>
@@ -74,9 +74,28 @@ namespace System
 		/// </summary>
 		public static int BindFailureExitCode = 1;
 		/// <summary>
-		/// Exit code used by Describe method as return value.
+		/// Exit code used by <see cref="Describe"/> method as return value.
 		/// </summary>
 		public static int DescribeExitCode = 0;
+		/// <summary>
+		/// Assumption about console's window width when formatting <see cref="Describe"/> output. When output is redirected then <see cref="Int32.MaxValue"/> is used.
+		/// </summary>
+		public static int DescribeConsoleWindowWidth;
+
+		static CommandLine()
+		{
+			// Author: @MarcStan
+			// fix when output is redirected, assume we can print any length and redirected
+			// output takes care of formatting
+			try
+			{
+				DescribeConsoleWindowWidth = Console.WindowWidth;
+			}
+			catch
+			{
+				DescribeConsoleWindowWidth = int.MaxValue;
+			}
+		}
 
 		/// <summary>
 		/// Run command on <typeparamref name="T"/> and return exit code of executed command.
@@ -564,10 +583,7 @@ namespace System
 			if (text == null) throw new ArgumentNullException("text");
 
 			var padding = GetPadding(builder);
-			// fix when output is redirected, assume we can print any length and redirected
-			// output takes care of formatting
-			const int maxWidth = int.MaxValue;
-			var windowWidth = ConsoleEx.IsConsoleSizeZero ? maxWidth : Console.WindowWidth;
+			var windowWidth = DescribeConsoleWindowWidth;
 			var chunkSize = windowWidth - padding - Environment.NewLine.Length;
 			for (var c = 0; c < text.Length; c += chunkSize)
 			{
