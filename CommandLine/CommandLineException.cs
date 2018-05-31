@@ -18,7 +18,7 @@ namespace System
 	/// Exception occurred while executing command during <see cref="CommandLine.Run"/>.
 	/// There is extra information in <see cref="Exception.Data"/> dictionary under "method", "methodToken" and "bindingErrors" keys.
 	/// </summary>
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 	[Serializable]
 #endif
 	public sealed class CommandLineException : Exception
@@ -36,7 +36,7 @@ namespace System
 		public CommandLineException(string message, Exception innerException) : base(message, innerException)
 		{
 		}
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 		/// <summary>
 		/// Create new instance of <see cref="CommandLineException"/>.
 		/// </summary>
@@ -112,7 +112,7 @@ namespace System
 
 			var error = new CommandLineException(builder.ToString());
 			error.Data["method"] = commandMethod.Name;
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 			error.Data["methodToken"] = commandMethod.MetadataToken;
 #endif
 			error.Data["bindingErrors"] = bindingErrors;

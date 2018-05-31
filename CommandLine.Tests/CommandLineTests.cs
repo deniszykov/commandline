@@ -27,12 +27,12 @@ namespace ConsoleApp.CommandLine.Tests
 			}
 			public static int BoolParameter(bool param1)
 			{
-				Assert.Equal(true, param1);
+				Assert.True(param1);
 				return 0;
 			}
 			public static int BoolFalseParameter(bool param1)
 			{
-				Assert.Equal(false, param1);
+				Assert.False(param1);
 				return 0;
 			}
 			public static int StringParameter(string param1)
@@ -59,13 +59,13 @@ namespace ConsoleApp.CommandLine.Tests
 			}
 			public static int StringArrayOneParameter(string[] param1)
 			{
-				Assert.Equal(1, param1.Length);
+				Assert.Single(param1);
 				Assert.Equal("param0", param1[0]);
 				return 0;
 			}
 			public static int StringArrayZeroParameter(string[] param1)
 			{
-				Assert.Equal(0, param1.Length);
+				Assert.Empty(param1);
 				return 0;
 			}
 			public static int StringArrayNullParameter(string[] param1 = null)

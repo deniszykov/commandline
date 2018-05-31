@@ -42,7 +42,7 @@ namespace System
 		/// </summary>
 		public const string UnknownMethodName = "<no name specified>";
 
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 		private static CommandLineArguments applicationArguments;
 		/// <summary>
 		/// Lazy initialized application startup parameters. Executable name as first parameter is substituted.
@@ -240,7 +240,7 @@ namespace System
 				{
 					descriptionText = helpText.Description;
 				}
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 				var description = type.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
 				if (description != null)
 				{
@@ -262,7 +262,7 @@ namespace System
 				var methodHelpText = method.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
 				if (methodHelpText != null)
 					methodDescriptionText = methodHelpText.Description;
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 				var methodDescription = method.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
 				if (methodDescription != null)
 					methodDescriptionText = methodDescriptionText ?? methodDescription.Description;
@@ -303,7 +303,7 @@ namespace System
 				var methodHelpText = method.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
 				if (methodHelpText != null)
 					methodDescriptionText = methodHelpText.Description;
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 				var methodDescription = method.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
 				if (methodDescription != null)
 					methodDescriptionText = methodDescriptionText ?? methodDescription.Description;
@@ -346,7 +346,7 @@ namespace System
 					var paramHelpText = parameter.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
 					if (paramHelpText != null)
 						paramDescriptionText = paramHelpText.Description;
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 					var paramDescription = parameter.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
 					if (paramDescription != null)
 						paramDescriptionText = paramDescriptionText ?? paramDescription.Description;
@@ -656,8 +656,8 @@ namespace System
 			if (method.GetCustomAttributes(typeof(HiddenAttribute), true).Any())
 				return true;
 
-#if NETSTANDARD13
-            return false;
+#if NETSTANDARD1_3
+			return false;
 #else
 			var browsableAttrs = method.GetCustomAttributes(typeof(BrowsableAttribute), true).Cast<BrowsableAttribute>();
 			return browsableAttrs.Any(a => a.Browsable == false);
@@ -670,8 +670,8 @@ namespace System
 			if (parameterInfo.GetCustomAttributes(typeof(HiddenAttribute), true).Any())
 				return true;
 
-#if NETSTANDARD13
-            return false;
+#if NETSTANDARD1_3
+			return false;
 #else
 			var browsableAttrs = parameterInfo.GetCustomAttributes(typeof(BrowsableAttribute), true).Cast<BrowsableAttribute>();
 			return browsableAttrs.Any(a => a.Browsable == false);

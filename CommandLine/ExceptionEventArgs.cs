@@ -14,7 +14,7 @@ namespace System
 	/// <summary>
 	/// Provides data for the event that is raised when there is an exception that is  not handled in any application domain.
 	/// </summary>
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 	[Serializable]
 #endif
 	public sealed class ExceptionEventArgs : EventArgs

@@ -18,7 +18,7 @@ namespace System
 	/// <summary>
 	/// Dictionary of command line arguments. Provides parsing/formatting features and by name access to parsed arguments.
 	/// </summary>
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 	[Serializable]
 #endif
 	public class CommandLineArguments : Dictionary<string, object>
@@ -124,7 +124,7 @@ namespace System
 		{
 			if (argumentsDictionary == null) throw new ArgumentException("argumentsDictionary");
 		}
-#if !NETSTANDARD13
+#if !NETSTANDARD1_3
 		/// <summary>
 		/// Creates new instance of <see cref="CommandLineArguments"/> for <see cref="System.Runtime.Serialization.Formatter"/>.
 		/// </summary>

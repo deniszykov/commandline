@@ -1,28 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0</TargetFrameworks>
-        <Authors>Denis Zykov</Authors>
-        <Version>1.2.7</Version>
-        <PackageId>ConsoleApp.CommandLine</PackageId>
-        <Product>ConsoleApp.CommandLine</Product>
-        <Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
-        <Company />
-        <SignAssembly>True</SignAssembly>
-        <AssemblyOriginatorKeyFile>sign.snk</AssemblyOriginatorKeyFile>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>		
-        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <ApplicationIcon />		
-        <StartupObject />
-        <AssemblyName>ConsoleApp.CommandLine</AssemblyName>
-        <RootNamespace>System.CommandLine</RootNamespace>
+	<PropertyGroup>
+		<TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
+		<Authors>Denis Zykov</Authors>
+		<Version>1.2.8</Version>
+		<PackageId>ConsoleApp.CommandLine</PackageId>
+		<Product>ConsoleApp.CommandLine</Product>
+		<Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
+		<Company />
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>sign.snk</AssemblyOriginatorKeyFile>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<ApplicationIcon />
+		<StartupObject />
+		<AssemblyName>ConsoleApp.CommandLine</AssemblyName>
+		<RootNamespace>System.CommandLine</RootNamespace>
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-        <OutputTypeEx>library</OutputTypeEx>
-        <OutputType>Library</OutputType>
-        <AssemblyVersion>1.2.7.0</AssemblyVersion>
-        <FileVersion>1.2.7.0</FileVersion>
-        <PackageReleaseNotes># 1.2.7
+		<OutputTypeEx>library</OutputTypeEx>
+		<OutputType>Library</OutputType>
+		<AssemblyVersion>1.2.8.0</AssemblyVersion>
+		<FileVersion>1.2.8.0</FileVersion>
+		<PackageReleaseNotes># 1.2.8
+- added netcoreapp2.1 target platform
+
+# 1.2.7
 - fixed exception when calling Describe while console output is redirected
 - TypeConvert package update
 
@@ -71,70 +74,54 @@
 
 # 1.0.0
 - initial release</PackageReleaseNotes>
-        <Copyright>(c) Denis Zykov 2017</Copyright>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>commandline;console;terminal</PackageTags>
-        <PackageProjectUrl>https://github.com/deniszykov/commandline</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
-        <PackageLicenseUrl>https://raw.githubusercontent.com/deniszykov/commandline/master/LICENSE</PackageLicenseUrl>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <Optimize>False</Optimize>
-        <DefineConstants>RELEASE</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-    </PropertyGroup>
-    <ItemGroup>
-        <None Include="..\README.md" Link="README.md" />
-        <None Include="sign.snk" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="TypeConvert" Version="2.1.0">
-          <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-    </ItemGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-        <DefineConstants>$(DefineConstants);NETSTANDARD;NETSTANDARD13;</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <DefineConstants>$(DefineConstants);NETSTANDARD;NETSTANDARD20;</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-        <DefineConstants>$(DefineConstants);NETCOREAPP;</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
-        <DefineConstants>$(DefineConstants);NET45</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
-        <DefineConstants>$(DefineConstants);NET35</DefineConstants>
-    </PropertyGroup>
+		<Copyright>(c) Denis Zykov 2017</Copyright>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>commandline;console;terminal</PackageTags>
+		<PackageProjectUrl>https://github.com/deniszykov/commandline</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
+		<PackageLicenseUrl>https://raw.githubusercontent.com/deniszykov/commandline/master/LICENSE</PackageLicenseUrl>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<Optimize>False</Optimize>
+		<DefineConstants>RELEASE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\README.md" Link="README.md" />
+		<None Include="sign.snk" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="TypeConvert" Version="2.1.1">
+			<PrivateAssets>All</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="ILRepack" Version="2.1.0-beta1">
+			<PrivateAssets>All</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="ILRepack" Version="2.1.0-beta1">
-            <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
-    </ItemGroup>
+	<Target Name="Repack" AfterTargets="BuiltProjectOutputGroup" Condition="' $(TargetFramework)' != '' AND '$(GeneratePackageOnBuild)' == 'true' ">
+		<GetFrameworkPath>
+			<Output TaskParameter="Path" PropertyName="FrameworkPath" />
+		</GetFrameworkPath>
+		<ItemGroup>
+			<NetPlatformFolders Include="$(NuGetPackageFolders.Split(';'))"></NetPlatformFolders>
+		</ItemGroup>
+		<PropertyGroup>
+			<ILRepack Condition="'$(ILRepack)' == ''">$(NuGetPackageRoot)ilrepack\2.1.0-beta1\tools\ILRepack.exe</ILRepack>
+			<ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net35'">v2</ILRepackTargetPlatform>
+			<ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net45'">v4,$(FrameworkPath)</ILRepackTargetPlatform>
+			<ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netcoreapp2.0' or '$(TargetFramework)' == 'netcoreapp2.1'or '$(TargetFramework)' == 'netstandard2.0'">v4</ILRepackTargetPlatform>
+			<IlRepackLibs Condition="'$(TargetFramework)' == 'netstandard2.0'">@(NetPlatformFolders->'"/lib:%(FullPath)\netstandard.library\2.0.0\build\netstandard2.0\ref"', ' ')</IlRepackLibs>
+			<IlRepackLibs Condition="'$(TargetFramework)' == 'netcoreapp2.0'">@(NetPlatformFolders->'"/lib:%(FullPath)\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0"', ' ')</IlRepackLibs>
+			<IlRepackLibs Condition="'$(TargetFramework)' == 'netcoreapp2.1'">@(NetPlatformFolders->'"/lib:%(FullPath)\microsoft.netcore.app\2.1.0\ref\netcoreapp2.1"', ' ')</IlRepackLibs>
+			<IlRepackSignKey>$(ProjectDir)sign.snk</IlRepackSignKey>
+		</PropertyGroup>
 
-    <Target Name="Repack" AfterTargets="BuiltProjectOutputGroup" Condition="' $(TargetFramework)' != '' AND '$(GeneratePackageOnBuild)' == 'true' ">
-        <GetFrameworkPath>
-            <Output TaskParameter="Path" PropertyName="FrameworkPath" />
-        </GetFrameworkPath>
-        <ItemGroup>
-            <NetPlatformFolders Include="$(NuGetPackageFolders.Split(';'))"></NetPlatformFolders>
-        </ItemGroup>
-        <PropertyGroup>
-            <ILRepack Condition="'$(ILRepack)' == ''">$(NuGetPackageRoot)ilrepack\2.1.0-beta1\tools\ILRepack.exe</ILRepack>
-            <ILRepack Condition="'$(ILRepack)' == ''">$(NuGetPackageRoot)ilrepack\2.1.0-beta1\tools\ILRepack.exe</ILRepack>
-            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net35'">v2</ILRepackTargetPlatform>
-            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net45'">v4,$(FrameworkPath)</ILRepackTargetPlatform>
-            <ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netcoreapp2.0' or '$(TargetFramework)' == 'netstandard2.0'">v4</ILRepackTargetPlatform>
-            <IlRepackLibs Condition="'$(TargetFramework)' == 'netstandard2.0'">@(NetPlatformFolders->'"/lib:%(FullPath)\netstandard.library\2.0.0\build\netstandard2.0\ref"', ' ')</IlRepackLibs>
-            <IlRepackLibs Condition="'$(TargetFramework)' == 'netcoreapp2.0'">@(NetPlatformFolders->'"/lib:%(FullPath)\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0"', ' ')</IlRepackLibs>
-            <IlRepackSignKey>$(ProjectDir)sign.snk</IlRepackSignKey>
-        </PropertyGroup>
-        
-        <Exec Command="&quot;$(ILRepack)&quot; /target:library &quot;/targetplatform:$(ILRepackTargetPlatform)&quot; $(IlRepackLibs) &quot;/keyfile:$(IlRepackSignKey)&quot; /internalize /xmldocs /union /parallel &quot;/out:$(TargetPath)&quot; &quot;$(TargetPath)&quot; &quot;$(TargetDir)TypeConvert.dll&quot;" WorkingDirectory="$(ProjectDir)" />
-        <Delete Files="$(TargetDir)TypeConvert.dll" />
-    </Target>
+		<Exec Command="&quot;$(ILRepack)&quot; /target:library &quot;/targetplatform:$(ILRepackTargetPlatform)&quot; $(IlRepackLibs) &quot;/keyfile:$(IlRepackSignKey)&quot; /internalize /xmldocs /union /parallel &quot;/out:$(TargetPath)&quot; &quot;$(TargetPath)&quot; &quot;$(TargetDir)TypeConvert.dll&quot;" WorkingDirectory="$(ProjectDir)" />
+		<Delete Files="$(TargetDir)TypeConvert.dll" />
+	</Target>
 </Project>
