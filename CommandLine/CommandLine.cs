@@ -472,6 +472,7 @@ namespace System
 					{
 						var elemType = expectedType.GetElementType();
 						Debug.Assert(elemType != null, "elemType != null");
+
 						if (value is IList<string>)
 						{
 							var valuesStr = (IList<string>)value;
@@ -479,14 +480,14 @@ namespace System
 							for (var i = 0; i < valuesStr.Count; i++)
 							{
 								value = valuesStr[i]; // used on failure in exception block
-								values.SetValue(TypeConvert.Convert(valuesStr[i], elemType), i);
+								values.SetValue(Convert(valuesStr[i], elemType, parameter), i);
 							}
 							value = values;
 						}
 						else if (value != null)
 						{
 							var values = Array.CreateInstance(elemType, 1);
-							values.SetValue(TypeConvert.Convert(value, elemType), 0);
+							values.SetValue(Convert(value, elemType, parameter), 0);
 							value = values;
 						}
 						else
@@ -510,7 +511,7 @@ namespace System
 						for (var i = 0; i < valuesStr.Count; i++)
 						{
 							value = valuesStr[i]; // used on failure in exception block
-							values[i] = TypeConvert.Convert(value, expectedType);
+							values[i] = Convert(value, expectedType, parameter);
 						}
 
 						if (IsSigned(Enum.GetUnderlyingType(expectedType)))
@@ -542,7 +543,7 @@ namespace System
 					}
 					else
 					{
-						value = TypeConvert.Convert(value, expectedType);
+						value = Convert(value, expectedType, parameter);
 					}
 				}
 				else if (parameter.IsOptional)
@@ -677,6 +678,39 @@ namespace System
 			return browsableAttrs.Any(a => a.Browsable == false);
 #endif
 
+		}
+		private static object Convert(object value, Type toType, ParameterInfo metadata)
+		{
+			if (toType == null) throw new ArgumentNullException("toType");
+			if (metadata == null) throw new ArgumentNullException("metadata");
+
+			var conversionError = default(Exception);
+#if !NETSTANDARD1_3
+			try
+			{
+				var typeConverterAttributes = metadata.GetCustomAttributes(typeof(TypeConverterAttribute), inherit: true);
+				if (typeConverterAttributes.Length > 0 && value != null)
+				{
+					var typeConverterType = Type.GetType(((TypeConverterAttribute)typeConverterAttributes[0]).ConverterTypeName, throwOnError: true);
+					var typeConverter = (TypeConverter)Activator.CreateInstance(typeConverterType);
+					if (typeConverter.CanConvertFrom(value.GetType()))
+						return typeConverter.ConvertFrom(value);
+				}
+			}
+			catch (Exception error)
+			{
+				conversionError = error;
+			}
+#endif
+
+			if (TypeConvert.TryConvert(ref value, toType) == false)
+			{
+				if (conversionError != null)
+					throw new InvalidOperationException(string.Format("Unable to convert '{0}' to type '{1}': {2}", value ?? "<null>", toType.FullName, conversionError.Message), conversionError);
+				else
+					throw new InvalidOperationException(string.Format("Unable to convert '{0}' to type '{1}'.", value ?? "<null>", toType.FullName));
+			}
+			return value;
 		}
 	}
 }
