@@ -161,7 +161,7 @@ namespace System
 
 							Describe(type);
 						}
-						else
+						else if (bestMatchMethod != null)
 						{
 							Console.WriteLine(" Error:");
 							Console.WriteLine(string.Format("  Invalid parameters specified for '{0}' command.", bindResult.MethodName));
@@ -174,6 +174,12 @@ namespace System
 							}
 
 							Describe(type, bindResult.MethodName);
+						}
+						else
+						{
+							Console.WriteLine(" Error:");
+							Console.WriteLine(error.Message);
+							Console.WriteLine();
 						}
 					}
 					else
