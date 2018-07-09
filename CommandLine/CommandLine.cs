@@ -433,8 +433,7 @@ namespace System
 			{
 				if (string.Equals(method.Name, methodName, StringComparison.OrdinalIgnoreCase) == false ||
 					!method.IsStatic ||
-					method.ReturnType != typeof(int) ||
-					IsHidden(method))
+					method.ReturnType != typeof(int))
 					continue;
 
 				var parameters = method.GetParameters();
