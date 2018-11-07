@@ -7,4 +7,4 @@ install:
 script:
 - dotnet build -f netcoreapp2.1
 - cd CommandLine.Tests
-- dotnet xunit -f netcoreapp2.1
+- dotnet test
