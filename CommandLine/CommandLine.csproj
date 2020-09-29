@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net35;net45;netstandard1.3;netstandard2.0;netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
 		<Authors>Denis Zykov</Authors>
-		<Version>1.3.3</Version>
+		<Version>1.3.4</Version>
 		<PackageId>ConsoleApp.CommandLine</PackageId>
 		<Product>ConsoleApp.CommandLine</Product>
 		<Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
@@ -20,7 +20,7 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<OutputTypeEx>library</OutputTypeEx>
 		<OutputType>Library</OutputType>
-		<PackageReleaseNotes># 1.3.1 - 1.3.3
+		<PackageReleaseNotes># 1.3.1 - 1.3.4
 - TypeConvert dependecy update (bug fixes)
 
 # 1.3.0
@@ -108,7 +108,7 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<Target Name="Repack" AfterTargets="BuiltProjectOutputGroup" Condition="' $(TargetFramework)' != '' AND '$(GeneratePackageOnBuild)' == 'true' ">
+	<Target Name="Repack" AfterTargets="BuiltProjectOutputGroup" Condition="' $(TargetFramework)' != '' AND '$(GeneratePackageOnBuild)' != '' ">
 		<GetFrameworkPath>
 			<Output TaskParameter="Path" PropertyName="FrameworkPath" />
 		</GetFrameworkPath>
