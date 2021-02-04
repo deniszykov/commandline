@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+#if !NETSTANDARD1_6
 using System.ComponentModel;
+#endif
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Annotations
@@ -19,7 +18,7 @@ namespace deniszykov.CommandLine.Annotations
 			if (customAttributeProvider.GetCustomAttributes(typeof(HiddenAttribute), true).Any())
 				return true;
 
-#if NETSTANDARD1_3
+#if NETSTANDARD1_6
 			return false;
 #else
 			// ReSharper disable once IdentifierTypo
@@ -71,12 +70,14 @@ namespace deniszykov.CommandLine.Annotations
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
 
+#if !NETSTANDARD1_6
 			if (customAttributeProvider.GetCustomAttributes(typeof(DescriptionAttribute), true).FirstOrDefault() is DescriptionAttribute descriptionAttribute &&
 				!string.IsNullOrEmpty(descriptionAttribute.Description))
 			{
 				return descriptionAttribute.Description;
 			}
-			else if (customAttributeProvider.GetCustomAttributes(typeof(HelpTextAttribute), true).FirstOrDefault() is HelpTextAttribute helpTextAttribute &&
+#endif
+			if (customAttributeProvider.GetCustomAttributes(typeof(HelpTextAttribute), true).FirstOrDefault() is HelpTextAttribute helpTextAttribute &&
 			 !string.IsNullOrEmpty(helpTextAttribute.Text))
 			{
 				return helpTextAttribute.Text;
