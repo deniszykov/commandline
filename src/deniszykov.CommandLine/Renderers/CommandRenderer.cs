@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using deniszykov.CommandLine.Binding;
 using deniszykov.TypeConversion;
+using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Renderers
 {
-	class CommandRenderer
+	internal sealed class CommandRenderer
 	{
-		private IConsole console;
-		private ITypeConversionProvider typeConversionProvider;
+		private readonly IConsole console;
+		private readonly ITypeConversionProvider typeConversionProvider;
 
 		public CommandRenderer(IConsole console, ITypeConversionProvider typeConversionProvider)
 		{
@@ -19,104 +19,201 @@ namespace deniszykov.CommandLine.Renderers
 			this.typeConversionProvider = typeConversionProvider;
 		}
 
-		/*
-
-		private static string GetCommandDescription(Type type, string commandName)
+		public void Render(CommandSet commandSet, Command foundCommand, IEnumerable<Command> enumerable)
 		{
-			if (type == null) throw new ArgumentNullException(nameof(type));
-			if (commandName == null) throw new ArgumentNullException(nameof(commandName));
+			if (foundCommand == null) throw new ArgumentNullException(nameof(foundCommand));
+			if (enumerable == null) throw new ArgumentNullException(nameof(enumerable));
 
-			var result = new StringBuilder();
-			var basePadding = 1;
+			var writer = new IndentedWriter(Environment.NewLine);
+			writer.Write(" ");
+			writer.KeepIndent();
 
-			foreach (var method in ReflectionUtils.GetTypeInfo(type).GetAllMethods().Where(IsValidCommandSignature))
+			var namePrefix = GetNamePrefix(enumerable);
+			foreach (var command in commandSet.Commands)
 			{
-				if (string.Equals(method.Name, commandName, StringComparison.OrdinalIgnoreCase) == false)
-					continue;
-
-				if (IsHidden(method))
-					continue;
-
-				result.Append(' ', basePadding).AppendLine("Command:");
-				result.Append(' ', basePadding + 1).Append(method.Name.ToUpper()).Append(" ");
-
-				var paramsArr = method.GetParameters().Where(p => !IsHidden(p)).Select(parameter => string.Format(parameter.IsOptional ? "[--{0} <{1}>] " : "--{0} <{1}> ", parameter.Name, GetParameterTypeFriendlyName(parameter))).ToArray();
-				var paramsDesc = string.Concat(paramsArr);
-				AppendLinePadded(result, paramsDesc);
-				result.AppendLine();
-
-				var methodDescriptionText = default(string);
-				var methodHelpText = method.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
-				if (methodHelpText != null)
-					methodDescriptionText = methodHelpText.Description;
-#if !NETSTANDARD1_3
-				var methodDescription = method.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
-				if (methodDescription != null)
-					methodDescriptionText = methodDescriptionText ?? methodDescription.Description;
-#endif
-				methodDescriptionText = (methodDescriptionText ?? string.Empty).Trim();
-
-				if (string.IsNullOrEmpty(methodDescriptionText) == false)
+				if (command.Hidden)
 				{
-					result.Append(' ', basePadding).AppendLine("Description:");
-					result.Append(' ', basePadding + 1);
-
-					if (methodDescriptionText.EndsWith(".", StringComparison.OrdinalIgnoreCase) == false)
-						methodDescriptionText += ".";
-
-					AppendLinePadded(result, methodDescriptionText);
-				}
-				else
-				{
-					result.AppendLine();
+					continue;
 				}
 
-				result.AppendLine();
-				result.Append(' ', basePadding).AppendLine("Parameters:");
-				foreach (var parameter in method.GetParameters())
+				if (string.Equals(command.Name, foundCommand.Name, StringComparison.OrdinalIgnoreCase) == false)
+					continue;
+
+				writer.Write($"{namePrefix}{command.Name.ToUpperInvariant()} ");
+				writer.KeepIndent();
+				var commandParameters = string.Join(" ",
+					command.GetNonHiddenBoundParameter().Select(parameter => string.Format(parameter.IsOptional ? "[--{0} <{1}>]" : "--{0} <{1}>", parameter.Name, GetParameterTypeFriendlyName(parameter))));
+				writer.WriteLine(commandParameters);
+				writer.RestoreIndent();
+				writer.WriteLine();
+
+				if (!string.IsNullOrEmpty(command.Description))
 				{
-					if (IsHidden(parameter))
-						continue;
+					writer.WriteLine(command.Description);
+					writer.WriteLine();
+				}
 
-					if (parameter.ParameterType == typeof(CommandLineArguments))
-						continue;
+				var maxNameLength = command.GetNonHiddenBoundParameter().Any() ?
+					command.GetNonHiddenBoundParameter().Max(param => 2 + param.Name.Length + 1 + (string.IsNullOrEmpty(param.Alias) ? 0 : 4 + param.Alias.Length)) : 0;
 
-					var parameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-					var parameterTypeName = parameterType.Name;
+				foreach (var parameter in command.BoundParameters)
+				{
+					if (parameter.IsHidden)
+					{
+						continue;
+					}
+
+					var parameterType = UnwrapType(parameter.ValueType.AsType());
+
 					var options = "";
 					var defaultValue = "";
-					if (ReflectionUtils.GetTypeInfo(parameterType).IsEnum) options = " Options are " + string.Join(", ", Enum.GetNames(parameterType)) + ".";
-					if (parameter.IsOptional && parameter.DefaultValue != null) defaultValue = " Default value is '" + TypeConvert.Convert(parameter.DefaultValue, parameterType) + "'.";
+					if (parameterType.GetTypeInfo().IsEnum) options = " Options are " + string.Join(", ", Enum.GetNames(parameterType)) + ".";
+					if (parameter.IsOptional && parameter.DefaultValue != null) defaultValue = " Default value is '" + this.typeConversionProvider.ConvertToString(parameter.DefaultValue) + "'.";
 
-					var paramDescriptionText = default(string);
-					var paramHelpText = parameter.GetCustomAttributes(typeof(HelpTextAttribute), true).Cast<HelpTextAttribute>().FirstOrDefault();
-					if (paramHelpText != null)
-						paramDescriptionText = paramHelpText.Description;
-#if !NETSTANDARD1_3
-					var paramDescription = parameter.GetCustomAttributes(typeof(DescriptionAttribute), true).Cast<DescriptionAttribute>().FirstOrDefault();
-					if (paramDescription != null)
-						paramDescriptionText = paramDescriptionText ?? paramDescription.Description;
-#endif
+					var paramAliasName = string.Empty;
+					if (!string.IsNullOrEmpty(parameter.Alias))
+					{
+						paramAliasName = $"[-{parameter.Alias.ToUpperInvariant()}] ";
+					}
 
-					paramDescriptionText = (paramDescriptionText ?? string.Empty).Trim();
+					var paramNamePadding = new string(' ', maxNameLength - (paramAliasName.Length + 2 + parameter.Name.Length + 1));
 
+					var paramDescriptionText = parameter.Description;
 					if (paramDescriptionText.Length > 0 && paramDescriptionText.EndsWith(".", StringComparison.OrdinalIgnoreCase) == false)
 						paramDescriptionText += ".";
 
-					result.Append(' ', basePadding + 2);
-					result.Append(parameter.Name.ToUpperInvariant()).Append(" ");
-					AppendLinePadded(result, string.Format("({0}) {1}{2}{3}", parameterTypeName, paramDescriptionText ?? string.Empty, defaultValue, options));
+					writer.Write($"--{parameter.Name.ToUpperInvariant()} {paramAliasName}{paramNamePadding}");
+					writer.KeepIndent();
+					writer.WriteLine(paramDescriptionText + defaultValue + options);
+					writer.RestoreIndent();
 				}
-			}
+				writer.WriteLine();
 
-			return result.ToString();
+			}
+			writer.RestoreIndent();
+
+			this.console.WriteLine(writer);
+		}
+		public void RenderNotFound(CommandSet commandSet, string commandToDescribe, IEnumerable<Command> enumerable)
+		{
+			var writer = new IndentedWriter(Environment.NewLine);
+			writer.Write(" ");
+			writer.KeepIndent();
+
+			writer.WriteLine("Error:");
+			writer.Write(" ");
+			writer.WriteLine($"Command '{commandToDescribe}' is not found.");
+			writer.RestoreIndent();
+
+			var namePrefix = GetNamePrefix(enumerable);
+
+			writer.WriteLine("Available commands:");
+			writer.Write(" ");
+			writer.KeepIndent();
+			foreach (var command in commandSet.Commands)
+			{
+				if (command.Hidden)
+				{
+					continue;
+				}
+
+				writer.WriteLine($"{namePrefix}{command.Name}");
+			}
+			writer.RestoreIndent();
+			writer.RestoreIndent();
+
+			this.console.WriteLine(writer);
+		}
+		public void RenderList(CommandSet commandSet, IEnumerable<Command> enumerable, bool includeTypeHelpText)
+		{
+			var writer = new IndentedWriter(Environment.NewLine);
+
+			writer.Write(" ");
+			writer.KeepIndent();
+
+			if (includeTypeHelpText)
+			{
+				writer.WriteLine(commandSet.Description);
+				writer.WriteLine();
+			}
+			writer.WriteLine("Commands:");
+
+			var namePrefix = GetNamePrefix(enumerable);
+			writer.Write("  ");
+			writer.KeepIndent();
+			foreach (var command in commandSet.Commands)
+			{
+				if (command.Hidden)
+				{
+					continue;
+				}
+
+				writer.Write($"{namePrefix}{command.Name} ");
+				writer.KeepIndent();
+				writer.WriteLine(command.Description);
+				writer.RestoreIndent();
+			}
+			writer.RestoreIndent();
+			writer.RestoreIndent();
+
+			this.console.WriteLine(writer);
 		}
 
-		*/
-
-		public void Render(Command command)
+		private static string GetParameterTypeFriendlyName(CommandParameter parameter)
 		{
-			throw new NotImplementedException();
+			if (parameter == null) throw new ArgumentNullException(nameof(parameter));
+
+			var parameterType = UnwrapType(parameter.ValueType.AsType());
+
+			if (parameterType == typeof(int) || parameterType == typeof(sbyte) || parameterType == typeof(short) || parameterType == typeof(long) ||
+				parameterType == typeof(uint) || parameterType == typeof(byte) || parameterType == typeof(ushort) || parameterType == typeof(ulong))
+			{
+				return "Integer";
+			}
+			else if (parameterType == typeof(double) || parameterType == typeof(float) || parameterType == typeof(decimal))
+			{
+				return "Number";
+			}
+			else if (parameterType == typeof(string))
+			{
+				return "Text";
+			}
+			else if (parameterType == typeof(char))
+			{
+				return "Symbol";
+			}
+			else if (parameterType == typeof(bool))
+			{
+				return "true/false";
+			}
+			else
+			{
+				return parameterType.Name;
+			}
+		}
+
+		[NotNull]
+		private static Type UnwrapType([NotNull] Type type)
+		{
+			if (type.IsArray)
+			{
+				type = type.GetElementType() ?? type;
+			}
+
+			type = Nullable.GetUnderlyingType(type) ?? type;
+
+			return type;
+		}
+
+		private static string GetNamePrefix(IEnumerable<Command> enumerable)
+		{
+			var namePrefix = string.Join(" ", enumerable.Select(command => command.ToString()));
+			if (namePrefix != string.Empty)
+			{
+				namePrefix += " ";
+			}
+
+			return namePrefix;
 		}
 	}
 }
