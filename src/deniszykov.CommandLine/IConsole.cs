@@ -6,9 +6,6 @@ namespace deniszykov.CommandLine
 	{
 		CancellationToken InterruptToken { get; }
 
-		void Indent(int charCount);
-		void UnIndent(int charCount);
-
 		void WriteLine(object text = null);
 		void WriteErrorLine(object text = null);
 	}

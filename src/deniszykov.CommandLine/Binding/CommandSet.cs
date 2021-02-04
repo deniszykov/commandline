@@ -23,7 +23,7 @@ namespace deniszykov.CommandLine.Binding
 			var commands = new List<Command>();
 			foreach (var method in type.GetAllMethods().OrderBy(m => m, Comparer<MethodInfo>.Create(CompareMethods)))
 			{
-				if (method.IsHidden() || HasInvalidSignature(method))
+				if (HasInvalidSignature(method))
 					continue;
 
 				var command = new Command(method);
@@ -33,6 +33,21 @@ namespace deniszykov.CommandLine.Binding
 			this.Commands = commands;
 			this.Name = type.GetName() ?? type.Name;
 			this.Description = type.GetDescription() ?? string.Empty;
+		}
+
+		[CanBeNull]
+		public Command FindCommand([NotNull] string name, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+		{
+			if (name == null) throw new ArgumentNullException(nameof(name));
+
+			foreach (var command in this.Commands)
+			{
+				if (string.Equals(command.Name, name, comparison))
+				{
+					return command;
+				}
+			}
+			return null;
 		}
 
 		private static bool HasInvalidSignature(MethodInfo method)

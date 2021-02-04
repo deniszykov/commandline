@@ -23,7 +23,9 @@ namespace deniszykov.CommandLine.Binding
 		public readonly object DefaultValue;
 		public readonly ParameterValueArity ValueArity;
 		public readonly bool IsOptional;
-#if !NETSTANDARD1_3
+		public readonly bool IsHidden;
+		public readonly bool IsValueCollector;
+#if !NETSTANDARD1_6
 		public readonly System.ComponentModel.TypeConverter TypeConverter;
 #endif
 
@@ -37,17 +39,28 @@ namespace deniszykov.CommandLine.Binding
 			this.Position = position;
 			this.ArgumentIndex = parameterInfo.Position;
 			this.ValueType = parameterInfo.ParameterType.GetTypeInfo();
-			this.DefaultValue = parameterInfo.DefaultValue;
+			this.DefaultValue = parameterInfo.DefaultValue ?? (this.ValueType.IsValueType ? Activator.CreateInstance(this.ValueType.AsType()) : null);
 			this.IsOptional = parameterInfo.IsOptional;
+			this.IsHidden = parameterInfo.IsHidden();
+			this.IsValueCollector = parameterInfo.GetCustomAttributes<ParamArrayAttribute>().Any();
+
+			if (this.IsValueCollector)
+			{
+				this.Position = -1;
+			}
 
 			var isList = this.ValueType.IsArray || this.ValueType.IsInstantiationOf(typeof(IList<>).GetTypeInfo());
 			var isFlags = this.ValueType.IsEnum && this.ValueType.IsFlags();
-			this.ValueArity = parameterInfo.ParameterType == typeof(bool) ? ParameterValueArity.ZeroOrOne :
+			var isBool = this.ValueType.AsType() == typeof(bool);
+			var isCount = this.ValueType.AsType() == typeof(OptionCount);
+			this.ValueArity = 
+				isCount ? ParameterValueArity.Zero :
+				isBool ? ParameterValueArity.ZeroOrOne :
 				isList ? ParameterValueArity.ZeroOrMany :
 				isFlags ? ParameterValueArity.OneOrMany :
 				ParameterValueArity.One;
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
 			var typeConverterAttribute = parameterInfo.GetCustomAttributes(typeof(System.ComponentModel.TypeConverterAttribute), inherit: true).FirstOrDefault();
 			if (typeConverterAttribute != null)
 			{

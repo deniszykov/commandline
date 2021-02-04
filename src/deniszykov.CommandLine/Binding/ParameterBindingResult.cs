@@ -15,7 +15,8 @@ namespace deniszykov.CommandLine.Binding
 {
 	internal class ParameterBindingResult
 	{
-		public bool IsSuccess { get { return this.Error == null; } }
+		public bool IsSuccess => this.Error == null;
+
 		public CommandParameter Parameter { get; private set; }
 		public object Value { get; private set; }
 		public Exception Error { get; private set; }

@@ -65,34 +65,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="deniszykov.TypeConversion" Version="3.0.0">
-			<PrivateAssets>All</PrivateAssets>
 		</PackageReference>
 	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="ILRepack" Version="2.1.0-beta1">
-			<PrivateAssets>All</PrivateAssets>
-		</PackageReference>
-	</ItemGroup>
-
-	<Target Name="Repack" AfterTargets="BuiltProjectOutputGroup" Condition="' $(TargetFramework)' != '' AND '$(GeneratePackageOnBuild)' == 'true' ">
-		<GetFrameworkPath>
-			<Output TaskParameter="Path" PropertyName="FrameworkPath" />
-		</GetFrameworkPath>
-		<ItemGroup>
-			<NetPlatformFolders Include="$(NuGetPackageFolders.Split(';'))"></NetPlatformFolders>
-		</ItemGroup>
-		<PropertyGroup>
-			<ILRepack Condition="'$(ILRepack)' == ''">$(NuGetPackageRoot)ilrepack\2.1.0-beta1\tools\ILRepack.exe</ILRepack>
-			<ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net35'">v2</ILRepackTargetPlatform>
-			<ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'net45'">v4,$(FrameworkPath)</ILRepackTargetPlatform>
-			<ILRepackTargetPlatform Condition="'$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netcoreapp2.0' or '$(TargetFramework)' == 'netcoreapp2.1'or '$(TargetFramework)' == 'netstandard2.0'">v4</ILRepackTargetPlatform>
-			<IlRepackLibs Condition="'$(TargetFramework)' == 'netstandard2.0'">@(NetPlatformFolders->'"/lib:%(FullPath)\netstandard.library\2.0.0\build\netstandard2.0\ref"', ' ')</IlRepackLibs>
-			<IlRepackLibs Condition="'$(TargetFramework)' == 'netcoreapp2.0'">@(NetPlatformFolders->'"/lib:%(FullPath)\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0"', ' ')</IlRepackLibs>
-			<IlRepackLibs Condition="'$(TargetFramework)' == 'netcoreapp2.1'">@(NetPlatformFolders->'"/lib:%(FullPath)\microsoft.netcore.app\2.1.0\ref\netcoreapp2.1"', ' ')</IlRepackLibs>
-			<IlRepackSignKey>$(ProjectDir)sign.snk</IlRepackSignKey>
-		</PropertyGroup>
-
-		<Exec Command="&quot;$(ILRepack)&quot; /target:library &quot;/targetplatform:$(ILRepackTargetPlatform)&quot; $(IlRepackLibs) &quot;/keyfile:$(IlRepackSignKey)&quot; /internalize /xmldocs /union /parallel &quot;/out:$(TargetPath)&quot; &quot;$(TargetPath)&quot; &quot;$(TargetDir)TypeConvert.dll&quot;" WorkingDirectory="$(ProjectDir)" />
-		<Delete Files="$(TargetDir)TypeConvert.dll" />
-	</Target>
 </Project>

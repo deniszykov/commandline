@@ -17,8 +17,6 @@ namespace deniszykov.CommandLine.Example
 				})
 				.Use<Program>()
 				.Run();
-
-			Console.ReadKey();
 			return result;
 		}
 

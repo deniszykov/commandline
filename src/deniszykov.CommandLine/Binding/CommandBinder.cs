@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
+using deniszykov.CommandLine.Parsing;
 using deniszykov.TypeConversion;
 using JetBrains.Annotations;
 
@@ -10,40 +14,50 @@ namespace deniszykov.CommandLine.Binding
 	internal sealed class CommandBinder
 	{
 		[NotNull] private readonly ITypeConversionProvider typeConversionProvider;
+		[NotNull] private readonly IArgumentsParser parser;
 		[NotNull] private readonly IServiceProvider serviceProvider;
 
+		public StringComparison LongOptionNameMatchingMode { get; }
+		public StringComparison ShortOptionNameMatchingMode { get; }
+
 		public CommandBinder(
+			[NotNull] CommandLineConfiguration configuration,
 			[NotNull] ITypeConversionProvider typeConversionProvider,
+			[NotNull] IArgumentsParser parser,
 			[NotNull] IServiceProvider serviceProvider)
 		{
+			if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+			if (parser == null) throw new ArgumentNullException(nameof(parser));
+			if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
 			if (typeConversionProvider == null) throw new ArgumentNullException(nameof(typeConversionProvider));
 
+			this.LongOptionNameMatchingMode = configuration.LongOptionNameMatchingMode;
+			this.ShortOptionNameMatchingMode = configuration.ShortOptionNameMatchingMode;
 			this.typeConversionProvider = typeConversionProvider;
+			this.parser = parser;
 			this.serviceProvider = serviceProvider;
 		}
 
-		public CommandBindingResult Bind(CommandSet commandSet, string defaultMethodName, CommandLineArguments arguments)
+		public CommandBindingResult Bind(CommandSet commandSet, string defaultCommandName, string[] arguments)
 		{
 			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
-			var methodName = default(string);
+			var commandName = default(string);
 			var bestMatchResult = default(CommandBindingResult);
-			if (arguments.ContainsKey("0"))
+			if (arguments.Length > 0)
 			{
-				var newArguments = new CommandLineArguments(this.typeConversionProvider, arguments);
-				methodName = this.typeConversionProvider.ConvertToString(newArguments["0"]);
-				newArguments.RemoveAt(0);
-				var result = this.FindAndBindCommand(commandSet.Commands, methodName, newArguments);
+				commandName = this.typeConversionProvider.ConvertToString(arguments[0]);
+				var result = this.FindAndBindCommand(commandSet.Commands, commandName, arguments.Skip(1).ToArray());
 				if (result.IsSuccess)
 					return result;
 
 				bestMatchResult = result;
 			}
 
-			if (string.IsNullOrEmpty(defaultMethodName) == false)
+			if (string.IsNullOrEmpty(defaultCommandName) == false)
 			{
-				methodName = defaultMethodName;
-				var result = this.FindAndBindCommand(commandSet.Commands, defaultMethodName, arguments);
+				commandName = defaultCommandName;
+				var result = this.FindAndBindCommand(commandSet.Commands, defaultCommandName, arguments);
 				if (result.IsSuccess)
 				{
 					return result;
@@ -52,12 +66,12 @@ namespace deniszykov.CommandLine.Binding
 				bestMatchResult ??= result;
 			}
 
-			if (string.IsNullOrEmpty(methodName))
+			if (string.IsNullOrEmpty(commandName))
 			{
-				methodName = CommandLine.UnknownMethodName;
+				commandName = CommandLine.UnknownMethodName;
 			}
 
-			bestMatchResult ??= new CommandBindingResult(methodName, CommandBindingResult.EmptyFailedMethodBindings);
+			bestMatchResult ??= new CommandBindingResult(commandName, CommandBindingResult.EmptyFailedMethodBindings);
 
 			return bestMatchResult;
 		}
@@ -71,11 +85,11 @@ namespace deniszykov.CommandLine.Binding
 			foreach (var serviceParameter in command.ServiceParameters)
 			{
 				var argumentIndex = serviceParameter.ArgumentIndex;
-				if (serviceParameter.ValueType == typeof(CommandExecutionContext))
+				if (serviceParameter.ValueType.AsType() == typeof(CommandExecutionContext))
 				{
 					commandArguments[argumentIndex] = context;
 				}
-				else if (serviceParameter.ValueType == typeof(CancellationToken))
+				else if (serviceParameter.ValueType.AsType() == typeof(CancellationToken))
 				{
 					commandArguments[argumentIndex] = cancellationToken;
 				}
@@ -83,22 +97,29 @@ namespace deniszykov.CommandLine.Binding
 		}
 
 
-		private CommandBindingResult FindAndBindCommand(IReadOnlyCollection<Command> commands, string methodName, CommandLineArguments arguments)
+		private CommandBindingResult FindAndBindCommand(IReadOnlyCollection<Command> commands, string commandName, string[] arguments)
 		{
 			if (commands == null) throw new ArgumentNullException(nameof(commands));
-			if (methodName == null) throw new ArgumentNullException(nameof(methodName));
+			if (commandName == null) throw new ArgumentNullException(nameof(commandName));
 			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
 			var failedCommands = new Dictionary<Command, ParameterBindingResult[]>();
 			foreach (var command in commands)
 			{
+				if (!string.Equals(commandName, command.Name))
+				{
+					continue;
+				}
+
+				var getOptionArity = new Func<string, ParameterValueArity?>(optionName => command.FindBoundParameter(optionName, optionName.Length > 1 ? LongOptionNameMatchingMode : ShortOptionNameMatchingMode)?.ValueArity);
+				var parsedArguments = this.parser.Parse(arguments, getOptionArity);
 				var boundParameters = command.BoundParameters;
 				var serviceParameters = command.ServiceParameters;
 				var parameterBindings = new ParameterBindingResult[boundParameters.Count];
 				var isSuccessfulBinding = true;
 				foreach (var parameter in boundParameters)
 				{
-					var bindResult = BindParameter(parameter, arguments);
+					var bindResult = BindParameter(parameter, parsedArguments);
 					parameterBindings[parameter.Position] = bindResult;
 					isSuccessfulBinding = isSuccessfulBinding && bindResult.IsSuccess;
 				}
@@ -109,7 +130,7 @@ namespace deniszykov.CommandLine.Binding
 					continue;
 				}
 
-				var target = command.TargetType != null ? this.ResolveService(command, command.TargetType, isOptional: false) : null;
+				var target = command.TargetType != null ? this.ResolveService(command, command.TargetType.AsType(), isOptional: false) : null;
 				var commandArguments = new object[boundParameters.Count + command.ServiceParameters.Count];
 				for (var i = 0; i < boundParameters.Count; i++)
 				{
@@ -119,120 +140,104 @@ namespace deniszykov.CommandLine.Binding
 
 				foreach (var serviceParameter in serviceParameters)
 				{
-					if (serviceParameter.ValueType == typeof(CommandExecutionContext) ||
-						serviceParameter.ValueType == typeof(CancellationToken))
+					if (serviceParameter.ValueType.AsType() == typeof(CommandExecutionContext) ||
+						serviceParameter.ValueType.AsType() == typeof(CancellationToken))
 					{
 						continue;
 					}
 
 					var argumentIndex = serviceParameter.ArgumentIndex;
-					commandArguments[argumentIndex] = this.ResolveService(command, serviceParameter.ValueType, serviceParameter.IsOptional);
+					commandArguments[argumentIndex] = this.ResolveService(command, serviceParameter.ValueType.AsType(), serviceParameter.IsOptional);
 				}
 
 				return new CommandBindingResult(command, target, commandArguments);
 			}
 
-			return new CommandBindingResult(methodName, failedCommands);
+			return new CommandBindingResult(commandName, failedCommands);
 		}
-		private ParameterBindingResult BindParameter(CommandParameter parameter, CommandLineArguments arguments)
+		private ParameterBindingResult BindParameter(CommandParameter parameter, ParsedArguments parsedArguments)
 		{
-			var expectedType = parameter.ValueType;
 			var value = default(object);
 			try
 			{
-				if (expectedType == typeof(CommandLineArguments))
+				if (parsedArguments.TryGetLongOption(parameter.Name, out var optionValue) ||
+					parsedArguments.TryGetShortOption(parameter.Alias ?? string.Empty, out optionValue) ||
+					parsedArguments.TryGetValue(parameter.Position, out optionValue))
 				{
-					value = new CommandLineArguments(this.typeConversionProvider, arguments);
-				}
-				else if (arguments.TryGetValue(parameter.Name, out value) || arguments.TryGetValue((parameter.Position).ToString(), out value))
-				{
-					var valueStringList = value as IList<string>;
-					if (expectedType.IsArray)
-					{
-						var elemType = expectedType.GetElementType();
-						Debug.Assert(elemType != null, "elemType != null");
+					var raw = optionValue.Raw;
 
-						if (valueStringList != null)
+					if (IsArityMatching(parameter.ValueArity, raw.Count) == false)
+					{
+						switch (raw.Count)
 						{
-							var values = Array.CreateInstance(elemType, valueStringList.Count);
-							for (var i = 0; i < valueStringList.Count; i++)
-							{
-								value = valueStringList[i]; // used on failure in exception block
-								values.SetValue(Convert(valueStringList[i], elemType, parameter), i);
-							}
-							value = values;
-						}
-						else if (value != null)
-						{
-							var values = Array.CreateInstance(elemType, 1);
-							values.SetValue(Convert(value, elemType, parameter), 0);
-							value = values;
-						}
-						else
-						{
-							var values = Array.CreateInstance(elemType, 0);
-							value = values;
+							case 0: throw new InvalidOperationException("Option requires an argument.");
+							case 1: throw new InvalidOperationException("Option requires no arguments.");
+							default: throw new InvalidOperationException("Option requires at most one argument.");
 						}
 					}
-					else if (expectedType == typeof(bool) && value == null)
+
+					if (parameter.ValueType.AsType() == typeof(OptionCount))
+					{
+						value = new OptionCount(optionValue.Count);
+					}
+					else if (parameter.ValueType.IsInstanceOfType(raw))
+					{
+						value = raw;
+					}
+					else if (parameter.ValueType.IsGenericType && parameter.ValueType.GetGenericTypeDefinition() == typeof(List<>))
+					{
+						var elementType = parameter.ValueType.GetGenericArguments()[0];
+						var values = (IList)Activator.CreateInstance(parameter.ValueType.AsType());
+						for (var i = 0; i < values.Count; i++)
+						{
+							var item = this.Convert(raw.ElementAt(i), elementType, parameter);
+							values.Add(item);
+						}
+						value = values;
+					}
+					else if (parameter.ValueType.IsArray)
+					{
+						var elementType = parameter.ValueType.GetElementType() ?? parameter.ValueType.AsType();
+						var values = Array.CreateInstance(elementType, raw.Count);
+						for (var i = 0; i < values.Length; i++)
+						{
+							var item = this.Convert(raw.ElementAt(i), elementType, parameter);
+							values.SetValue(item, i);
+						}
+						value = values;
+					}
+					else if (raw.Count == 0 && parameter.ValueType.AsType() == typeof(bool))
 					{
 						value = true;
 					}
-					else if (value == null)
+					else if (raw.Count == 0)
 					{
-						value = parameter.IsOptional ? parameter.DefaultValue : expectedType.IsValueType ? Activator.CreateInstance(expectedType) : null;
+						value = parameter.DefaultValue;
 					}
-					else if (valueStringList != null && expectedType.IsEnum)
+					else if (parameter.ValueType.IsEnum)
 					{
-						var values = new object[valueStringList.Count];
-						for (var i = 0; i < valueStringList.Count; i++)
-						{
-							value = valueStringList[i]; // used on failure in exception block
-							values[i] = Convert(value, expectedType, parameter);
-						}
-
-						if (Enum.GetUnderlyingType(expectedType).IsSignedNumber())
-						{
-							var combinedValue = 0L;
-							foreach (var enumValue in values)
-							{
-								value = enumValue; // used on failure in exception block
-								combinedValue |= this.typeConversionProvider.Convert<object, long>(value);
-							}
-
-							value = Enum.ToObject(expectedType, combinedValue);
-						}
-						else
-						{
-							var combinedValue = 0UL;
-							foreach (var enumValue in values)
-							{
-								value = enumValue; // used on failure in exception block
-								combinedValue |= this.typeConversionProvider.Convert<object, ulong>(enumValue);
-							}
-							value = Enum.ToObject(expectedType, combinedValue);
-						}
+						value = string.Join(",", raw);
 					}
-					else if (valueStringList != null && expectedType.IsAssignableFrom(typeof(IList<string>)) == false)
+					else if (parameter.ValueType.AsType() == typeof(string))
 					{
-						throw new FormatException($"Parameter has {valueStringList.Count} values while only one is expected.");
-					}
-					else
-					{
-						value = Convert(value, expectedType, parameter);
+						value = string.Join(" ", raw);
 					}
 				}
 				else if (parameter.IsOptional)
 				{
 					value = parameter.DefaultValue;
 				}
-				else if (expectedType == typeof(bool))
+				else if (parameter.ValueType.AsType() == typeof(bool))
 				{
 					value = false;
 				}
+				else if (parameter.ValueType.AsType() == typeof(OptionCount))
+				{
+					value = new OptionCount(0);
+				}
 				else
 				{
-					throw new InvalidOperationException("Missing parameter value.");
+					throw new InvalidOperationException("Missing required option.");
 				}
 			}
 			catch (Exception bindingError)
@@ -240,8 +245,8 @@ namespace deniszykov.CommandLine.Binding
 				return new ParameterBindingResult(parameter, bindingError, value);
 			}
 
-			if (value != null && value.GetType() != parameter.ValueType)
-				value = this.typeConversionProvider.Convert(value.GetType(), parameter.ValueType, value);
+			if (value != null && value.GetType() != parameter.ValueType.AsType())
+				value = this.typeConversionProvider.Convert(value.GetType(), parameter.ValueType.AsType(), value);
 
 			return new ParameterBindingResult(parameter, null, value);
 		}
@@ -261,7 +266,7 @@ namespace deniszykov.CommandLine.Binding
 			if (metadata == null) throw new ArgumentNullException(nameof(metadata));
 
 			var conversionError = default(Exception);
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
 			try
 			{
 				if (metadata.TypeConverter != null)
@@ -288,6 +293,19 @@ namespace deniszykov.CommandLine.Binding
 			else
 			{
 				throw new InvalidOperationException($"Unable to convert '{value ?? "<null>"}' to type '{toType.FullName}'.");
+			}
+		}
+
+		private static bool IsArityMatching(ParameterValueArity parameterValueArity, int rawCount)
+		{
+			switch (parameterValueArity)
+			{
+				case ParameterValueArity.Zero: return rawCount == 0;
+				case ParameterValueArity.ZeroOrOne: return rawCount <= 1;
+				case ParameterValueArity.One: return rawCount == 1;
+				case ParameterValueArity.ZeroOrMany: return rawCount > 0;
+				case ParameterValueArity.OneOrMany: return rawCount > 1;
+				default: throw new ArgumentOutOfRangeException(nameof(parameterValueArity), parameterValueArity, null);
 			}
 		}
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using deniszykov.CommandLine.Annotations;
@@ -15,12 +16,14 @@ namespace deniszykov.CommandLine.Binding
 		public readonly string Description;
 		[CanBeNull]
 		public readonly TypeInfo TargetType;
-		[NotNull]
+		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<CommandParameter> BoundParameters;
-		[NotNull]
+		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<CommandParameter> ServiceParameters;
 		[NotNull]
 		public readonly Func<object, object[], int> Invoker;
+
+		public bool Hidden;
 
 		public Command([NotNull] MethodInfo method)
 		{
@@ -28,13 +31,13 @@ namespace deniszykov.CommandLine.Binding
 
 			this.Name = method.GetName() ?? method.Name;
 			this.Description = method.GetDescription() ?? string.Empty;
+			this.Hidden = method.IsHidden();
 
 			var boundParameters = new List<CommandParameter>();
 			var serviceParameters = new List<CommandParameter>();
 
 			foreach (var parameterInfo in method.GetParameters())
 			{
-
 				if (parameterInfo.IsServiceParameter())
 				{
 					var parameter = new CommandParameter(parameterInfo, serviceParameters.Count);
@@ -62,6 +65,28 @@ namespace deniszykov.CommandLine.Binding
 					throw;
 				}
 			};
+		}
+
+		[NotNull, ItemNotNull]
+		public IEnumerable<CommandParameter> GetNonHiddenBoundParameter()
+		{
+			return this.BoundParameters.Where(param => !param.IsHidden);
+		}
+
+		[CanBeNull]
+		public CommandParameter FindBoundParameter([NotNull]string name, StringComparison stringComparison)
+		{
+			if (name == null) throw new ArgumentNullException(nameof(name));
+
+			foreach (var parameter in this.BoundParameters)
+			{
+				if (string.Equals(parameter.Name, name, stringComparison) ||
+					string.Equals(parameter.Alias, name, stringComparison))
+				{
+					return parameter;
+				}
+			}
+			return null;
 		}
 
 		/// <inheritdoc />

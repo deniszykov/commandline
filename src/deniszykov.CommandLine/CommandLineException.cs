@@ -21,7 +21,7 @@ namespace deniszykov.CommandLine
 	/// Exception occurred while executing command during <see cref="CommandLine.Run"/>.
 	/// There is extra information in <see cref="Exception.Data"/> dictionary under "method", "methodToken" and "bindingErrors" keys.
 	/// </summary>
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
 	[Serializable]
 #endif
 	public sealed class CommandLineException : Exception
@@ -39,7 +39,7 @@ namespace deniszykov.CommandLine
 		public CommandLineException(string message, Exception innerException) : base(message, innerException)
 		{
 		}
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
 		/// <summary>
 		/// Create new instance of <see cref="CommandLineException"/>.
 		/// </summary>
@@ -93,7 +93,7 @@ namespace deniszykov.CommandLine
 
 					var errorMessage = parameterBindResult.Error.Message;
 					var parameterType = parameterBindResult.Parameter.ValueType;
-					parameterType = Nullable.GetUnderlyingType(parameterType)?.GetTypeInfo() ?? parameterType;
+					parameterType = Nullable.GetUnderlyingType(parameterType.AsType())?.GetTypeInfo() ?? parameterType;
 					builder.Append("(").Append(parameterType.Name).Append(") ");
 					if (parameterBindResult.Error is FormatException && parameterBindResult.Value != null)
 					{

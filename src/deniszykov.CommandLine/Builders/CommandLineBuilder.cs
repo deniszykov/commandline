@@ -76,12 +76,11 @@ namespace deniszykov.CommandLine.Builders
 		{
 			var serviceProvider = this.serviceProviderFactory?.Invoke() ?? this.CreateDefaultServiceProviderFactory();
 			var typeConversionProvider = (ITypeConversionProvider)serviceProvider.GetService(typeof(ITypeConversionProvider)) ?? new TypeConversionProvider();
-			var commandLineArguments = new CommandLineArguments(typeConversionProvider, this.commandLineArgs);
 			var console = (IConsole)serviceProvider.GetService(typeof(IConsole)) ?? new DefaultConsole(this.configuration.HookConsoleCancelKeyPress);
 
 			var commandLine = new CommandLine(
 				this.commandsBuilder,
-				commandLineArguments,
+				this.commandLineArgs,
 				this.configuration,
 				typeConversionProvider,
 				console,

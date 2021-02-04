@@ -20,6 +20,7 @@ using System.Threading;
 using deniszykov.CommandLine.Annotations;
 using deniszykov.CommandLine.Binding;
 using deniszykov.CommandLine.Builders;
+using deniszykov.CommandLine.Parsing;
 using deniszykov.CommandLine.Renderers;
 using deniszykov.TypeConversion;
 using JetBrains.Annotations;
@@ -37,21 +38,9 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public const int DotNetExceptionExitCode = -2147023895;
 		/// <summary>
-		/// Prefix of command's argument.
-		/// </summary>
-		public const string ArgumentNamePrefix = "--";
-		/// <summary>
-		/// Prefix of short name of command's argument.
-		/// </summary>
-		public const string ArgumentNamePrefixShort = "-";
-		/// <summary>
 		/// Method name used as placeholder for missing command name in exception text and <see cref="CommandBindingResult.CommandName"/> property.
 		/// </summary>
 		public const string UnknownMethodName = "<no name specified>";
-		/// <summary>
-		/// Name of property with list of preceding commands of current <see cref="ICommandsBuilder"/>. Type is array of <see cref="Command"/>.
-		/// </summary>
-		public const string CommandChainPropertyName = "__command_chain__";
 
 		/// <summary>
 		/// Assumption about console's window width when formatting <see cref="Describe"/> output. When output is redirected then <see cref="Int32.MaxValue"/> is used.
@@ -59,20 +48,20 @@ namespace deniszykov.CommandLine
 		public static int DescribeConsoleWindowWidth;
 
 		[NotNull] private readonly ICommandsBuilder commandsBuilder;
-		[NotNull] private readonly CommandLineArguments commandLineArguments;
+		[NotNull] private readonly string[] commandLineArguments;
 		[NotNull] private readonly CommandLineConfiguration configuration;
 		[NotNull] private readonly IDictionary<object, object> properties;
 		[NotNull] private readonly ITypeConversionProvider typeConversionProvider;
 		[NotNull] private readonly IConsole console;
 		[NotNull] private readonly IServiceProvider serviceProvider;
 		[NotNull] private readonly CommandBinder commandBinder;
-		[NotNull] private readonly CommandListRenderer commandListRenderer;
 		[NotNull] private readonly CommandRenderer commandRenderer;
+		[NotNull] private readonly IArgumentsParser parser;
 
 
 		public CommandLine(
 			[NotNull] ICommandsBuilder commandsBuilder,
-			[NotNull] CommandLineArguments commandLineArguments,
+			[NotNull] string[] commandLineArguments,
 			[NotNull] CommandLineConfiguration configuration,
 			[NotNull] ITypeConversionProvider typeConversionProvider,
 			[NotNull] IConsole console,
@@ -94,8 +83,8 @@ namespace deniszykov.CommandLine
 			this.console = console;
 			this.serviceProvider = serviceProvider;
 			this.properties = properties;
-			this.commandBinder = new CommandBinder(typeConversionProvider, this.serviceProvider);
-			this.commandListRenderer = new CommandListRenderer(console, typeConversionProvider);
+			this.parser = new GetOptParser(configuration);
+			this.commandBinder = new CommandBinder(configuration, typeConversionProvider, this.parser, this.serviceProvider);
 			this.commandRenderer = new CommandRenderer(console, typeConversionProvider);
 		}
 
@@ -145,17 +134,18 @@ namespace deniszykov.CommandLine
 			{
 				var commandSet = this.commandsBuilder.Build();
 				var command = commandSet.Commands.FirstOrDefault(otherCommand => string.Equals(otherCommand.Name, commandToDescribe, StringComparison.OrdinalIgnoreCase));
+				var commandChain = this.properties.GetCommandChain().ToList();
 				if (command != null)
 				{
-					this.commandRenderer.Render(command);
+					this.commandRenderer.Render(commandSet, command, commandChain);
 				}
 				else if (string.IsNullOrEmpty(commandToDescribe) == false)
 				{
-					this.commandListRenderer.RenderNotFound(commandSet, commandToDescribe);
+					this.commandRenderer.RenderNotFound(commandSet, commandToDescribe, commandChain);
 				}
 				else
 				{
-					this.commandListRenderer.Render(commandSet);
+					this.commandRenderer.RenderList(commandSet, commandChain, includeTypeHelpText: commandChain.Count == 0);
 				}
 				return this.configuration.DescribeExitCode;
 			}
@@ -175,9 +165,7 @@ namespace deniszykov.CommandLine
 
 			return new CommandLineBuilder(commandLineArgs).Configure(config =>
 			{
-				config.BindFailureExitCode = 1;
-				config.DescribeExitCode = 2;
-				config.NewLine = Environment.NewLine;
+				config.SetToDefault();
 			});
 		}
 
@@ -186,16 +174,14 @@ namespace deniszykov.CommandLine
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
 
-			var typeConversionProvider = (ITypeConversionProvider)context.ServiceProvider.GetService(typeof(ITypeConversionProvider)) ?? new TypeConversionProvider();
-			var newArguments = new CommandLineArguments(typeConversionProvider, context.Arguments);
-
-			if (newArguments.ContainsKey("0"))
+			var newArguments = context.Arguments;
+			if (context.Arguments.Length > 0 && string.Equals(context.Arguments[0], context.Command.Name, StringComparison.OrdinalIgnoreCase))
 			{
-				newArguments.RemoveAt(0);
+				newArguments = newArguments.Skip(1).ToArray();
 			}
 
 			// configure new builder
-			var commandLineBuilder = new CommandLineBuilder(newArguments.ToArray())
+			var commandLineBuilder = new CommandLineBuilder(newArguments)
 				.UseServiceProvider(() => context.ServiceProvider)
 				.Configure(config =>
 				{
@@ -209,13 +195,7 @@ namespace deniszykov.CommandLine
 			}
 
 			// add current command to chain
-			var commandChain = context.GetCommandChain().ToList();
-			if (commandChain.Contains(context.Command))
-			{
-				throw CommandLineException.RecursiveCommandChain(commandChain.Select(command => command.Name), context.Command.Name);
-			}
-			commandChain.Add(context.Command);
-			commandLineBuilder.Properties[CommandChainPropertyName] = commandChain.ToArray();
+			commandLineBuilder.Properties.AddCommandChain(context.Command);
 
 			// copy command set
 			commandLineBuilder.Use(() => context.CommandsBuilder);

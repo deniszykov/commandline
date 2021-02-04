@@ -15,7 +15,7 @@ namespace deniszykov.CommandLine
 	/// <summary>
 	/// Provides data for the event that is raised when there is an exception that is  not handled in any application domain.
 	/// </summary>
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_6
 	[Serializable]
 #endif
 	public sealed class ExceptionEventArgs : EventArgs
