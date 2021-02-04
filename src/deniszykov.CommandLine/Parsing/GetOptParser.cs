@@ -25,11 +25,11 @@ namespace deniszykov.CommandLine.Parsing
 
 			this.LongNameMatchingMode = configuration.LongOptionNameMatchingMode;
 			this.ShortNameMatchingMode = configuration.ShortOptionNameMatchingMode;
-			this.ShortNamePrefixes = configuration.ShortNamePrefixes ?? new string[0];
-			this.LongNamePrefixes = configuration.LongNamePrefixes ?? new string[0];
+			this.ShortNamePrefixes = configuration.ShortOptionNamePrefixes ?? new string[0];
+			this.LongNamePrefixes = configuration.LongOptionNamePrefixes ?? new string[0];
 			this.OptionsBreaks = configuration.OptionsBreaks ?? new string[0];
 			this.HelpOptions = configuration.HelpOptions ?? new string[0];
-			this.OptionArgumentSplitter = configuration.OptionArgumentSplitter ?? "=".ToCharArray();
+			this.OptionArgumentSplitter = configuration.OptionArgumentSplitters ?? "=".ToCharArray();
 			this.TreatUnknownOptionsAsValues = configuration.TreatUnknownOptionsAsValues;
 		}
 
@@ -104,7 +104,7 @@ namespace deniszykov.CommandLine.Parsing
 										longName = shortNameLetters.Substring(l);
 									}
 
-									if (this.TreatUnknownOptionsAsValues)
+									if (this.TreatUnknownOptionsAsValues || longName.All(char.IsDigit))
 									{
 										yield return new ArgumentToken(TokenType.Value, l == 0 ? argument : longName);
 										l = shortNameLetters.Length;
@@ -192,12 +192,11 @@ namespace deniszykov.CommandLine.Parsing
 			}
 		}
 
-		private bool IsExactOption(string argument, string[] optionVariants)
+		private bool IsExactOption(string argument, string[] optionVariants, StringComparison comparison)
 		{
-			var valueSplitterIndex = argument.IndexOfAny(this.OptionArgumentSplitter);
-			foreach (var variants in optionVariants)
+			foreach (var variant in optionVariants)
 			{
-				if (string.Compare(variants, 0, argument, 0, valueSplitterIndex < 0 ? argument.Length : valueSplitterIndex, this.LongNameMatchingMode) == 0)
+				if (string.Compare(variant, 0, argument, 0, variant.Length, comparison) == 0 && variant.Length == argument.Length)
 				{
 					return true;
 				}
@@ -248,11 +247,11 @@ namespace deniszykov.CommandLine.Parsing
 		}
 		private bool IsOptionsBreak(string argument)
 		{
-			return IsExactOption(argument, OptionsBreaks);
+			return IsExactOption(argument, OptionsBreaks, StringComparison.Ordinal);
 		}
 		private bool IsHelpOption(string argument)
 		{
-			return IsExactOption(argument, HelpOptions);
+			return IsExactOption(argument, HelpOptions, StringComparison.Ordinal);
 		}
 	}
 }

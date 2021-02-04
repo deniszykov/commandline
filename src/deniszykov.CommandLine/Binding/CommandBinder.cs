@@ -19,6 +19,7 @@ namespace deniszykov.CommandLine.Binding
 
 		public StringComparison LongOptionNameMatchingMode { get; }
 		public StringComparison ShortOptionNameMatchingMode { get; }
+		public StringComparison CommandNameMatchingMode { get; }
 
 		public CommandBinder(
 			[NotNull] CommandLineConfiguration configuration,
@@ -33,6 +34,7 @@ namespace deniszykov.CommandLine.Binding
 
 			this.LongOptionNameMatchingMode = configuration.LongOptionNameMatchingMode;
 			this.ShortOptionNameMatchingMode = configuration.ShortOptionNameMatchingMode;
+			this.CommandNameMatchingMode = configuration.CommandNameMatchingMode;
 			this.typeConversionProvider = typeConversionProvider;
 			this.parser = parser;
 			this.serviceProvider = serviceProvider;
@@ -63,7 +65,7 @@ namespace deniszykov.CommandLine.Binding
 					return result;
 				}
 
-				bestMatchResult ??= result;
+				bestMatchResult = result;
 			}
 
 			if (string.IsNullOrEmpty(commandName))
@@ -106,7 +108,7 @@ namespace deniszykov.CommandLine.Binding
 			var failedCommands = new Dictionary<Command, ParameterBindingResult[]>();
 			foreach (var command in commands)
 			{
-				if (!string.Equals(commandName, command.Name))
+				if (!string.Equals(commandName, command.Name, this.CommandNameMatchingMode))
 				{
 					continue;
 				}
@@ -218,7 +220,7 @@ namespace deniszykov.CommandLine.Binding
 					{
 						value = string.Join(",", raw);
 					}
-					else if (parameter.ValueType.AsType() == typeof(string))
+					else
 					{
 						value = string.Join(" ", raw);
 					}
@@ -303,8 +305,8 @@ namespace deniszykov.CommandLine.Binding
 				case ParameterValueArity.Zero: return rawCount == 0;
 				case ParameterValueArity.ZeroOrOne: return rawCount <= 1;
 				case ParameterValueArity.One: return rawCount == 1;
-				case ParameterValueArity.ZeroOrMany: return rawCount > 0;
-				case ParameterValueArity.OneOrMany: return rawCount > 1;
+				case ParameterValueArity.ZeroOrMany: return rawCount >= 0;
+				case ParameterValueArity.OneOrMany: return rawCount >= 1;
 				default: throw new ArgumentOutOfRangeException(nameof(parameterValueArity), parameterValueArity, null);
 			}
 		}

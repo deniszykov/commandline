@@ -122,7 +122,8 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "-Zz", "--unknown-param=value", "-Zz" }, new[] { "--unknown-param=value" })]
 		[InlineData(new[] { "-Zz", "--zero-param", "--unknown-param=value", "-Zz" }, new[] { "--unknown-param=value" })]
 		[InlineData(new[] { "-Zz", "--zero-param", "param", "-Zz" }, new[] { "param" })]
-		[InlineData(new[] { "-Zz", "--zero-param", "-1", "-1.2", "+100500", "http://example.com", "-Zz" }, new[] { "-1", "-1.2", "+100500", "http://example.com" })]
+		// Options break
+		[InlineData(new[] { "-Zz", "--zero-param", "--", "-1", "-1.2", "+100500", "http://example.com", "-Zz" }, new[] { "-1", "-1.2", "+100500", "http://example.com", "-Zz" })]
 		public void ParseValues(string[] args, string[] expectedValues)
 		{
 			var configuration = new CommandLineConfiguration();

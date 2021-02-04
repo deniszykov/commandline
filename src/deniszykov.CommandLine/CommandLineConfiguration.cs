@@ -43,15 +43,15 @@ namespace deniszykov.CommandLine
 
 		public bool TreatUnknownOptionsAsValues { get; set; }
 
-		[NotNull] public string[] ShortNamePrefixes { get; set; }
+		[NotNull] public string[] ShortOptionNamePrefixes { get; set; }
 
-		[NotNull] public string[] LongNamePrefixes { get; set; }
+		[NotNull] public string[] LongOptionNamePrefixes { get; set; }
 
 		[NotNull] public string[] OptionsBreaks { get; set; }
 
 		[NotNull] public string[] HelpOptions { get; set; }
 
-		[NotNull] public char[] OptionArgumentSplitter { get; set; }
+		[NotNull] public char[] OptionArgumentSplitters { get; set; }
 
 		public void CopyTo([NotNull]CommandLineConfiguration config)
 		{
@@ -68,6 +68,11 @@ namespace deniszykov.CommandLine
 			config.ShortOptionNameMatchingMode = this.ShortOptionNameMatchingMode;
 			config.CommandNameMatchingMode = this.CommandNameMatchingMode;
 			config.TreatUnknownOptionsAsValues = this.TreatUnknownOptionsAsValues;
+			config.ShortOptionNamePrefixes = this.ShortOptionNamePrefixes;
+			config.LongOptionNamePrefixes = this.LongOptionNamePrefixes;
+			config.OptionsBreaks = this.OptionsBreaks;
+			config.HelpOptions = this.HelpOptions;
+			config.OptionArgumentSplitters = this.OptionArgumentSplitters;
 		}
 
 		public void SetToDefault()
@@ -76,10 +81,11 @@ namespace deniszykov.CommandLine
 			this.DescribeExitCode = 2;
 			this.ShortOptionNameMatchingMode = StringComparison.Ordinal;
 			this.LongOptionNameMatchingMode = StringComparison.OrdinalIgnoreCase;
-			this.ShortNamePrefixes = new[] { "-", "/" };
-			this.LongNamePrefixes = new[] { "--", "/" };
+			this.CommandNameMatchingMode = StringComparison.OrdinalIgnoreCase;
+			this.ShortOptionNamePrefixes = new[] { "-", "/" };
+			this.LongOptionNamePrefixes = new[] { "--", "/" };
 			this.OptionsBreaks = new[] { "--" };
-			this.OptionArgumentSplitter = new[] { ' ', '=' };
+			this.OptionArgumentSplitters = new[] { ' ', '=' };
 			this.HelpOptions = new[] { "-h", "/h", "--help", "-?", "/?" };
 		}
 	}

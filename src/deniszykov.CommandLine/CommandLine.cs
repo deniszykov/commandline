@@ -85,7 +85,7 @@ namespace deniszykov.CommandLine
 			this.properties = properties;
 			this.parser = new GetOptParser(configuration);
 			this.commandBinder = new CommandBinder(configuration, typeConversionProvider, this.parser, this.serviceProvider);
-			this.commandRenderer = new CommandRenderer(console, typeConversionProvider);
+			this.commandRenderer = new CommandRenderer(configuration, console, typeConversionProvider);
 		}
 
 		/// <summary>

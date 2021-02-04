@@ -20,8 +20,6 @@ namespace deniszykov.CommandLine.Tests
 
 		public class TestApi
 		{
-
-
 			public static int NoParameters() { return 0; }
 			public static int IntParameter(int param1)
 			{
@@ -62,6 +60,11 @@ namespace deniszykov.CommandLine.Tests
 			public static int StringNullParameter(string param1 = null)
 			{
 				Assert.Null(param1);
+				return 0;
+			}
+			public static int StringEmptyParameter(string param1)
+			{
+				Assert.Equal("", param1);
 				return 0;
 			}
 			public static int StringArrayTwoParameter(string[] param1)
@@ -133,8 +136,8 @@ namespace deniszykov.CommandLine.Tests
 			[Description("This is test command with multiple params description.")]
 			public static int MultiparamCommand(
 				[Description("This is parameter1 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet turpis at ex malesuada facilisis sed ac eros.")]
-				[Alias("p1")]
-				[Name("param1Renamed")]
+				[Alias("p")]
+				[Name("param-renamed")]
 				int param1,
 				string param2,
 				[Description("This is parameter3 description.")]
@@ -144,7 +147,9 @@ namespace deniszykov.CommandLine.Tests
 				[Description("This is parameter3 description.")]
 				string param5 = null,
 				[Description("This is parameter3 description."), Hidden]
-				string param6Hidden = null
+				string param6Hidden = null,
+				[Description("This is rest parameters.")]
+				params string[] otherParams
 			)
 			{
 				Assert.Equal(1, param1);
@@ -165,40 +170,39 @@ namespace deniszykov.CommandLine.Tests
 		}
 
 		[Theory]
-		[InlineData(new string[0], "NoParameters")]
-		[InlineData(new[] { "--param1", "1" }, "IntParameter")]
-		[InlineData(new[] { "--param1", "-1" }, "IntNegativeParameter")]
-		[InlineData(new[] { "--", "-1" }, "IntNegativeParameter")]
-		[InlineData(new[] { "--param1", "true" }, "BoolParameter")]
-		[InlineData(new string[0], "BoolFalseParameter")]
-		[InlineData(new[] { "--param1", "false" }, "BoolFalseParameter")]
-		[InlineData(new[] { "--param1", "param" }, "StringParameter")]
-		[InlineData(new[] { "-", "-param" }, "StringHyphenParameter")]
-		[InlineData(new string[0], "StringNullParameter")]
-		[InlineData(new[] { "--param1" }, "StringNullParameter")]
-		[InlineData(new[] { "--param1", "param0", "param1" }, "StringArrayTwoParameter")]
-		[InlineData(new[] { "--param1", "param0" }, "StringArrayOneParameter")]
-		[InlineData(new[] { "--param1" }, "StringArrayZeroParameter")]
-		[InlineData(new string[0], "StringArrayNullParameter")]
-		[InlineData(new[] { "--param1", "2" }, "EnumTwoParameter")]
-		[InlineData(new[] { "--param1", "Two" }, "EnumTwoParameter")]
-		[InlineData(new[] { "--param1" }, "EnumZeroParameter")]
-		[InlineData(new string[0], "EnumZeroParameter")]
-		[InlineData(new[] { "--param1", "3" }, "FlagsThreeParameter")]
-		[InlineData(new[] { "--param1", "One,Two" }, "FlagsThreeParameter")]
-		[InlineData(new[] { "--param1", "One", "Two" }, "FlagsThreeParameter")]
-		[InlineData(new[] { "--param1", "2" }, "FlagsTwoParameter")]
-		[InlineData(new[] { "--param1", "Two" }, "FlagsTwoParameter")]
-		[InlineData(new[] { "--param1" }, "FlagsZeroParameter")]
-		[InlineData(new string[0], "FlagsZeroParameter")]
-		[InlineData(new[] { "--", "-1", "-param2" }, "IntNegativeStringParameter")]
-		[InlineData(new[] { "-", "-1", "-param2" }, "IntNegativeStringParameter")]
-		[InlineData(new[] { "--param1", "-1", "-", "--param2", "-param2" }, "IntNegativeStringParameter")]
-		[InlineData(new[] { "-1", "-", "--param2", "-param2" }, "IntNegativeStringParameter")]
-		[InlineData(new[] { "-1", "--", "-param2" }, "IntNegativeStringParameter")]
-		[InlineData(new[] { "--", "-1", "-param2", "--" }, "IntNegativeStringParameter")]
-		[InlineData(new[] { "--", "-1", "-param2", "-" }, "IntNegativeStringParameter")]
-		[InlineData(new[] { "-", "--", "-1", "-param2", "-" }, "IntNegativeStringParameter")]
+		[InlineData(new string[0], nameof(TestApi.NoParameters))]
+		[InlineData(new[] { "--param1", "1" }, nameof(TestApi.IntParameter))]
+		[InlineData(new[] { "--param1", "-1" }, nameof(TestApi.IntNegativeParameter))]
+		[InlineData(new[] { "--", "-1" }, nameof(TestApi.IntNegativeParameter))]
+		[InlineData(new[] { "--param1", "true" }, nameof(TestApi.BoolParameter))]
+		[InlineData(new string[0], nameof(TestApi.BoolFalseParameter))]
+		[InlineData(new[] { "--param1", "false" }, nameof(TestApi.BoolFalseParameter))]
+		[InlineData(new[] { "--param1", "param" }, nameof(TestApi.StringParameter))]
+		[InlineData(new[] { "--", "-param" }, nameof(TestApi.StringHyphenParameter))]
+		[InlineData(new string[0], nameof(TestApi.StringNullParameter))]
+		[InlineData(new[] { "--param1", "" }, nameof(TestApi.StringEmptyParameter))]
+		[InlineData(new[] { "--param1", "param0", "param1" }, nameof(TestApi.StringArrayTwoParameter))]
+		[InlineData(new[] { "--param1", "param0" }, nameof(TestApi.StringArrayOneParameter))]
+		[InlineData(new[] { "--param1" }, nameof(TestApi.StringArrayZeroParameter))]
+		[InlineData(new string[0], nameof(TestApi.StringArrayNullParameter))]
+		[InlineData(new[] { "--param1", "2" }, nameof(TestApi.EnumTwoParameter))]
+		[InlineData(new[] { "--param1", "Two" }, nameof(TestApi.EnumTwoParameter))]
+		[InlineData(new[] { "--param1", "0" }, nameof(TestApi.EnumZeroParameter))]
+		[InlineData(new string[0], nameof(TestApi.EnumZeroParameter))]
+		[InlineData(new[] { "--param1", "3" }, nameof(TestApi.FlagsThreeParameter))]
+		[InlineData(new[] { "--param1", "One,Two" }, nameof(TestApi.FlagsThreeParameter))]
+		[InlineData(new[] { "--param1=One,Two" }, nameof(TestApi.FlagsThreeParameter))]
+		[InlineData(new[] { "--param1", "2" }, nameof(TestApi.FlagsTwoParameter))]
+		[InlineData(new[] { "--param1", "Two" }, nameof(TestApi.FlagsTwoParameter))]
+		[InlineData(new[] { "--param1", "0" }, nameof(TestApi.FlagsZeroParameter))]
+		[InlineData(new string[0], nameof(TestApi.FlagsZeroParameter))]
+		[InlineData(new[] { "--", "-1", "-param2" }, nameof(TestApi.IntNegativeStringParameter))]
+		[InlineData(new[] { "--param1", "-1", "--param2", "-param2" }, nameof(TestApi.IntNegativeStringParameter))]
+		[InlineData(new[] { "-1", "--param2", "-param2" }, nameof(TestApi.IntNegativeStringParameter))]
+		[InlineData(new[] { "-1", "--", "-param2" }, nameof(TestApi.IntNegativeStringParameter))]
+		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
+		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
+		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
 		public void BindTest(string[] commandLineArguments, string command)
 		{
 			var exitCode = CommandLine.CreateFromArguments(commandLineArguments)
