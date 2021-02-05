@@ -21,7 +21,7 @@ namespace deniszykov.CommandLine.Binding
 		public readonly TypeInfo ValueType;
 		[CanBeNull]
 		public readonly object DefaultValue;
-		public readonly ParameterValueArity ValueArity;
+		public readonly ValueArity ValueArity;
 		public readonly bool IsOptional;
 		public readonly bool IsHidden;
 		public readonly bool IsValueCollector;
@@ -54,11 +54,11 @@ namespace deniszykov.CommandLine.Binding
 			var isBool = this.ValueType.AsType() == typeof(bool);
 			var isCount = this.ValueType.AsType() == typeof(OptionCount);
 			this.ValueArity = 
-				isCount ? ParameterValueArity.Zero :
-				isBool ? ParameterValueArity.ZeroOrOne :
-				isList ? ParameterValueArity.ZeroOrMany :
-				isFlags ? ParameterValueArity.OneOrMany :
-				ParameterValueArity.One;
+				isCount ? ValueArity.Zero :
+				isBool ? ValueArity.ZeroOrOne :
+				isList ? ValueArity.ZeroOrMany :
+				isFlags ? ValueArity.OneOrMany :
+				ValueArity.One;
 
 #if !NETSTANDARD1_6
 			var typeConverterAttribute = parameterInfo.GetCustomAttributes(typeof(System.ComponentModel.TypeConverterAttribute), inherit: true).FirstOrDefault();

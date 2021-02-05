@@ -1,6 +1,6 @@
 ﻿namespace deniszykov.CommandLine.Binding
 {
-	public enum ParameterValueArity
+	public enum ValueArity
 	{
 		Zero,
 		ZeroOrOne,

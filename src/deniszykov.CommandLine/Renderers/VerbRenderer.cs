@@ -48,7 +48,7 @@ namespace deniszykov.CommandLine.Renderers
 			var namePrefix = GetNamePrefix(enumerable, this.VerbNameMatchingMode);
 			foreach (var verb in verbSet.Verbs)
 			{
-				if (verb.Hidden)
+				if (verb.IsHidden)
 				{
 					continue;
 				}
@@ -146,7 +146,7 @@ namespace deniszykov.CommandLine.Renderers
 			writer.KeepIndent();
 			foreach (var verb in verbSet.Verbs)
 			{
-				if (verb.Hidden)
+				if (verb.IsHidden)
 				{
 					continue;
 				}
@@ -177,7 +177,7 @@ namespace deniszykov.CommandLine.Renderers
 			writer.KeepIndent();
 			foreach (var verb in verbSet.Verbs)
 			{
-				if (verb.Hidden)
+				if (verb.IsHidden)
 				{
 					continue;
 				}
@@ -209,21 +209,21 @@ namespace deniszykov.CommandLine.Renderers
 			parameterUsage.Append(this.GetPrefixedOptionName(parameter.Name));
 			switch (parameter.ValueArity)
 			{
-				case ParameterValueArity.Zero:
+				case ValueArity.Zero:
 					break;
-				case ParameterValueArity.ZeroOrOne:
-				case ParameterValueArity.ZeroOrMany:
-				case ParameterValueArity.One:
-				case ParameterValueArity.OneOrMany:
+				case ValueArity.ZeroOrOne:
+				case ValueArity.ZeroOrMany:
+				case ValueArity.One:
+				case ValueArity.OneOrMany:
 					parameterUsage.Append(this.OptionArgumentSplitter);
-					if (parameter.ValueArity == ParameterValueArity.ZeroOrMany || parameter.ValueArity == ParameterValueArity.ZeroOrOne)
+					if (parameter.ValueArity == ValueArity.ZeroOrMany || parameter.ValueArity == ValueArity.ZeroOrOne)
 					{
 						parameterUsage.Append('[');
 					}
 					parameterUsage.Append("<");
 					parameterUsage.Append(GetParameterTypeFriendlyName(parameter).ToUpperInvariant());
 					parameterUsage.Append(">");
-					if (parameter.ValueArity == ParameterValueArity.ZeroOrMany || parameter.ValueArity == ParameterValueArity.ZeroOrOne)
+					if (parameter.ValueArity == ValueArity.ZeroOrMany || parameter.ValueArity == ValueArity.ZeroOrOne)
 					{
 						parameterUsage.Append(']');
 					}

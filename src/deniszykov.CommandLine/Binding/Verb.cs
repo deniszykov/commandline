@@ -23,7 +23,7 @@ namespace deniszykov.CommandLine.Binding
 		[NotNull]
 		public readonly Func<object, object[], int> Invoker;
 
-		public bool Hidden;
+		public readonly bool IsHidden;
 
 		public Verb([NotNull] MethodInfo method)
 		{
@@ -31,7 +31,7 @@ namespace deniszykov.CommandLine.Binding
 
 			this.Name = method.GetName() ?? method.Name;
 			this.Description = method.GetDescription() ?? string.Empty;
-			this.Hidden = method.IsHidden();
+			this.IsHidden = method.IsHidden();
 
 			var boundParameters = new List<VerbParameter>();
 			var serviceParameters = new List<VerbParameter>();

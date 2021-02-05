@@ -96,7 +96,6 @@ namespace deniszykov.CommandLine.Binding
 			}
 		}
 
-
 		private VerbBindingResult FindAndBindVerb(IReadOnlyCollection<Verb> verbs, string verbName, string[] arguments)
 		{
 			if (verbs == null) throw new ArgumentNullException(nameof(verbs));
@@ -111,7 +110,7 @@ namespace deniszykov.CommandLine.Binding
 					continue;
 				}
 
-				var getOptionArity = new Func<string, ParameterValueArity?>(optionName => verb.FindBoundParameter(optionName, optionName.Length > 1 ? LongOptionNameMatchingMode : ShortOptionNameMatchingMode)?.ValueArity);
+				var getOptionArity = new Func<string, ValueArity?>(optionName => verb.FindBoundParameter(optionName, optionName.Length > 1 ? LongOptionNameMatchingMode : ShortOptionNameMatchingMode)?.ValueArity);
 				var parsedArguments = this.parser.Parse(arguments, getOptionArity);
 				var boundParameters = verb.BoundParameters;
 				var serviceParameters = verb.ServiceParameters;
@@ -239,14 +238,14 @@ namespace deniszykov.CommandLine.Binding
 				{
 					throw new InvalidOperationException("Missing required option.");
 				}
+
+				if (value != null && value.GetType() != parameter.ValueType.AsType())
+					value = this.typeConversionProvider.Convert(value.GetType(), parameter.ValueType.AsType(), value);
 			}
 			catch (Exception bindingError)
 			{
 				return new ParameterBindingResult(parameter, bindingError, value);
 			}
-
-			if (value != null && value.GetType() != parameter.ValueType.AsType())
-				value = this.typeConversionProvider.Convert(value.GetType(), parameter.ValueType.AsType(), value);
 
 			return new ParameterBindingResult(parameter, null, value);
 		}
@@ -296,15 +295,15 @@ namespace deniszykov.CommandLine.Binding
 			}
 		}
 
-		private static bool IsArityMatching(ParameterValueArity parameterValueArity, int rawCount)
+		private static bool IsArityMatching(ValueArity parameterValueArity, int rawCount)
 		{
 			switch (parameterValueArity)
 			{
-				case ParameterValueArity.Zero: return rawCount == 0;
-				case ParameterValueArity.ZeroOrOne: return rawCount <= 1;
-				case ParameterValueArity.One: return rawCount == 1;
-				case ParameterValueArity.ZeroOrMany: return rawCount >= 0;
-				case ParameterValueArity.OneOrMany: return rawCount >= 1;
+				case ValueArity.Zero: return rawCount == 0;
+				case ValueArity.ZeroOrOne: return rawCount <= 1;
+				case ValueArity.One: return rawCount == 1;
+				case ValueArity.ZeroOrMany: return rawCount >= 0;
+				case ValueArity.OneOrMany: return rawCount >= 1;
 				default: throw new ArgumentOutOfRangeException(nameof(parameterValueArity), parameterValueArity, null);
 			}
 		}
