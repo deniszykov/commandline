@@ -38,7 +38,7 @@ namespace deniszykov.CommandLine.Annotations
 
 			var isServiceDependency = parameterInfo.GetCustomAttributes(typeof(FromServiceAttribute), true).FirstOrDefault() is FromServiceAttribute;
 			return isServiceDependency ||
-				parameterInfo.ParameterType == typeof(CommandExecutionContext) ||
+				parameterInfo.ParameterType == typeof(VerbExecutionContext) ||
 				parameterInfo.ParameterType == typeof(CancellationToken);
 		}
 		[CanBeNull]
@@ -46,10 +46,10 @@ namespace deniszykov.CommandLine.Annotations
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
 
-			if (customAttributeProvider.GetCustomAttributes(typeof(NameAttribute), true).FirstOrDefault() is NameAttribute commandAttribute &&
-				!string.IsNullOrEmpty(commandAttribute.Name))
+			if (customAttributeProvider.GetCustomAttributes(typeof(NameAttribute), true).FirstOrDefault() is NameAttribute nameAttribute &&
+				!string.IsNullOrEmpty(nameAttribute.Name))
 			{
-				return commandAttribute.Name;
+				return nameAttribute.Name;
 			}
 			return null;
 		}
@@ -58,10 +58,10 @@ namespace deniszykov.CommandLine.Annotations
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
 
-			if (customAttributeProvider.GetCustomAttributes(typeof(AliasAttribute), true).FirstOrDefault() is AliasAttribute commandAttribute &&
-				!string.IsNullOrEmpty(commandAttribute.Alias))
+			if (customAttributeProvider.GetCustomAttributes(typeof(AliasAttribute), true).FirstOrDefault() is AliasAttribute aliasAttribute &&
+				!string.IsNullOrEmpty(aliasAttribute.Alias))
 			{
-				return commandAttribute.Alias;
+				return aliasAttribute.Alias;
 			}
 			return null;
 		}

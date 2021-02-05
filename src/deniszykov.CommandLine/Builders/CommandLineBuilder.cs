@@ -10,22 +10,22 @@ namespace deniszykov.CommandLine.Builders
 	internal sealed class CommandLineBuilder : ICommandLineBuilder
 	{
 		private readonly Dictionary<object, object> properties;
-		private readonly string[] commandLineArgs;
+		private readonly string[] arguments;
 		private readonly CommandLineConfiguration configuration;
-		private ICommandsBuilder commandsBuilder;
+		private IVerbSetBuilder verbSetBuilder;
 
 		private Func<IServiceProvider> serviceProviderFactory;
 
 		/// <inheritdoc />
 		public IDictionary<object, object> Properties => this.properties;
 
-		public CommandLineBuilder(string[] commandLineArgs)
+		public CommandLineBuilder(string[] arguments)
 		{
-			if (commandLineArgs == null) throw new ArgumentNullException(nameof(commandLineArgs));
+			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
 			this.properties = new Dictionary<object, object>();
-			this.commandLineArgs = commandLineArgs;
-			this.commandsBuilder = default(ICommandsBuilder);
+			this.arguments = arguments;
+			this.verbSetBuilder = default(IVerbSetBuilder);
 			this.configuration = new CommandLineConfiguration();
 			this.serviceProviderFactory = this.CreateDefaultServiceProviderFactory;
 		}
@@ -47,28 +47,28 @@ namespace deniszykov.CommandLine.Builders
 			return this;
 		}
 		/// <inheritdoc />
-		public ICommandLineBuilder Use<CommandListT>()
+		public ICommandLineBuilder Use<VerbSetT>()
 		{
-			var builder = new CommandsFromTypeBuilder(typeof(CommandListT).GetTypeInfo());
-			this.commandsBuilder = builder;
+			var builder = new VerbsFromTypeBuilder(typeof(VerbSetT).GetTypeInfo());
+			this.verbSetBuilder = builder;
 			return this;
 		}
 		/// <inheritdoc />
-		public ICommandLineBuilder Use(Type commandListType)
+		public ICommandLineBuilder Use(Type verSetType)
 		{
-			if (commandListType == null) throw new ArgumentNullException(nameof(commandListType));
+			if (verSetType == null) throw new ArgumentNullException(nameof(verSetType));
 
-			var builder = new CommandsFromTypeBuilder(commandListType.GetTypeInfo());
-			this.commandsBuilder = builder;
+			var builder = new VerbsFromTypeBuilder(verSetType.GetTypeInfo());
+			this.verbSetBuilder = builder;
 			return this;
 		}
 		/// <inheritdoc />
-		public ICommandLineBuilder Use(Func<ICommandsBuilder> buildDelegate)
+		public ICommandLineBuilder Use(Func<IVerbSetBuilder> buildDelegate)
 		{
 			if (buildDelegate == null) throw new ArgumentNullException(nameof(buildDelegate));
 
 			var builder = buildDelegate();
-			this.commandsBuilder = builder;
+			this.verbSetBuilder = builder;
 			return this;
 		}
 
@@ -79,8 +79,8 @@ namespace deniszykov.CommandLine.Builders
 			var console = (IConsole)serviceProvider.GetService(typeof(IConsole)) ?? new DefaultConsole(this.configuration.HookConsoleCancelKeyPress);
 
 			var commandLine = new CommandLine(
-				this.commandsBuilder,
-				this.commandLineArgs,
+				this.verbSetBuilder,
+				this.arguments,
 				this.configuration,
 				typeConversionProvider,
 				console,
@@ -97,9 +97,9 @@ namespace deniszykov.CommandLine.Builders
 		}
 
 		/// <inheritdoc />
-		public int Describe(string commandToDescribe)
+		public int Describe(string verbToDescribe)
 		{
-			return this.Build().Describe(commandToDescribe);
+			return this.Build().Describe(verbToDescribe);
 		}
 
 		private IServiceProvider CreateDefaultServiceProviderFactory()

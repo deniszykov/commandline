@@ -121,20 +121,20 @@ namespace deniszykov.CommandLine.Tests
 		public class DescribeTestApi
 		{
 
-			[Description("This is test command description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet turpis at ex malesuada facilisis sed ac eros. Suspendisse pretium congue quam non dapibus. Pellentesque vel consequat mi. Vestibulum id bibendum augue, a pellentesque erat. Integer vel tempor lacus. Duis ut sapien non nulla interdum cursus. Maecenas vel laoreet lectus. ")]
-			public static int TestCommand()
+			[Description("This is test verb description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet turpis at ex malesuada facilisis sed ac eros. Suspendisse pretium congue quam non dapibus. Pellentesque vel consequat mi. Vestibulum id bibendum augue, a pellentesque erat. Integer vel tempor lacus. Duis ut sapien non nulla interdum cursus. Maecenas vel laoreet lectus. ")]
+			public static int TestVerb()
 			{
 				return 0;
 			}
-			[Description("This is test command description.")]
-			public static int TestCommand(int param1)
+			[Description("This is test verb description.")]
+			public static int TestVerb(int param1)
 			{
 				Assert.Equal(1, param1);
 				return 0;
 			}
 
-			[Description("This is test command with multiple params description.")]
-			public static int MultiparamCommand(
+			[Description("This is test verb with multiple params description.")]
+			public static int MultiparamVerb(
 				[Description("This is parameter1 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet turpis at ex malesuada facilisis sed ac eros.")]
 				[Alias("p")]
 				[Name("param-renamed")]
@@ -156,8 +156,8 @@ namespace deniszykov.CommandLine.Tests
 				return 0;
 			}
 
-			[Description("This is hidden command.")]
-			public static int HiddenCommand()
+			[Description("This is hidden verb.")]
+			public static int HiddenVerb()
 			{
 				return 0;
 			}
@@ -203,14 +203,14 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
 		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
 		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
-		public void BindTest(string[] commandLineArguments, string command)
+		public void BindTest(string[] arguments, string verbName)
 		{
-			var exitCode = CommandLine.CreateFromArguments(commandLineArguments)
+			var exitCode = CommandLine.CreateFromArguments(arguments)
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
 					config.DescribeOnBindFailure = false;
-					config.DefaultCommandName = command;
+					config.DefaultVerbName = verbName;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -226,16 +226,16 @@ namespace deniszykov.CommandLine.Tests
 		}
 
 		[Theory]
-		[InlineData(nameof(DescribeTestApi.TestCommand))]
-		[InlineData(nameof(DescribeTestApi.MultiparamCommand))]
-		public void DescribeTest(string command)
+		[InlineData(nameof(DescribeTestApi.TestVerb))]
+		[InlineData(nameof(DescribeTestApi.MultiparamVerb))]
+		public void DescribeTest(string verbName)
 		{
-			var exitCode = CommandLine.CreateFromArguments(command)
+			var exitCode = CommandLine.CreateFromArguments(verbName)
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
 					config.DescribeOnBindFailure = false;
-					config.DefaultCommandName = command;
+					config.DefaultVerbName = verbName;
 					config.DescribeExitCode = 0;
 				})
 				.UseServiceProvider(() =>
@@ -246,7 +246,7 @@ namespace deniszykov.CommandLine.Tests
 					return services;
 				})
 				.Use<DescribeTestApi>()
-				.Describe(command);
+				.Describe(verbName);
 
 			Assert.Equal(0, exitCode);
 		}

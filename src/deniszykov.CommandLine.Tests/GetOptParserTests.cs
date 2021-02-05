@@ -67,8 +67,8 @@ namespace deniszykov.CommandLine.Tests
 			configuration.SetToDefault();
 
 			var parser = new GetOptParser(configuration);
-			var command = new CommandSet(typeof(TestApi).GetTypeInfo()).FindCommand(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ParameterValueArity?>(n => command.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
+			var getOptionArity = new Func<string, ParameterValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -96,8 +96,8 @@ namespace deniszykov.CommandLine.Tests
 			configuration.SetToDefault();
 
 			var parser = new GetOptParser(configuration);
-			var command = new CommandSet(typeof(TestApi).GetTypeInfo()).FindCommand(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ParameterValueArity?>(n => command.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
+			var getOptionArity = new Func<string, ParameterValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -131,8 +131,8 @@ namespace deniszykov.CommandLine.Tests
 			configuration.TreatUnknownOptionsAsValues = true;
 
 			var parser = new GetOptParser(configuration);
-			var command = new CommandSet(typeof(TestApi).GetTypeInfo()).FindCommand(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ParameterValueArity?>(n => command.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
+			var getOptionArity = new Func<string, ParameterValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -155,8 +155,8 @@ namespace deniszykov.CommandLine.Tests
 			configuration.SetToDefault();
 
 			var parser = new GetOptParser(configuration);
-			var command = new CommandSet(typeof(TestApi).GetTypeInfo()).FindCommand(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ParameterValueArity?>(n => command.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
+			var getOptionArity = new Func<string, ParameterValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 

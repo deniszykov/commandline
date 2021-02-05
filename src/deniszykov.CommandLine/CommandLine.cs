@@ -10,17 +10,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
-using deniszykov.CommandLine.Annotations;
 using deniszykov.CommandLine.Binding;
 using deniszykov.CommandLine.Builders;
-using deniszykov.CommandLine.Parsing;
 using deniszykov.CommandLine.Renderers;
 using deniszykov.TypeConversion;
 using JetBrains.Annotations;
@@ -34,27 +26,27 @@ namespace deniszykov.CommandLine
 	public sealed class CommandLine
 	{
 		/// <summary>
-		/// Exit code used when unhandled .NET Exception occurred during command execution.
+		/// Exit code used when unhandled .NET Exception occurred during verb execution.
 		/// </summary>
 		public const int DotNetExceptionExitCode = -2147023895;
 		/// <summary>
-		/// Method name used as placeholder for missing command name in exception text and <see cref="CommandBindingResult.CommandName"/> property.
+		/// Method name used as placeholder for missing verb name in exception text and <see cref="VerbBindingResult.VerbName"/> property.
 		/// </summary>
-		public const string UnknownMethodName = "<no name specified>";
+		public const string UnknownVerbName = "<no name specified>";
 
-		[NotNull] private readonly ICommandsBuilder commandsBuilder;
-		[NotNull] private readonly string[] commandLineArguments;
+		[NotNull] private readonly IVerbSetBuilder verbSetBuilder;
+		[NotNull] private readonly string[] arguments;
 		[NotNull] private readonly CommandLineConfiguration configuration;
 		[NotNull] private readonly IDictionary<object, object> properties;
 		[NotNull] private readonly IConsole console;
 		[NotNull] private readonly IServiceProvider serviceProvider;
-		[NotNull] private readonly CommandBinder commandBinder;
-		[NotNull] private readonly CommandRenderer commandRenderer;
+		[NotNull] private readonly VerbBinder verbBinder;
+		[NotNull] private readonly VerbRenderer verbRenderer;
 
 
 		public CommandLine(
-			[NotNull] ICommandsBuilder commandsBuilder,
-			[NotNull] string[] commandLineArguments,
+			[NotNull] IVerbSetBuilder verbSetBuilder,
+			[NotNull] string[] arguments,
 			[NotNull] CommandLineConfiguration configuration,
 			[NotNull] ITypeConversionProvider typeConversionProvider,
 			[NotNull] IConsole console,
@@ -62,45 +54,44 @@ namespace deniszykov.CommandLine
 			[NotNull] IDictionary<object, object> properties
 			)
 		{
-			if (commandsBuilder == null) throw new ArgumentNullException(nameof(commandsBuilder));
-			if (commandLineArguments == null) throw new ArgumentNullException(nameof(commandLineArguments));
+			if (verbSetBuilder == null) throw new ArgumentNullException(nameof(verbSetBuilder));
+			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 			if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 			if (typeConversionProvider == null) throw new ArgumentNullException(nameof(typeConversionProvider));
 			if (console == null) throw new ArgumentNullException(nameof(console));
 			if (properties == null) throw new ArgumentNullException(nameof(properties));
 
-			this.commandsBuilder = commandsBuilder;
-			this.commandLineArguments = commandLineArguments;
+			this.verbSetBuilder = verbSetBuilder;
+			this.arguments = arguments;
 			this.configuration = configuration;
 			this.console = console;
 			this.serviceProvider = serviceProvider;
 			this.properties = properties;
-			var parser = new GetOptParser(configuration);
-			this.commandBinder = new CommandBinder(configuration, typeConversionProvider, parser, this.serviceProvider);
-			this.commandRenderer = new CommandRenderer(configuration, console, typeConversionProvider);
+			this.verbBinder = new VerbBinder(configuration, typeConversionProvider, this.serviceProvider);
+			this.verbRenderer = new VerbRenderer(configuration, console, typeConversionProvider);
 		}
 
 		/// <summary>
-		/// Run command on configured type and return exit code of executed command.
+		/// Run verb on configured type and return exit code of executed verb.
 		/// </summary>
-		/// <returns>Exit code of command-or-<see cref="DotNetExceptionExitCode"/> if exception happened-or-<see cref="CommandLineConfiguration.BindFailureExitCode"/> if command not found and description is shown.</returns>
+		/// <returns>Exit code of verb-or-<see cref="DotNetExceptionExitCode"/> if exception happened-or-<see cref="CommandLineConfiguration.BindFailureExitCode"/> if verb not found and description is shown.</returns>
 		public int Run()
 		{
 			try
 			{
-				var commandSet = this.commandsBuilder.Build();
-				var bindResult = this.commandBinder.Bind(commandSet, this.configuration.DefaultCommandName, this.commandLineArguments);
+				var verbSet = this.verbSetBuilder.Build();
+				var bindResult = this.verbBinder.Bind(verbSet, this.configuration.DefaultVerbName, this.arguments);
 				if (bindResult.IsSuccess)
 				{
 					// prepare scoped services
-					var context = new CommandExecutionContext(this.commandsBuilder, bindResult.Command, this.commandLineArguments,
+					var context = new VerbExecutionContext(this.verbSetBuilder, bindResult.Verb, this.arguments,
 						this.serviceProvider, this.configuration, this.properties);
 					var cancellationToken = this.console.InterruptToken;
 
-					// resolve service parameters on command
-					this.commandBinder.ProvideContext(bindResult, context, cancellationToken);
+					// resolve service parameters on verb
+					this.verbBinder.ProvideContext(bindResult, context, cancellationToken);
 
-					// execute command
+					// execute verb
 					return bindResult.Invoke();
 				}
 
@@ -116,28 +107,28 @@ namespace deniszykov.CommandLine
 			}
 		}
 		/// <summary>
-		/// Write description of available commands on type into <see cref="IConsole.WriteLine"/>-or-Write detailed description of <paramref name="commandToDescribe"/> into <see cref="IConsole.WriteLine"/>.
+		/// Write description of available verbds on type into <see cref="IConsole.WriteLine"/>-or-Write detailed description of <paramref name="verbToDescribe"/> into <see cref="IConsole.WriteLine"/>.
 		/// </summary>
-		/// <param name="commandToDescribe">Optional command name for detailed description.</param>
+		/// <param name="verbToDescribe">Optional verb name for detailed description.</param>
 		/// <returns><see cref="CommandLineConfiguration.DescribeExitCode"/></returns>
-		public int Describe(string commandToDescribe = null)
+		public int Describe(string verbToDescribe = null)
 		{
 			try
 			{
-				var commandSet = this.commandsBuilder.Build();
-				var command = commandSet.Commands.FirstOrDefault(otherCommand => string.Equals(otherCommand.Name, commandToDescribe, StringComparison.OrdinalIgnoreCase));
-				var commandChain = this.properties.GetCommandChain().ToList();
-				if (command != null)
+				var verbSet = this.verbSetBuilder.Build();
+				var verb = verbSet.Verbs.FirstOrDefault(otherVerb => string.Equals(otherVerb.Name, verbToDescribe, StringComparison.OrdinalIgnoreCase));
+				var verbChain = this.properties.GetVerbChain().ToList();
+				if (verb != null)
 				{
-					this.commandRenderer.Render(commandSet, command, commandChain);
+					this.verbRenderer.Render(verbSet, verb, verbChain);
 				}
-				else if (string.IsNullOrEmpty(commandToDescribe) == false)
+				else if (string.IsNullOrEmpty(verbToDescribe) == false)
 				{
-					this.commandRenderer.RenderNotFound(commandSet, commandToDescribe, commandChain);
+					this.verbRenderer.RenderNotFound(verbSet, verbToDescribe, verbChain);
 				}
 				else
 				{
-					this.commandRenderer.RenderList(commandSet, commandChain, includeTypeHelpText: commandChain.Count == 0);
+					this.verbRenderer.RenderList(verbSet, verbChain, includeTypeHelpText: verbChain.Count == 0);
 				}
 				return this.configuration.DescribeExitCode;
 			}
@@ -151,23 +142,23 @@ namespace deniszykov.CommandLine
 		}
 
 		[NotNull]
-		public static ICommandLineBuilder CreateFromArguments([NotNull, ItemNotNull] params string[] commandLineArgs)
+		public static ICommandLineBuilder CreateFromArguments([NotNull, ItemNotNull] params string[] arguments)
 		{
-			if (commandLineArgs == null) throw new ArgumentNullException(nameof(commandLineArgs));
+			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
-			return new CommandLineBuilder(commandLineArgs).Configure(config =>
+			return new CommandLineBuilder(arguments).Configure(config =>
 			{
 				config.SetToDefault();
 			});
 		}
 
 		[NotNull]
-		public static ICommandLineBuilder CreateFromContext([NotNull] CommandExecutionContext context)
+		public static ICommandLineBuilder CreateFromContext([NotNull] VerbExecutionContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
 
 			var newArguments = context.Arguments;
-			if (context.Arguments.Length > 0 && string.Equals(context.Arguments[0], context.Command.Name, StringComparison.OrdinalIgnoreCase))
+			if (context.Arguments.Length > 0 && string.Equals(context.Arguments[0], context.Verb.Name, StringComparison.OrdinalIgnoreCase))
 			{
 				newArguments = newArguments.Skip(1).ToArray();
 			}
@@ -186,16 +177,16 @@ namespace deniszykov.CommandLine
 				commandLineBuilder.Properties[contextProperty.Key] = contextProperty.Value;
 			}
 
-			// add current command to chain
-			commandLineBuilder.Properties.AddCommandChain(context.Command);
+			// add current verb to chain
+			commandLineBuilder.Properties.AddVertToChain(context.Verb);
 
-			// copy command set
-			commandLineBuilder.Use(() => context.CommandsBuilder);
+			// copy verb set
+			commandLineBuilder.Use(() => context.VerbSetBuilder);
 
 			return commandLineBuilder;
 		}
 
-		private void PrintOrThrowNotFoundException(CommandBindingResult bindResult)
+		private void PrintOrThrowNotFoundException(VerbBindingResult bindResult)
 		{
 			var bestMatchMethod = (from bindingKeyValue in bindResult.FailedMethodBindings
 								   let parameters = bindingKeyValue.Value
@@ -206,19 +197,19 @@ namespace deniszykov.CommandLine
 			var error = default(CommandLineException);
 			if (bestMatchMethod == null)
 			{
-				error = CommandLineException.CommandNotFound(bindResult.CommandName);
+				error = CommandLineException.VerbNotFound(bindResult.VerbName);
 			}
 			else
 			{
-				error = CommandLineException.InvalidCommandParameters(bestMatchMethod, bindResult.FailedMethodBindings[bestMatchMethod]);
+				error = CommandLineException.InvalidVerbParameters(bestMatchMethod, bindResult.FailedMethodBindings[bestMatchMethod]);
 			}
 
 			if (this.configuration.DescribeOnBindFailure)
 			{
-				if (bindResult.CommandName == UnknownMethodName)
+				if (bindResult.VerbName == UnknownVerbName)
 				{
 					this.console.WriteLine(" Error:");
-					this.console.WriteLine("  No command is specified.");
+					this.console.WriteLine("  No verb is specified.");
 					this.console.WriteLine();
 
 					if (this.configuration.DetailedBindFailureMessage)
@@ -232,7 +223,7 @@ namespace deniszykov.CommandLine
 				else if (bestMatchMethod != null)
 				{
 					this.console.WriteLine(" Error:");
-					this.console.WriteLine($"  Invalid parameters specified for '{bindResult.CommandName}' command.");
+					this.console.WriteLine($"  Invalid parameters specified for '{bindResult.VerbName}' verb.");
 					this.console.WriteLine();
 
 					if (this.configuration.DetailedBindFailureMessage)
@@ -241,7 +232,7 @@ namespace deniszykov.CommandLine
 						this.console.WriteErrorLine();
 					}
 
-					this.Describe(bindResult.CommandName);
+					this.Describe(bindResult.VerbName);
 				}
 				else
 				{

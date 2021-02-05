@@ -9,37 +9,37 @@ namespace deniszykov.CommandLine
 	internal static class PropertyExtensions
 	{
 		/// <summary>
-		/// Name of property with list of preceding commands of current <see cref="ICommandsBuilder"/>. Type is array of <see cref="Command"/>.
+		/// Name of property with list of preceding verbs of current <see cref="IVerbSetBuilder"/>. Type is array of <see cref="Verb"/>.
 		/// </summary>
-		public const string CommandChainPropertyName = "__command_chain__";
+		public const string VerbChainPropertyName = "__verb_chain__";
 
 		[NotNull, ItemNotNull]
-		public static IEnumerable<Command> GetCommandChain([NotNull] this IDictionary<object, object> properties)
+		public static IEnumerable<Verb> GetVerbChain([NotNull] this IDictionary<object, object> properties)
 		{
 			if (properties == null) throw new ArgumentNullException(nameof(properties));
 
-			if (properties.TryGetValue(CommandChainPropertyName, out var commandChainObj) &&
-				commandChainObj is Command[] commandChain)
+			if (properties.TryGetValue(VerbChainPropertyName, out var verbChainObj) &&
+				verbChainObj is Verb[] verbChain)
 			{
-				return commandChain;
+				return verbChain;
 			}
 			else
 			{
-				return Enumerable.Empty<Command>();
+				return Enumerable.Empty<Verb>();
 			}
 		}
-		public static void AddCommandChain([NotNull] this IDictionary<object, object> properties, [NotNull] Command command)
+		public static void AddVertToChain([NotNull] this IDictionary<object, object> properties, [NotNull] Verb verb)
 		{
 			if (properties == null) throw new ArgumentNullException(nameof(properties));
-			if (command == null) throw new ArgumentNullException(nameof(command));
+			if (verb == null) throw new ArgumentNullException(nameof(verb));
 
-			var commandChain = properties.GetCommandChain().ToList();
-			if (commandChain.Contains(command))
+			var verbChain = properties.GetVerbChain().ToList();
+			if (verbChain.Contains(verb))
 			{
-				throw CommandLineException.RecursiveCommandChain(commandChain.Select(commandInChain => commandInChain.Name), command.Name);
+				throw CommandLineException.RecursiveVerbChain(verbChain.Select(otherVerb => otherVerb.Name), verb.Name);
 			}
-			commandChain.Add(command);
-			properties[CommandChainPropertyName] = commandChain.ToArray();
+			verbChain.Add(verb);
+			properties[VerbChainPropertyName] = verbChain.ToArray();
 		}
 	}
 }

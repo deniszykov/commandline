@@ -10,17 +10,17 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Renderers
 {
-	internal sealed class CommandRenderer
+	internal sealed class VerbRenderer
 	{
 		[NotNull] private readonly IConsole console;
 		[NotNull] private readonly ITypeConversionProvider typeConversionProvider;
 
-		public StringComparison CommandNameMatchingMode { get; }
+		public StringComparison VerbNameMatchingMode { get; }
 		public string ShortOptionNamePrefix { get; }
 		public string LongOptionNamePrefix { get; }
 		public char OptionArgumentSplitter { get; }
 
-		public CommandRenderer(
+		public VerbRenderer(
 			[NotNull] CommandLineConfiguration configuration,
 			[NotNull] IConsole console,
 			[NotNull] ITypeConversionProvider typeConversionProvider)
@@ -31,60 +31,60 @@ namespace deniszykov.CommandLine.Renderers
 
 			this.console = console;
 			this.typeConversionProvider = typeConversionProvider;
-			this.CommandNameMatchingMode = configuration.CommandNameMatchingMode;
+			this.VerbNameMatchingMode = configuration.VerbNameMatchingMode;
 			this.ShortOptionNamePrefix = configuration.ShortOptionNamePrefixes.First();
 			this.LongOptionNamePrefix = configuration.LongOptionNamePrefixes.First();
 			this.OptionArgumentSplitter = configuration.OptionArgumentSplitters.First();
 		}
 
-		public void Render(CommandSet commandSet, Command foundCommand, IEnumerable<Command> enumerable)
+		public void Render(VerbSet verbSet, Verb foundVerb, IEnumerable<Verb> enumerable)
 		{
-			if (foundCommand == null) throw new ArgumentNullException(nameof(foundCommand));
+			if (foundVerb == null) throw new ArgumentNullException(nameof(foundVerb));
 			if (enumerable == null) throw new ArgumentNullException(nameof(enumerable));
 
 			var writer = new IndentedWriter(Environment.NewLine);
 
 
-			var namePrefix = GetNamePrefix(enumerable, this.CommandNameMatchingMode);
-			foreach (var command in commandSet.Commands)
+			var namePrefix = GetNamePrefix(enumerable, this.VerbNameMatchingMode);
+			foreach (var verb in verbSet.Verbs)
 			{
-				if (command.Hidden)
+				if (verb.Hidden)
 				{
 					continue;
 				}
 
-				if (string.Equals(command.Name, foundCommand.Name, this.CommandNameMatchingMode) == false)
+				if (string.Equals(verb.Name, foundVerb.Name, this.VerbNameMatchingMode) == false)
 					continue;
 
 				writer.WriteLine("Usage:");
 				writer.Write("  ");
 				writer.KeepIndent();
-				writer.Write($"{namePrefix}{GetCommandName(command.Name, this.CommandNameMatchingMode)} ");
+				writer.Write($"{namePrefix}{GetCommandName(verb.Name, this.VerbNameMatchingMode)} ");
 				writer.KeepIndent();
-				var parameterUsage = string.Join(" ", command.GetNonHiddenBoundParameter().Select(this.GetParameterUsage));
+				var parameterUsage = string.Join(" ", verb.GetNonHiddenBoundParameter().Select(this.GetParameterUsage));
 				writer.WriteLine(parameterUsage);
 				writer.RestoreIndent();
 				writer.WriteLine();
 				writer.RestoreIndent();
 
-				if (!string.IsNullOrEmpty(command.Description))
+				if (!string.IsNullOrEmpty(verb.Description))
 				{
 					writer.Write("  ");
 					writer.KeepIndent();
 
-					writer.WriteLine(command.Description);
+					writer.WriteLine(verb.Description);
 					writer.WriteLine();
 
 					writer.RestoreIndent();
 				}
 
-				var maxNameLength = command.GetNonHiddenBoundParameter().Any() ?
-					command.GetNonHiddenBoundParameter().Max(param => this.GetParameterNames(param).Length) : 0;
+				var maxNameLength = verb.GetNonHiddenBoundParameter().Any() ?
+					verb.GetNonHiddenBoundParameter().Max(param => this.GetParameterNames(param).Length) : 0;
 
 				writer.WriteLine("Options:");
 				writer.Write("  ");
 				writer.KeepIndent();
-				foreach (var parameter in command.BoundParameters)
+				foreach (var parameter in verb.BoundParameters)
 				{
 					if (parameter.IsHidden)
 					{
@@ -128,7 +128,7 @@ namespace deniszykov.CommandLine.Renderers
 
 			this.console.WriteLine(writer);
 		}
-		public void RenderNotFound(CommandSet commandSet, string commandToDescribe, IEnumerable<Command> enumerable)
+		public void RenderNotFound(VerbSet verbSet, string verbToDescribe, IEnumerable<Verb> enumerable)
 		{
 			var writer = new IndentedWriter(Environment.NewLine);
 			writer.Write(" ");
@@ -136,29 +136,29 @@ namespace deniszykov.CommandLine.Renderers
 
 			writer.WriteLine("Error:");
 			writer.Write(" ");
-			writer.WriteLine($"Command '{commandToDescribe}' is not found.");
+			writer.WriteLine($"Command '{verbToDescribe}' is not found.");
 			writer.RestoreIndent();
 
-			var namePrefix = GetNamePrefix(enumerable, this.CommandNameMatchingMode);
+			var namePrefix = GetNamePrefix(enumerable, this.VerbNameMatchingMode);
 
-			writer.WriteLine("Available commands:");
+			writer.WriteLine("Available verbs:");
 			writer.Write(" ");
 			writer.KeepIndent();
-			foreach (var command in commandSet.Commands)
+			foreach (var verb in verbSet.Verbs)
 			{
-				if (command.Hidden)
+				if (verb.Hidden)
 				{
 					continue;
 				}
 
-				writer.WriteLine($"{namePrefix}{GetCommandName(command.Name, this.CommandNameMatchingMode)}");
+				writer.WriteLine($"{namePrefix}{GetCommandName(verb.Name, this.VerbNameMatchingMode)}");
 			}
 			writer.RestoreIndent();
 			writer.RestoreIndent();
 
 			this.console.WriteLine(writer);
 		}
-		public void RenderList(CommandSet commandSet, IEnumerable<Command> enumerable, bool includeTypeHelpText)
+		public void RenderList(VerbSet verbSet, IEnumerable<Verb> enumerable, bool includeTypeHelpText)
 		{
 			var writer = new IndentedWriter(Environment.NewLine);
 
@@ -167,24 +167,24 @@ namespace deniszykov.CommandLine.Renderers
 
 			if (includeTypeHelpText)
 			{
-				writer.WriteLine(commandSet.Description);
+				writer.WriteLine(verbSet.Description);
 				writer.WriteLine();
 			}
-			writer.WriteLine("Commands:");
+			writer.WriteLine("Verbs:");
 
-			var namePrefix = GetNamePrefix(enumerable, this.CommandNameMatchingMode);
+			var namePrefix = GetNamePrefix(enumerable, this.VerbNameMatchingMode);
 			writer.Write("  ");
 			writer.KeepIndent();
-			foreach (var command in commandSet.Commands)
+			foreach (var verb in verbSet.Verbs)
 			{
-				if (command.Hidden)
+				if (verb.Hidden)
 				{
 					continue;
 				}
 
-				writer.Write($"{namePrefix}{GetCommandName(command.Name, this.CommandNameMatchingMode)} ");
+				writer.Write($"{namePrefix}{GetCommandName(verb.Name, this.VerbNameMatchingMode)} ");
 				writer.KeepIndent();
-				writer.WriteLine(command.Description);
+				writer.WriteLine(verb.Description);
 				writer.RestoreIndent();
 			}
 			writer.RestoreIndent();
@@ -194,7 +194,7 @@ namespace deniszykov.CommandLine.Renderers
 		}
 
 		[NotNull]
-		private string GetParameterUsage([NotNull] CommandParameter parameter)
+		private string GetParameterUsage([NotNull] VerbParameter parameter)
 		{
 			if (parameter.IsValueCollector)
 			{
@@ -238,7 +238,7 @@ namespace deniszykov.CommandLine.Renderers
 			return parameterUsage.ToString();
 		}
 		[NotNull]
-		private string GetParameterNames([NotNull] CommandParameter parameter)
+		private string GetParameterNames([NotNull] VerbParameter parameter)
 		{
 			if (parameter == null) throw new ArgumentNullException(nameof(parameter));
 
@@ -272,7 +272,7 @@ namespace deniszykov.CommandLine.Renderers
 			}
 		}
 
-		private static string GetParameterTypeFriendlyName(CommandParameter parameter)
+		private static string GetParameterTypeFriendlyName(VerbParameter parameter)
 		{
 			if (parameter == null) throw new ArgumentNullException(nameof(parameter));
 
@@ -318,9 +318,9 @@ namespace deniszykov.CommandLine.Renderers
 			return type;
 		}
 
-		private static string GetNamePrefix(IEnumerable<Command> enumerable, StringComparison commandNameMatchingMode)
+		private static string GetNamePrefix(IEnumerable<Verb> enumerable, StringComparison verbNameMatchingMode)
 		{
-			var namePrefix = string.Join(" ", enumerable.Select(command => GetCommandName(command.Name, commandNameMatchingMode)));
+			var namePrefix = string.Join(" ", enumerable.Select(command => GetCommandName(command.Name, verbNameMatchingMode)));
 			if (namePrefix != string.Empty)
 			{
 				namePrefix += " ";
@@ -329,23 +329,23 @@ namespace deniszykov.CommandLine.Renderers
 			return namePrefix;
 		}
 
-		private static string GetCommandName(string commandName, StringComparison commandNameMatchingMode)
+		private static string GetCommandName(string verbName, StringComparison verbNameMatchingMode)
 		{
-			switch (commandNameMatchingMode)
+			switch (verbNameMatchingMode)
 			{
 				case StringComparison.OrdinalIgnoreCase:
 				case StringComparison.CurrentCultureIgnoreCase:
 #if !NETSTANDARD1_6
 				case StringComparison.InvariantCultureIgnoreCase:
 #endif
-					return commandName.ToUpperInvariant();
+					return verbName.ToUpperInvariant();
 #if !NETSTANDARD1_6
 				case StringComparison.InvariantCulture:
 #endif
 				case StringComparison.CurrentCulture:
 				case StringComparison.Ordinal:
-					return commandName;
-				default: throw new ArgumentOutOfRangeException(nameof(commandNameMatchingMode), commandNameMatchingMode, null);
+					return verbName;
+				default: throw new ArgumentOutOfRangeException(nameof(verbNameMatchingMode), verbNameMatchingMode, null);
 			}
 		}
 	}

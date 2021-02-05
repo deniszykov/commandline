@@ -11,15 +11,15 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		[CanBeNull] public ExceptionEventHandler UnhandledExceptionHandler { get; set; }
 		/// <summary>
-		/// Try to describe API into <see cref="IConsole.WriteLine"/> when bind error occurs (command name mistype or wrong arguments).
+		/// Try to describe API into <see cref="IConsole.WriteLine"/> when bind error occurs (verb name mistype or wrong arguments).
 		/// </summary>
 		public bool DescribeOnBindFailure { get; set; }
 		/// <summary>
-		/// Output whole error message to <see cref="IConsole.WriteErrorLine"/> when bind error occurs (command name mistype or wrong arguments).
+		/// Output whole error message to <see cref="IConsole.WriteErrorLine"/> when bind error occurs (verb name mistype or wrong arguments).
 		/// </summary>
 		public bool DetailedBindFailureMessage { get; set; }
 		/// <summary>
-		/// Exit code returned when unable to find command and help text is displayed instead. Defaults to <c>1</c>.
+		/// Exit code returned when unable to find verb and help text is displayed instead. Defaults to <c>1</c>.
 		/// </summary>
 		public int BindFailureExitCode { get; set; }
 		/// <summary>
@@ -29,9 +29,9 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Set default action name to use if non are passed.
 		/// </summary>
-		[CanBeNull] public string DefaultCommandName { get; set; }
+		[CanBeNull] public string DefaultVerbName { get; set; }
 		/// <summary>
-		/// Set to true to hook <see cref="Console.CancelKeyPress"/> event and redirect it as <see cref="CancellationToken"/> for running command.
+		/// Set to true to hook <see cref="Console.CancelKeyPress"/> event and redirect it as <see cref="CancellationToken"/> for running verb.
 		/// </summary>
 		public bool HookConsoleCancelKeyPress { get; set; }
 
@@ -39,7 +39,7 @@ namespace deniszykov.CommandLine
 
 		public StringComparison ShortOptionNameMatchingMode { get; set; }
 
-		public StringComparison CommandNameMatchingMode { get; set; }
+		public StringComparison VerbNameMatchingMode { get; set; }
 
 		public bool TreatUnknownOptionsAsValues { get; set; }
 
@@ -62,11 +62,11 @@ namespace deniszykov.CommandLine
 			config.DetailedBindFailureMessage = this.DetailedBindFailureMessage;
 			config.BindFailureExitCode = this.BindFailureExitCode;
 			config.DescribeExitCode = this.DescribeExitCode;
-			config.DefaultCommandName = this.DefaultCommandName;
+			config.DefaultVerbName = this.DefaultVerbName;
 			config.HookConsoleCancelKeyPress = this.HookConsoleCancelKeyPress;
 			config.LongOptionNameMatchingMode = this.LongOptionNameMatchingMode;
 			config.ShortOptionNameMatchingMode = this.ShortOptionNameMatchingMode;
-			config.CommandNameMatchingMode = this.CommandNameMatchingMode;
+			config.VerbNameMatchingMode = this.VerbNameMatchingMode;
 			config.TreatUnknownOptionsAsValues = this.TreatUnknownOptionsAsValues;
 			config.ShortOptionNamePrefixes = this.ShortOptionNamePrefixes;
 			config.LongOptionNamePrefixes = this.LongOptionNamePrefixes;
@@ -81,7 +81,7 @@ namespace deniszykov.CommandLine
 			this.DescribeExitCode = 2;
 			this.ShortOptionNameMatchingMode = StringComparison.Ordinal;
 			this.LongOptionNameMatchingMode = StringComparison.OrdinalIgnoreCase;
-			this.CommandNameMatchingMode = StringComparison.OrdinalIgnoreCase;
+			this.VerbNameMatchingMode = StringComparison.OrdinalIgnoreCase;
 			this.ShortOptionNamePrefixes = new[] { "-", "/" };
 			this.LongOptionNamePrefixes = new[] { "--", "/" };
 			this.OptionsBreaks = new[] { "--" };

@@ -2,8 +2,8 @@
 
 namespace deniszykov.CommandLine
 {
-	public interface ICommandsBuilder
+	public interface IVerbSetBuilder
 	{
-		CommandSet Build();
+		VerbSet Build();
 	}
 }

@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
 {
-	public sealed class Command
+	public sealed class Verb
 	{
 		[NotNull]
 		public readonly string Name;
@@ -17,15 +17,15 @@ namespace deniszykov.CommandLine.Binding
 		[CanBeNull]
 		public readonly TypeInfo TargetType;
 		[NotNull, ItemNotNull]
-		public readonly IReadOnlyCollection<CommandParameter> BoundParameters;
+		public readonly IReadOnlyCollection<VerbParameter> BoundParameters;
 		[NotNull, ItemNotNull]
-		public readonly IReadOnlyCollection<CommandParameter> ServiceParameters;
+		public readonly IReadOnlyCollection<VerbParameter> ServiceParameters;
 		[NotNull]
 		public readonly Func<object, object[], int> Invoker;
 
 		public bool Hidden;
 
-		public Command([NotNull] MethodInfo method)
+		public Verb([NotNull] MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
@@ -33,19 +33,19 @@ namespace deniszykov.CommandLine.Binding
 			this.Description = method.GetDescription() ?? string.Empty;
 			this.Hidden = method.IsHidden();
 
-			var boundParameters = new List<CommandParameter>();
-			var serviceParameters = new List<CommandParameter>();
+			var boundParameters = new List<VerbParameter>();
+			var serviceParameters = new List<VerbParameter>();
 
 			foreach (var parameterInfo in method.GetParameters())
 			{
 				if (parameterInfo.IsServiceParameter())
 				{
-					var parameter = new CommandParameter(parameterInfo, serviceParameters.Count);
+					var parameter = new VerbParameter(parameterInfo, serviceParameters.Count);
 					serviceParameters.Add(parameter);
 				}
 				else
 				{
-					var parameter = new CommandParameter(parameterInfo, boundParameters.Count);
+					var parameter = new VerbParameter(parameterInfo, boundParameters.Count);
 					boundParameters.Add(parameter);
 				}
 			}
@@ -68,13 +68,13 @@ namespace deniszykov.CommandLine.Binding
 		}
 
 		[NotNull, ItemNotNull]
-		public IEnumerable<CommandParameter> GetNonHiddenBoundParameter()
+		public IEnumerable<VerbParameter> GetNonHiddenBoundParameter()
 		{
 			return this.BoundParameters.Where(param => !param.IsHidden);
 		}
 
 		[CanBeNull]
-		public CommandParameter FindBoundParameter([NotNull]string name, StringComparison stringComparison)
+		public VerbParameter FindBoundParameter([NotNull]string name, StringComparison stringComparison)
 		{
 			if (name == null) throw new ArgumentNullException(nameof(name));
 

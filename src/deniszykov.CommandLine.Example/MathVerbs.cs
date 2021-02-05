@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace deniszykov.CommandLine.Example
 {
-	public class MathCommands
+	public class MathVerbs
 	{
-		// ### Basic Command ###
+		// ### Basic Verb ###
 		[Description("Adds two numbers and print result.")]
 		public static int Add(int value1, int value2)
 		{
@@ -14,7 +14,7 @@ namespace deniszykov.CommandLine.Example
 			return 0;
 		}
 
-		// ### Basic Command ###
+		// ### Basic Verb ###
 		[Description("Adds numbers and print result.")]
 		public static int Add(int[] values)
 		{
@@ -22,13 +22,13 @@ namespace deniszykov.CommandLine.Example
 			return 0;
 		}
 
-		// ### Help Command ###
+		// ### Help Verb ###
 		[Description("Display this help.")]
-		public static int Help(CommandExecutionContext context, string commandToDescribe = null)
+		public static int Help(VerbExecutionContext context, string verbName = null)
 		{
 			return CommandLine
 				.CreateFromContext(context)
-				.Describe(commandToDescribe);
+				.Describe(verbName);
 		}
 	}
 }

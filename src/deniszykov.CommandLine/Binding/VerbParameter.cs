@@ -7,7 +7,7 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
 {
-	public sealed class CommandParameter
+	public sealed class VerbParameter
 	{
 		[NotNull]
 		public readonly string Name;
@@ -29,7 +29,7 @@ namespace deniszykov.CommandLine.Binding
 		public readonly System.ComponentModel.TypeConverter TypeConverter;
 #endif
 
-		public CommandParameter(ParameterInfo parameterInfo, int position)
+		public VerbParameter(ParameterInfo parameterInfo, int position)
 		{
 			if (parameterInfo == null) throw new ArgumentNullException(nameof(parameterInfo));
 

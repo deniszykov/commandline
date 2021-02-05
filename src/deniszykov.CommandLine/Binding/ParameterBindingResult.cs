@@ -17,11 +17,11 @@ namespace deniszykov.CommandLine.Binding
 	{
 		public bool IsSuccess => this.Error == null;
 
-		public CommandParameter Parameter { get; private set; }
+		public VerbParameter Parameter { get; private set; }
 		public object Value { get; private set; }
 		public Exception Error { get; private set; }
 
-		public ParameterBindingResult(CommandParameter parameter, Exception error, object value)
+		public ParameterBindingResult(VerbParameter parameter, Exception error, object value)
 		{
 			if (parameter == null) throw new ArgumentNullException(nameof(parameter));
 

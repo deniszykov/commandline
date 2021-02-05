@@ -11,7 +11,7 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
 {
-	internal sealed class CommandBinder
+	internal sealed class VerbBinder
 	{
 		[NotNull] private readonly ITypeConversionProvider typeConversionProvider;
 		[NotNull] private readonly IArgumentsParser parser;
@@ -19,9 +19,9 @@ namespace deniszykov.CommandLine.Binding
 
 		public StringComparison LongOptionNameMatchingMode { get; }
 		public StringComparison ShortOptionNameMatchingMode { get; }
-		public StringComparison CommandNameMatchingMode { get; }
+		public StringComparison VerbNameMatchingMode { get; }
 
-		public CommandBinder(
+		public VerbBinder(
 			[NotNull] CommandLineConfiguration configuration,
 			[NotNull] ITypeConversionProvider typeConversionProvider,
 			[NotNull] IServiceProvider serviceProvider)
@@ -32,32 +32,32 @@ namespace deniszykov.CommandLine.Binding
 
 			this.LongOptionNameMatchingMode = configuration.LongOptionNameMatchingMode;
 			this.ShortOptionNameMatchingMode = configuration.ShortOptionNameMatchingMode;
-			this.CommandNameMatchingMode = configuration.CommandNameMatchingMode;
+			this.VerbNameMatchingMode = configuration.VerbNameMatchingMode;
 			this.typeConversionProvider = typeConversionProvider;
 			this.parser = new GetOptParser(configuration);
 			this.serviceProvider = serviceProvider;
 		}
 
-		public CommandBindingResult Bind(CommandSet commandSet, string defaultCommandName, string[] arguments)
+		public VerbBindingResult Bind(VerbSet verbSet, string defaultVerbName, string[] arguments)
 		{
 			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
-			var commandName = default(string);
-			var bestMatchResult = default(CommandBindingResult);
+			var verbName = default(string);
+			var bestMatchResult = default(VerbBindingResult);
 			if (arguments.Length > 0)
 			{
-				commandName = this.typeConversionProvider.ConvertToString(arguments[0]);
-				var result = this.FindAndBindCommand(commandSet.Commands, commandName, arguments.Skip(1).ToArray());
+				verbName = this.typeConversionProvider.ConvertToString(arguments[0]);
+				var result = this.FindAndBindVerb(verbSet.Verbs, verbName, arguments.Skip(1).ToArray());
 				if (result.IsSuccess)
 					return result;
 
 				bestMatchResult = result;
 			}
 
-			if (string.IsNullOrEmpty(defaultCommandName) == false)
+			if (string.IsNullOrEmpty(defaultVerbName) == false)
 			{
-				commandName = defaultCommandName;
-				var result = this.FindAndBindCommand(commandSet.Commands, defaultCommandName, arguments);
+				verbName = defaultVerbName;
+				var result = this.FindAndBindVerb(verbSet.Verbs, defaultVerbName, arguments);
 				if (result.IsSuccess)
 				{
 					return result;
@@ -66,55 +66,55 @@ namespace deniszykov.CommandLine.Binding
 				bestMatchResult = result;
 			}
 
-			if (string.IsNullOrEmpty(commandName))
+			if (string.IsNullOrEmpty(verbName))
 			{
-				commandName = CommandLine.UnknownMethodName;
+				verbName = CommandLine.UnknownVerbName;
 			}
 
-			bestMatchResult ??= new CommandBindingResult(commandName, CommandBindingResult.EmptyFailedMethodBindings);
+			bestMatchResult ??= new VerbBindingResult(verbName, VerbBindingResult.EmptyFailedMethodBindings);
 
 			return bestMatchResult;
 		}
-		public void ProvideContext(CommandBindingResult bindResult, CommandExecutionContext context, CancellationToken cancellationToken)
+		public void ProvideContext(VerbBindingResult bindResult, VerbExecutionContext context, CancellationToken cancellationToken)
 		{
 			if (bindResult == null) throw new ArgumentNullException(nameof(bindResult));
 			if (context == null) throw new ArgumentNullException(nameof(context));
 
-			var command = bindResult.Command;
-			var commandArguments = bindResult.Arguments;
-			foreach (var serviceParameter in command.ServiceParameters)
+			var verb = bindResult.Verb;
+			var verArguments = bindResult.Arguments;
+			foreach (var serviceParameter in verb.ServiceParameters)
 			{
 				var argumentIndex = serviceParameter.ArgumentIndex;
-				if (serviceParameter.ValueType.AsType() == typeof(CommandExecutionContext))
+				if (serviceParameter.ValueType.AsType() == typeof(VerbExecutionContext))
 				{
-					commandArguments[argumentIndex] = context;
+					verArguments[argumentIndex] = context;
 				}
 				else if (serviceParameter.ValueType.AsType() == typeof(CancellationToken))
 				{
-					commandArguments[argumentIndex] = cancellationToken;
+					verArguments[argumentIndex] = cancellationToken;
 				}
 			}
 		}
 
 
-		private CommandBindingResult FindAndBindCommand(IReadOnlyCollection<Command> commands, string commandName, string[] arguments)
+		private VerbBindingResult FindAndBindVerb(IReadOnlyCollection<Verb> verbs, string verbName, string[] arguments)
 		{
-			if (commands == null) throw new ArgumentNullException(nameof(commands));
-			if (commandName == null) throw new ArgumentNullException(nameof(commandName));
+			if (verbs == null) throw new ArgumentNullException(nameof(verbs));
+			if (verbName == null) throw new ArgumentNullException(nameof(verbName));
 			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
-			var failedCommands = new Dictionary<Command, ParameterBindingResult[]>();
-			foreach (var command in commands)
+			var failedVerbs = new Dictionary<Verb, ParameterBindingResult[]>();
+			foreach (var verb in verbs)
 			{
-				if (!string.Equals(commandName, command.Name, this.CommandNameMatchingMode))
+				if (!string.Equals(verbName, verb.Name, this.VerbNameMatchingMode))
 				{
 					continue;
 				}
 
-				var getOptionArity = new Func<string, ParameterValueArity?>(optionName => command.FindBoundParameter(optionName, optionName.Length > 1 ? LongOptionNameMatchingMode : ShortOptionNameMatchingMode)?.ValueArity);
+				var getOptionArity = new Func<string, ParameterValueArity?>(optionName => verb.FindBoundParameter(optionName, optionName.Length > 1 ? LongOptionNameMatchingMode : ShortOptionNameMatchingMode)?.ValueArity);
 				var parsedArguments = this.parser.Parse(arguments, getOptionArity);
-				var boundParameters = command.BoundParameters;
-				var serviceParameters = command.ServiceParameters;
+				var boundParameters = verb.BoundParameters;
+				var serviceParameters = verb.ServiceParameters;
 				var parameterBindings = new ParameterBindingResult[boundParameters.Count];
 				var isSuccessfulBinding = true;
 				foreach (var parameter in boundParameters)
@@ -126,36 +126,36 @@ namespace deniszykov.CommandLine.Binding
 
 				if (isSuccessfulBinding == false)
 				{
-					failedCommands.Add(command, parameterBindings);
+					failedVerbs.Add(verb, parameterBindings);
 					continue;
 				}
 
-				var target = command.TargetType != null ? this.ResolveService(command, command.TargetType.AsType(), isOptional: false) : null;
-				var commandArguments = new object[boundParameters.Count + command.ServiceParameters.Count];
+				var target = verb.TargetType != null ? this.ResolveService(verb, verb.TargetType.AsType(), isOptional: false) : null;
+				var verbArguments = new object[boundParameters.Count + verb.ServiceParameters.Count];
 				for (var i = 0; i < boundParameters.Count; i++)
 				{
 					var argumentIndex = parameterBindings[i].Parameter.ArgumentIndex;
-					commandArguments[argumentIndex] = parameterBindings[i].Value;
+					verbArguments[argumentIndex] = parameterBindings[i].Value;
 				}
 
 				foreach (var serviceParameter in serviceParameters)
 				{
-					if (serviceParameter.ValueType.AsType() == typeof(CommandExecutionContext) ||
+					if (serviceParameter.ValueType.AsType() == typeof(VerbExecutionContext) ||
 						serviceParameter.ValueType.AsType() == typeof(CancellationToken))
 					{
 						continue;
 					}
 
 					var argumentIndex = serviceParameter.ArgumentIndex;
-					commandArguments[argumentIndex] = this.ResolveService(command, serviceParameter.ValueType.AsType(), serviceParameter.IsOptional);
+					verbArguments[argumentIndex] = this.ResolveService(verb, serviceParameter.ValueType.AsType(), serviceParameter.IsOptional);
 				}
 
-				return new CommandBindingResult(command, target, commandArguments);
+				return new VerbBindingResult(verb, target, verbArguments);
 			}
 
-			return new CommandBindingResult(commandName, failedCommands);
+			return new VerbBindingResult(verbName, failedVerbs);
 		}
-		private ParameterBindingResult BindParameter(CommandParameter parameter, ParsedArguments parsedArguments)
+		private ParameterBindingResult BindParameter(VerbParameter parameter, ParsedArguments parsedArguments)
 		{
 			var value = default(object);
 			try
@@ -251,16 +251,16 @@ namespace deniszykov.CommandLine.Binding
 			return new ParameterBindingResult(parameter, null, value);
 		}
 
-		private object ResolveService(Command command, Type serviceType, bool isOptional)
+		private object ResolveService(Verb verb, Type serviceType, bool isOptional)
 		{
 			var instance = this.serviceProvider.GetService(serviceType);
 			if (instance == null && !isOptional)
 			{
-				throw CommandLineException.UnableToResolveService(command, serviceType);
+				throw CommandLineException.UnableToResolveService(verb, serviceType);
 			}
 			return instance;
 		}
-		private object Convert(object value, Type toType, CommandParameter metadata)
+		private object Convert(object value, Type toType, VerbParameter metadata)
 		{
 			if (toType == null) throw new ArgumentNullException(nameof(toType));
 			if (metadata == null) throw new ArgumentNullException(nameof(metadata));

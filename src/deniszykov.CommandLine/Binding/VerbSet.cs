@@ -7,44 +7,44 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
 {
-	public sealed class CommandSet
+	public sealed class VerbSet
 	{
 		[NotNull]
 		public readonly string Name;
 		[NotNull]
 		public readonly string Description;
 		[NotNull, ItemNotNull]
-		public readonly IReadOnlyCollection<Command> Commands;
+		public readonly IReadOnlyCollection<Verb> Verbs;
 
-		public CommandSet([NotNull] TypeInfo type)
+		public VerbSet([NotNull] TypeInfo type)
 		{
 			if (type == null) throw new ArgumentNullException(nameof(type));
 
-			var commands = new List<Command>();
+			var verbs = new List<Verb>();
 			foreach (var method in type.GetAllMethods().OrderBy(m => m, Comparer<MethodInfo>.Create(CompareMethods)))
 			{
 				if (HasInvalidSignature(method))
 					continue;
 
-				var command = new Command(method);
-				commands.Add(command);
+				var verb = new Verb(method);
+				verbs.Add(verb);
 			}
 
-			this.Commands = commands;
+			this.Verbs = verbs;
 			this.Name = type.GetName() ?? type.Name;
 			this.Description = type.GetDescription() ?? string.Empty;
 		}
 
 		[CanBeNull]
-		public Command FindCommand([NotNull] string name, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+		public Verb FindVerb([NotNull] string name, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
 		{
 			if (name == null) throw new ArgumentNullException(nameof(name));
 
-			foreach (var command in this.Commands)
+			foreach (var verb in this.Verbs)
 			{
-				if (string.Equals(command.Name, name, comparison))
+				if (string.Equals(verb.Name, name, comparison))
 				{
-					return command;
+					return verb;
 				}
 			}
 			return null;

@@ -13,14 +13,14 @@ namespace deniszykov.CommandLine.Example
 				.CreateFromArguments(arguments)
 				.Configure(config =>
 				{
-					config.DefaultCommandName = nameof(Help);
+					config.DefaultVerbName = nameof(Help);
 				})
 				.Use<Program>()
 				.Run();
 			return result;
 		}
 
-		// ### Basic Command ###
+		// ### Basic Verb ###
 		[Description("Says hello to specified 'name'.")]
 		public static int SayHelloTo(string name)
 		{
@@ -28,23 +28,23 @@ namespace deniszykov.CommandLine.Example
 			return 0;
 		}
 
-		// ### Sub Command ###
-		[Description("Math related commands.")]
-		public static int Math(CommandExecutionContext context)
+		// ### Sub Verb ###
+		[Description("Math related verbs.")]
+		public static int Math(VerbExecutionContext context)
 		{
 			return CommandLine
 				.CreateFromContext(context)
-				.Use<MathCommands>()
+				.Use<MathVerbs>()
 				.Run();
 		}
 
-		// ### Help Command ###
+		// ### Help Verb ###
 		[Description("Display this help.")]
-		public static int Help(CommandExecutionContext context, string commandToDescribe = null)
+		public static int Help(VerbExecutionContext context, string verbName = null)
 		{
 			return CommandLine
 				.CreateFromContext(context)
-				.Describe(commandToDescribe);
+				.Describe(verbName);
 		}
 	}
 }

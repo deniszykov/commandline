@@ -18,7 +18,7 @@ using deniszykov.CommandLine.Binding;
 namespace deniszykov.CommandLine
 {
 	/// <summary>
-	/// Exception occurred while executing command during <see cref="CommandLine.Run"/>.
+	/// Exception occurred while executing verb during <see cref="CommandLine.Run"/>.
 	/// There is extra information in <see cref="Exception.Data"/> dictionary under "method", "methodToken" and "bindingErrors" keys.
 	/// </summary>
 #if !NETSTANDARD1_6
@@ -48,20 +48,20 @@ namespace deniszykov.CommandLine
 		}
 #endif
 
-		internal static CommandLineException CommandNotFound(string commandName)
+		internal static CommandLineException VerbNotFound(string verbName)
 		{
-			if (commandName == null) throw new ArgumentNullException(nameof(commandName));
+			if (verbName == null) throw new ArgumentNullException(nameof(verbName));
 
-			return new CommandLineException($"Command '{commandName}' is not found.");
+			return new CommandLineException($"Command '{verbName}' is not found.");
 		}
-		internal static CommandLineException InvalidCommandParameters(Command command, ParameterBindingResult[] parameterBindResults)
+		internal static CommandLineException InvalidVerbParameters(Verb verb, ParameterBindingResult[] parameterBindResults)
 		{
-			if (command == null) throw new ArgumentNullException(nameof(command));
+			if (verb == null) throw new ArgumentNullException(nameof(verb));
 			if (parameterBindResults == null) throw new ArgumentNullException(nameof(parameterBindResults));
 
 			var bindingErrors = new Dictionary<string, Exception>();
 			var builder = new StringBuilder();
-			builder.AppendFormat("Invalid parameters for command {0}(", command.Name);
+			builder.AppendFormat("Invalid parameters for verb {0}(", verb.Name);
 			foreach (var parameterBindResult in parameterBindResults)
 			{
 				if (parameterBindResult.Parameter.IsOptional)
@@ -114,23 +114,23 @@ namespace deniszykov.CommandLine
 			}
 
 			var error = new CommandLineException(builder.ToString());
-			error.Data["method"] = command.Name;
+			error.Data["verb"] = verb.Name;
 			error.Data["bindingErrors"] = bindingErrors;
 			return error;
 		}
-		internal static CommandLineException UnableToResolveService(Command command, Type serviceType)
+		internal static CommandLineException UnableToResolveService(Verb verb, Type serviceType)
 		{
-			if (command == null) throw new ArgumentNullException(nameof(command));
+			if (verb == null) throw new ArgumentNullException(nameof(verb));
 			if (serviceType == null) throw new ArgumentNullException(nameof(serviceType));
 
-			return new CommandLineException($"Unable to resolve required service of type '{serviceType}' for '{command.Name}' command.");
+			return new CommandLineException($"Unable to resolve required service of type '{serviceType}' for '{verb.Name}' command.");
 		}
-		internal static CommandLineException RecursiveCommandChain(IEnumerable<string> currentChain, string newCommand)
+		internal static CommandLineException RecursiveVerbChain(IEnumerable<string> currentChain, string newVerb)
 		{
 			if (currentChain == null) throw new ArgumentNullException(nameof(currentChain));
-			if (newCommand == null) throw new ArgumentNullException(nameof(newCommand));
+			if (newVerb == null) throw new ArgumentNullException(nameof(newVerb));
 
-			return new CommandLineException($"Calling '{newCommand}' cause possible infinite recursion in chain '{string.Join("' -> '", currentChain)}'.");
+			return new CommandLineException($"Calling '{newVerb}' cause possible infinite recursion in chain '{string.Join("' -> '", currentChain)}'.");
 		}
 	}
 }

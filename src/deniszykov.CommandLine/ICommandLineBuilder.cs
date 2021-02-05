@@ -17,39 +17,39 @@ namespace deniszykov.CommandLine
 		/// <returns>The same instance of the <see cref="ICommandLineBuilder"/> for chaining.</returns>
 		ICommandLineBuilder Configure(Action<CommandLineConfiguration> configureDelegate);
 		/// <summary>
-		/// Provider <see cref="IServiceProvider"/> to retrieve services during binding and invocation of command. Could be called once.
+		/// Provider <see cref="IServiceProvider"/> to retrieve services during binding and invocation of verb. Could be called once.
 		/// </summary>
 		/// <param name="factory">Factory creating <see cref="IServiceProvider"/> instance to use.</param>
 		/// <returns>The same instance of the <see cref="ICommandLineBuilder"/> for chaining.</returns>
 		ICommandLineBuilder UseServiceProvider(Func<IServiceProvider> factory);
 		/// <summary>
-		/// Use methods from specified <typeparamref name="CommandListT"/> type as commands. Each call override previous <see cref="Use(Type)"/>.
+		/// Use methods from specified <typeparamref name="VerbSetT"/> type as verbs. Each call override previous <see cref="Use(Type)"/>.
 		/// </summary>
-		/// <typeparam name="CommandListT">Type of command class. Used to look-up commands by name.</typeparam>
+		/// <typeparam name="VerbSetT">Type of verb class. Used to look-up verbs by name.</typeparam>
 		/// <returns>The same instance of the <see cref="ICommandLineBuilder"/> for chaining.</returns>
-		ICommandLineBuilder Use<CommandListT>();
+		ICommandLineBuilder Use<VerbSetT>();
 		/// <summary>
-		/// Use methods from specified <paramref name="commandListType"/> type as commands. Each call override previous <see cref="Use(Type)"/>.
+		/// Use methods from specified <paramref name="verSetType"/> type as verbs. Each call override previous <see cref="Use(Type)"/>.
 		/// </summary>
-		/// <param name="commandListType">Type of command class. Used to look-up commands by name.</param>
+		/// <param name="verSetType">Type of verb class. Used to look-up verbs by name.</param>
 		/// <returns>The same instance of the <see cref="ICommandLineBuilder"/> for chaining.</returns>
-		ICommandLineBuilder Use(Type commandListType);
+		ICommandLineBuilder Use(Type verSetType);
 		/// <summary>
-		/// Use specified command list builder to declare commands. Each call override previous <see cref="Use(Type)"/>.
+		/// Use specified verb list builder to declare verbs. Each call override previous <see cref="Use(Type)"/>.
 		/// </summary>
 		/// <returns>The same instance of the <see cref="ICommandLineBuilder"/> for chaining.</returns>
-		ICommandLineBuilder Use(Func<ICommandsBuilder> buildDelegate);
+		ICommandLineBuilder Use(Func<IVerbSetBuilder> buildDelegate);
 
 		/// <summary>
 		/// Run <see cref="CommandLine"/> with specified parameters and return exit code.
 		/// </summary>
-		/// <returns>Command's exit code.</returns>
+		/// <returns>Verb's exit code.</returns>
 		int Run();
 
 		/// <summary>
-		/// Write description of available commands on type into <see cref="IConsole.WriteLine"/>-or-Write detailed description of <paramref name="commandToDescribe"/> into <see cref="IConsole.WriteLine"/>.
+		/// Write description of available verbs on type into <see cref="IConsole.WriteLine"/>-or-Write detailed description of <paramref name="verbToDescribe"/> into <see cref="IConsole.WriteLine"/>.
 		/// </summary>
-		/// <returns>Command's exit code.</returns>
-		int Describe(string commandToDescribe);
+		/// <returns>Verb's exit code.</returns>
+		int Describe(string verbToDescribe);
 	}
 }
