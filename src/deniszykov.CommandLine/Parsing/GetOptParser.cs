@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using deniszykov.CommandLine.Binding;
 using JetBrains.Annotations;
@@ -192,7 +190,7 @@ namespace deniszykov.CommandLine.Parsing
 			}
 		}
 
-		private bool IsExactOption(string argument, string[] optionVariants, StringComparison comparison)
+		private static bool IsExactOption(string argument, string[] optionVariants, StringComparison comparison)
 		{
 			foreach (var variant in optionVariants)
 			{
@@ -247,11 +245,11 @@ namespace deniszykov.CommandLine.Parsing
 		}
 		private bool IsOptionsBreak(string argument)
 		{
-			return IsExactOption(argument, OptionsBreaks, StringComparison.Ordinal);
+			return IsExactOption(argument, this.OptionsBreaks, StringComparison.Ordinal);
 		}
 		private bool IsHelpOption(string argument)
 		{
-			return IsExactOption(argument, HelpOptions, StringComparison.Ordinal);
+			return IsExactOption(argument, this.HelpOptions, StringComparison.Ordinal);
 		}
 	}
 }

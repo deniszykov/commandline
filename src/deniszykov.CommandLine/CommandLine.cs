@@ -42,21 +42,14 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public const string UnknownMethodName = "<no name specified>";
 
-		/// <summary>
-		/// Assumption about console's window width when formatting <see cref="Describe"/> output. When output is redirected then <see cref="Int32.MaxValue"/> is used.
-		/// </summary>
-		public static int DescribeConsoleWindowWidth;
-
 		[NotNull] private readonly ICommandsBuilder commandsBuilder;
 		[NotNull] private readonly string[] commandLineArguments;
 		[NotNull] private readonly CommandLineConfiguration configuration;
 		[NotNull] private readonly IDictionary<object, object> properties;
-		[NotNull] private readonly ITypeConversionProvider typeConversionProvider;
 		[NotNull] private readonly IConsole console;
 		[NotNull] private readonly IServiceProvider serviceProvider;
 		[NotNull] private readonly CommandBinder commandBinder;
 		[NotNull] private readonly CommandRenderer commandRenderer;
-		[NotNull] private readonly IArgumentsParser parser;
 
 
 		public CommandLine(
@@ -79,12 +72,11 @@ namespace deniszykov.CommandLine
 			this.commandsBuilder = commandsBuilder;
 			this.commandLineArguments = commandLineArguments;
 			this.configuration = configuration;
-			this.typeConversionProvider = typeConversionProvider;
 			this.console = console;
 			this.serviceProvider = serviceProvider;
 			this.properties = properties;
-			this.parser = new GetOptParser(configuration);
-			this.commandBinder = new CommandBinder(configuration, typeConversionProvider, this.parser, this.serviceProvider);
+			var parser = new GetOptParser(configuration);
+			this.commandBinder = new CommandBinder(configuration, typeConversionProvider, parser, this.serviceProvider);
 			this.commandRenderer = new CommandRenderer(configuration, console, typeConversionProvider);
 		}
 

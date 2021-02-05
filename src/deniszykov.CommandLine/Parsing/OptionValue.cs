@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Parsing
 {
-	public struct OptionValue
+	public readonly struct OptionValue
 	{
 		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<string> Raw;

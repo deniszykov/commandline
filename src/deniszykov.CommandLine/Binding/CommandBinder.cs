@@ -24,11 +24,9 @@ namespace deniszykov.CommandLine.Binding
 		public CommandBinder(
 			[NotNull] CommandLineConfiguration configuration,
 			[NotNull] ITypeConversionProvider typeConversionProvider,
-			[NotNull] IArgumentsParser parser,
 			[NotNull] IServiceProvider serviceProvider)
 		{
 			if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-			if (parser == null) throw new ArgumentNullException(nameof(parser));
 			if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
 			if (typeConversionProvider == null) throw new ArgumentNullException(nameof(typeConversionProvider));
 
@@ -36,7 +34,7 @@ namespace deniszykov.CommandLine.Binding
 			this.ShortOptionNameMatchingMode = configuration.ShortOptionNameMatchingMode;
 			this.CommandNameMatchingMode = configuration.CommandNameMatchingMode;
 			this.typeConversionProvider = typeConversionProvider;
-			this.parser = parser;
+			this.parser = new GetOptParser(configuration);
 			this.serviceProvider = serviceProvider;
 		}
 
