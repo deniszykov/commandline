@@ -188,7 +188,7 @@ namespace deniszykov.CommandLine
 
 		private void PrintOrThrowNotFoundException(VerbBindingResult bindResult)
 		{
-			var bestMatchMethod = (from bindingKeyValue in bindResult.FailedMethodBindings
+			var bestMatchMethod = (from bindingKeyValue in bindResult.BindingFailures
 								   let parameters = bindingKeyValue.Value
 								   let method = bindingKeyValue.Key
 								   orderby parameters.Count(parameter => parameter.IsSuccess) descending
@@ -201,7 +201,7 @@ namespace deniszykov.CommandLine
 			}
 			else
 			{
-				error = CommandLineException.InvalidVerbParameters(bestMatchMethod, bindResult.FailedMethodBindings[bestMatchMethod]);
+				error = CommandLineException.InvalidVerbParameters(bestMatchMethod, bindResult.BindingFailures[bestMatchMethod]);
 			}
 
 			if (this.configuration.DescribeOnBindFailure)

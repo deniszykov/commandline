@@ -44,11 +44,6 @@ namespace deniszykov.CommandLine.Binding
 			this.IsHidden = parameterInfo.IsHidden();
 			this.IsValueCollector = parameterInfo.GetCustomAttributes<ParamArrayAttribute>().Any();
 
-			if (this.IsValueCollector)
-			{
-				this.Position = -1;
-			}
-
 			var isList = this.ValueType.IsArray || this.ValueType.IsInstantiationOf(typeof(IList<>).GetTypeInfo());
 			var isFlags = this.ValueType.IsEnum && this.ValueType.IsFlags();
 			var isBool = this.ValueType.AsType() == typeof(bool);

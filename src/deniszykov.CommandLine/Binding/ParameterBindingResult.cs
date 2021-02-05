@@ -17,9 +17,9 @@ namespace deniszykov.CommandLine.Binding
 	{
 		public bool IsSuccess => this.Error == null;
 
-		public VerbParameter Parameter { get; private set; }
-		public object Value { get; private set; }
-		public Exception Error { get; private set; }
+		public VerbParameter Parameter { get; }
+		public object Value { get; }
+		public Exception Error { get; }
 
 		public ParameterBindingResult(VerbParameter parameter, Exception error, object value)
 		{
@@ -36,9 +36,9 @@ namespace deniszykov.CommandLine.Binding
 		public override string ToString()
 		{
 			if (this.IsSuccess)
-				return $"Successful binding to parameter {this.Parameter.Name}.";
+				return $"Successful binding to parameter '{this.Parameter.Name}'.";
 			else
-				return $"Failure binding to parameter {this.Parameter.Name}: {this.Error.Message}";
+				return $"Failure binding to parameter '{this.Parameter.Name}': {this.Error.Message}";
 		}
 	}
 }

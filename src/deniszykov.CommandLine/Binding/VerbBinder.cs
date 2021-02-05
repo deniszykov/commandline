@@ -115,10 +115,11 @@ namespace deniszykov.CommandLine.Binding
 				var boundParameters = verb.BoundParameters;
 				var serviceParameters = verb.ServiceParameters;
 				var parameterBindings = new ParameterBindingResult[boundParameters.Count];
+				var takenValues = new HashSet<int>();
 				var isSuccessfulBinding = true;
 				foreach (var parameter in boundParameters)
 				{
-					var bindResult = BindParameter(parameter, parsedArguments);
+					var bindResult = BindParameter(parameter, parsedArguments, takenValues);
 					parameterBindings[parameter.Position] = bindResult;
 					isSuccessfulBinding = isSuccessfulBinding && bindResult.IsSuccess;
 				}
@@ -154,14 +155,14 @@ namespace deniszykov.CommandLine.Binding
 
 			return new VerbBindingResult(verbName, failedVerbs);
 		}
-		private ParameterBindingResult BindParameter(VerbParameter parameter, ParsedArguments parsedArguments)
+		private ParameterBindingResult BindParameter(VerbParameter parameter, ParsedArguments parsedArguments, HashSet<int> takenValues)
 		{
 			var value = default(object);
 			try
 			{
 				if (parsedArguments.TryGetLongOption(parameter.Name, out var optionValue) ||
 					parsedArguments.TryGetShortOption(parameter.Alias ?? string.Empty, out optionValue) ||
-					parsedArguments.TryGetValue(parameter.Position, out optionValue))
+					TryGetPositionalArgument(parameter, parsedArguments, takenValues, out optionValue))
 				{
 					var raw = optionValue.Raw;
 
@@ -250,6 +251,7 @@ namespace deniszykov.CommandLine.Binding
 			return new ParameterBindingResult(parameter, null, value);
 		}
 
+
 		private object ResolveService(Verb verb, Type serviceType, bool isOptional)
 		{
 			var instance = this.serviceProvider.GetService(serviceType);
@@ -293,6 +295,24 @@ namespace deniszykov.CommandLine.Binding
 			{
 				throw new InvalidOperationException($"Unable to convert '{value ?? "<null>"}' to type '{toType.FullName}'.");
 			}
+		}
+
+		private static bool TryGetPositionalArgument(VerbParameter parameter, ParsedArguments parsedArguments, HashSet<int> takenValues, out OptionValue optionValue)
+		{
+			if (parameter.IsValueCollector)
+			{
+				var restValues = parsedArguments.Values.Where((value, index) => !takenValues.Contains(index)).ToArray();
+				optionValue = new OptionValue(restValues, 1);
+				return true;
+			}
+
+			if (parsedArguments.TryGetValue(parameter.Position, out optionValue))
+			{
+				takenValues.Add(parameter.Position);
+				return true;
+			}
+
+			return false;
 		}
 
 		private static bool IsArityMatching(ValueArity parameterValueArity, int rawCount)

@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 
@@ -21,23 +22,23 @@ namespace deniszykov.CommandLine.Binding
 
 		public bool IsSuccess => this.Verb != null;
 
-		public Verb Verb { get; private set; }
-		public string VerbName { get; private set; }
-		public object Target { get; private set; }
-		public object[] Arguments { get; private set; }
-		public Dictionary<Verb, ParameterBindingResult[]> FailedMethodBindings { get; private set; }
+		public Verb Verb { get; }
+		public string VerbName { get; }
+		public object Target { get; }
+		public object[] Arguments { get; }
+		public Dictionary<Verb, ParameterBindingResult[]> BindingFailures { get; }
 
-		public VerbBindingResult([NotNull] string verbName, [NotNull]Dictionary<Verb, ParameterBindingResult[]> failedMethodBindings)
+		public VerbBindingResult([NotNull] string verbName, [NotNull]Dictionary<Verb, ParameterBindingResult[]> bindingFailures)
 		{
 			if (verbName == null) throw new ArgumentNullException(nameof(verbName));
-			if (failedMethodBindings == null) throw new ArgumentNullException(nameof(failedMethodBindings));
+			if (bindingFailures == null) throw new ArgumentNullException(nameof(bindingFailures));
 
 			this.VerbName = verbName;
-			this.FailedMethodBindings = failedMethodBindings;
+			this.BindingFailures = bindingFailures;
 		}
 		public VerbBindingResult([NotNull] Verb verb, [CanBeNull]object target, [NotNull]object[] arguments)
 		{
-			this.FailedMethodBindings = EmptyFailedMethodBindings;
+			this.BindingFailures = EmptyFailedMethodBindings;
 			this.Verb = verb;
 			this.Arguments = arguments;
 			this.Target = target;
@@ -51,9 +52,9 @@ namespace deniszykov.CommandLine.Binding
 		public override string ToString()
 		{
 			if (this.IsSuccess)
-				return $"Successful binding to method {this.Verb} and {this.Arguments.Length} arguments";
+				return $"Successful binding to verb '{this.Verb}' with '{string.Join(", ", this.Arguments)}' arguments.";
 			else
-				return $"Failure binding to method {this.VerbName} ";
+				return $"Failure binding to verb '{this.VerbName}'." + string.Join(Environment.NewLine, this.BindingFailures.Select(kv => $"{kv.Key.Name}: {string.Join(", ", kv.Value.Where(p => !p.IsSuccess).Select(p => p.ToString()))}"));
 		}
 	}
 }
