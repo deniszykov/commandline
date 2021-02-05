@@ -37,6 +37,22 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "-o", "1", "-o" }, "o", new[] { "1" }, 2)]
 		[InlineData(new[] { "-o", "1", "-o", "2" }, "o", new[] { "1", "2" }, 2)]
 		[InlineData(new[] { "-o", "1", "-k", "2" }, "o", new[] { "1" }, 1)]
+		// special symbols
+		[InlineData(new[] { "-k", "-" }, "k", new[] { "-" }, 1)]
+		[InlineData(new[] { "-k", "-" }, "k", new[] { "-" }, 1)]
+		[InlineData(new[] { "-k", "@" }, "k", new[] { "@" }, 1)]
+		[InlineData(new[] { "-k", "/" }, "k", new[] { "/" }, 1)]
+		[InlineData(new[] { "-k", "?" }, "k", new[] { "?" }, 1)]
+		[InlineData(new[] { "-k", "/?" }, "k", new[] { "/?" }, 1)]
+		[InlineData(new[] { "-k", "-?" }, "k", new[] { "-?" }, 1)]
+		[InlineData(new[] { "-k", "-h" }, "k", new[] { "-h" }, 1)]
+		[InlineData(new[] { "-k", "--help" }, "k", new[] { "--help" }, 1)]
+		// excluding special characters when greedy scanning
+		[InlineData(new[] { "-k", "-", "-", "--" }, "k", new[] { "-", "-" }, 1)]
+		[InlineData(new[] { "-k", "-", "-", "/?" }, "k", new[] { "-", "-" }, 1)]
+		[InlineData(new[] { "-k", "-", "-", "-?" }, "k", new[] { "-", "-" }, 1)]
+		[InlineData(new[] { "-k", "-", "-", "-h" }, "k", new[] { "-", "-" }, 1)]
+		[InlineData(new[] { "-k", "-", "-", "--help" }, "k", new[] { "-", "-" }, 1)]
 		// combined
 		[InlineData(new[] { "-zo" }, "o", new string[0], 1)]
 		[InlineData(new[] { "-zo" }, "z", new string[0], 1)]
@@ -68,7 +84,7 @@ namespace deniszykov.CommandLine.Tests
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ParameterValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var getOptionArity = new Func<string, ValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -97,7 +113,7 @@ namespace deniszykov.CommandLine.Tests
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ParameterValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var getOptionArity = new Func<string, ValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -132,7 +148,7 @@ namespace deniszykov.CommandLine.Tests
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ParameterValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var getOptionArity = new Func<string, ValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -156,7 +172,7 @@ namespace deniszykov.CommandLine.Tests
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ParameterValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var getOptionArity = new Func<string, ValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 

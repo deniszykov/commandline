@@ -13,7 +13,7 @@ namespace deniszykov.CommandLine.Parsing
 		public abstract StringComparison LongNameMatchingMode { get; }
 
 		/// <inheritdoc />
-		public ParsedArguments Parse(string[] arguments, Func<string, ParameterValueArity?> getOptionArity)
+		public ParsedArguments Parse(string[] arguments, Func<string, ValueArity?> getOptionArity)
 		{
 			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 			if (getOptionArity == null) throw new ArgumentNullException(nameof(getOptionArity));
@@ -69,7 +69,7 @@ namespace deniszykov.CommandLine.Parsing
 			return new ParsedArguments(shortOptions, longOptions, values, hasHelpOption);
 		}
 
-		protected abstract IEnumerable<ArgumentToken> Tokenize(string[] arguments, Func<string, ParameterValueArity?> getOptionArity);
+		protected abstract IEnumerable<ArgumentToken> Tokenize(string[] arguments, Func<string, ValueArity?> getOptionArity);
 
 		private static void IncrementOptionCount(Dictionary<string, OptionValue> options, string optionName)
 		{

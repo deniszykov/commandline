@@ -31,7 +31,7 @@ namespace deniszykov.CommandLine.Parsing
 			this.TreatUnknownOptionsAsValues = configuration.TreatUnknownOptionsAsValues;
 		}
 
-		protected override IEnumerable<ArgumentToken> Tokenize(string[] arguments, Func<string, ParameterValueArity?> getOptionArity)
+		protected override IEnumerable<ArgumentToken> Tokenize(string[] arguments, Func<string, ValueArity?> getOptionArity)
 		{
 			const int MODE_VALUE_OR_OPTION = 0;
 			const int MODE_VALUE = 1;
@@ -70,17 +70,17 @@ namespace deniszykov.CommandLine.Parsing
 								yield return new ArgumentToken(TokenType.OptionArgument, optionArgument);
 							}
 
-							switch (getOptionArity(longName) ?? ParameterValueArity.ZeroOrMany)
+							switch (getOptionArity(longName) ?? ValueArity.ZeroOrMany)
 							{
-								case ParameterValueArity.Zero:
+								case ValueArity.Zero:
 									mode = MODE_VALUE_OR_OPTION;
 									break;
-								case ParameterValueArity.OneOrMany:
-								case ParameterValueArity.One:
+								case ValueArity.OneOrMany:
+								case ValueArity.One:
 									mode = MODE_ONE_OR_MORE_ARGUMENTS;
 									break;
-								case ParameterValueArity.ZeroOrMany:
-								case ParameterValueArity.ZeroOrOne:
+								case ValueArity.ZeroOrMany:
+								case ValueArity.ZeroOrOne:
 									mode = MODE_ZERO_OR_MORE_ARGUMENTS;
 									break;
 								default:
@@ -120,23 +120,23 @@ namespace deniszykov.CommandLine.Parsing
 
 									switch (arity.Value)
 									{
-										case ParameterValueArity.Zero:
+										case ValueArity.Zero:
 											continue;
-										case ParameterValueArity.One:
-										case ParameterValueArity.OneOrMany:
+										case ValueArity.One:
+										case ValueArity.OneOrMany:
 											if (!isLast) // threat rest as argument for short option (e.g. -s100 is -s=100)
 											{
 												yield return new ArgumentToken(TokenType.OptionArgument, shortNameLetters.Substring(l + 1));
-												mode = arity == ParameterValueArity.One ? MODE_VALUE_OR_OPTION : MODE_ZERO_OR_MORE_ARGUMENTS;
+												mode = arity == ValueArity.One ? MODE_VALUE_OR_OPTION : MODE_ZERO_OR_MORE_ARGUMENTS;
 											}
 											else
 											{
-												mode = arity == ParameterValueArity.One ? MODE_ONE_OR_MORE_ARGUMENTS : MODE_ZERO_OR_MORE_ARGUMENTS;
+												mode = arity == ValueArity.One ? MODE_ONE_OR_MORE_ARGUMENTS : MODE_ZERO_OR_MORE_ARGUMENTS;
 											}
 											l = shortNameLetters.Length;
 											break;
-										case ParameterValueArity.ZeroOrOne:
-										case ParameterValueArity.ZeroOrMany:
+										case ValueArity.ZeroOrOne:
+										case ValueArity.ZeroOrMany:
 										default:
 											var nextShortNameIsKnown = !isLast && getOptionArity(shortNameLetters[l + 1].ToString()).HasValue;
 											if (nextShortNameIsKnown)
@@ -145,7 +145,7 @@ namespace deniszykov.CommandLine.Parsing
 											}
 											else
 											{
-												goto case ParameterValueArity.One;
+												goto case ValueArity.One;
 											}
 									}
 								}
@@ -172,7 +172,9 @@ namespace deniszykov.CommandLine.Parsing
 						continue;
 					case MODE_ZERO_OR_MORE_ARGUMENTS:
 						if ((this.IsLongNameOption(argument, out longName, out _) && getOptionArity(longName) != null) ||
-							(this.IsShortNameOption(argument, out shortNameLetters, out _) && getOptionArity(shortNameLetters[0].ToString()) != null))
+							(this.IsShortNameOption(argument, out shortNameLetters, out _) && getOptionArity(shortNameLetters[0].ToString()) != null) ||
+							this.IsOptionsBreak(argument) ||
+							this.IsHelpOption(argument))
 						{
 							goto case MODE_VALUE_OR_OPTION;
 						}
@@ -180,7 +182,9 @@ namespace deniszykov.CommandLine.Parsing
 						continue;
 					case MODE_ZERO_OR_MORE_EXPLICIT_ARGUMENTS:
 						if (this.IsLongNameOption(argument, out longName, out _) ||
-							this.IsShortNameOption(argument, out shortNameLetters, out _))
+							this.IsShortNameOption(argument, out shortNameLetters, out _) ||
+							this.IsOptionsBreak(argument) ||
+							this.IsHelpOption(argument))
 						{
 							goto case MODE_VALUE_OR_OPTION;
 						}
@@ -209,7 +213,11 @@ namespace deniszykov.CommandLine.Parsing
 			var valueSplitterIndex = argument.IndexOfAny(this.OptionArgumentSplitter);
 			foreach (var optionPrefix in prefixes)
 			{
-				if (!argument.StartsWith(optionPrefix, StringComparison.Ordinal)) continue;
+				if (argument.Length <= optionPrefix.Length ||
+					argument.StartsWith(optionPrefix, StringComparison.Ordinal) == false)
+				{
+					continue;
+				}
 
 				var nameEnd = valueSplitterIndex < 0 ? argument.Length : valueSplitterIndex;
 				optionName = argument.Substring(optionPrefix.Length, nameEnd - optionPrefix.Length);
@@ -226,17 +234,6 @@ namespace deniszykov.CommandLine.Parsing
 		}
 		private bool IsShortNameOption(string argument, out string optionName, out string optionArgument)
 		{
-			optionName = default;
-			optionArgument = default;
-
-			foreach (var longNamePrefix in this.LongNamePrefixes)
-			{
-				if (argument.StartsWith(longNamePrefix, StringComparison.Ordinal))
-				{
-					//return false;
-				}
-			}
-
 			return this.IsOption(this.ShortNamePrefixes, argument, out optionName, out optionArgument);
 		}
 		private bool IsLongNameOption(string argument, out string optionName, out string optionArgument)
