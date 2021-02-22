@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using deniszykov.CommandLine.Annotations;
 using deniszykov.CommandLine.Binding;
 using deniszykov.TypeConversion;
@@ -144,7 +145,7 @@ namespace deniszykov.CommandLine.Tests
 		// count binding
 		[InlineData(new[] { "--param-3-count", "--param-3-count", "--param-3-count", "--param-3-count" }, nameof(TestApi.Param3Value), 4, true)]
 		[InlineData(new[] { "--param-3-count", "--param-5-count", "--param-3-count", "--param-3-count" }, nameof(TestApi.Param5Value), 1, true)]
-		public void BindLongOptionNameTest(string[] arguments, string propertyName, object propertyValue, bool success)
+		public async Task BindLongOptionNameTest(string[] arguments, string propertyName, object propertyValue, bool success)
 		{
 			var testApi = new TestApi();
 			var configuration = new CommandLineConfiguration();
@@ -167,7 +168,7 @@ namespace deniszykov.CommandLine.Tests
 			{
 				return;
 			}
-			Assert.Equal(0, ((VerbBindingResult.Bound)bindingResult).Invoke());
+			Assert.Equal(0, await ((VerbBindingResult.Bound)bindingResult).InvokeAsync());
 
 			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
 			Assert.Equal(propertyValue, expectedPropertyValue);
@@ -186,7 +187,7 @@ namespace deniszykov.CommandLine.Tests
 		// count binding
 		[InlineData(new[] { "-z", "-z", "-z", "-z" }, nameof(TestApi.Param3Value), 4, true)]
 		[InlineData(new[] { "-z", "-Z", "-z", "-z" }, nameof(TestApi.Param5Value), 1, true)]
-		public void BindShortOptionNameTest(string[] arguments, string propertyName, object propertyValue, bool success)
+		public async Task BindShortOptionNameTest(string[] arguments, string propertyName, object propertyValue, bool success)
 		{
 			var testApi = new TestApi();
 			var configuration = new CommandLineConfiguration();
@@ -209,7 +210,7 @@ namespace deniszykov.CommandLine.Tests
 			{
 				return;
 			}
-			Assert.Equal(0, ((VerbBindingResult.Bound)bindingResult).Invoke());
+			Assert.Equal(0, await ((VerbBindingResult.Bound)bindingResult).InvokeAsync());
 
 			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
 			Assert.Equal(propertyValue, expectedPropertyValue);
@@ -237,7 +238,7 @@ namespace deniszykov.CommandLine.Tests
 		// partial binding on required parameters
 		[InlineData(new[] { "--param-1-int", "120" }, nameof(TestApi.TwoParamBindVerb), nameof(TestApi.Param1), 120, false)]
 		[InlineData(new[] { "--param-2-int", "120" }, nameof(TestApi.TwoParamBindVerb), nameof(TestApi.Param2), 120, false)]
-		public void BindValueTest(string[] arguments, string methodName, string propertyName, object propertyValue, bool success)
+		public async Task BindValueTest(string[] arguments, string methodName, string propertyName, object propertyValue, bool success)
 		{
 			var testApi = new TestApi();
 			var configuration = new CommandLineConfiguration();
@@ -260,7 +261,7 @@ namespace deniszykov.CommandLine.Tests
 			{
 				return;
 			}
-			Assert.Equal(0, ((VerbBindingResult.Bound)bindingResult).Invoke());
+			Assert.Equal(0, await ((VerbBindingResult.Bound)bindingResult).InvokeAsync());
 
 			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
 

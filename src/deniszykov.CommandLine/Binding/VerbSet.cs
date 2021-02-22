@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using deniszykov.CommandLine.Annotations;
 using JetBrains.Annotations;
 
@@ -93,7 +94,8 @@ namespace deniszykov.CommandLine.Binding
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
-			return method.ReturnType != typeof(int) || method.IsGenericMethod && method.IsSpecialName;
+			return (method.ReturnType != typeof(int) && method.ReturnType != typeof(Task<int>)) ||
+				method.IsGenericMethod && method.IsSpecialName;
 		}
 
 		private static int CompareMethods(MethodInfo x, MethodInfo y)

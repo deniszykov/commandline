@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
@@ -51,5 +52,11 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		/// <returns>Verb's exit code.</returns>
 		int Run();
+
+		/// <summary>
+		/// Run <see cref="CommandLine"/> asynchronously with specified parameters and return exit code.
+		/// </summary>
+		/// <returns>Verb's exit code.</returns>
+		Task<int> RunAsync();
 	}
 }

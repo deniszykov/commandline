@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using deniszykov.CommandLine.Annotations;
 using JetBrains.Annotations;
 
@@ -42,7 +43,7 @@ namespace deniszykov.CommandLine.Binding
 		/// Verb invocation function. First parameter is target instance, second is all <see cref="BoundParameters"/> and <see cref="ServiceParameters"/> in right order. Exit code is expected as result.
 		/// </summary>
 		[NotNull]
-		public readonly Func<object, object[], int> Invoker;
+		public readonly Func<object, object[], Task<int>> Invoker;
 		/// <summary>
 		/// Flag indication that this verb is hidden from help display/listing.
 		/// </summary>
@@ -61,7 +62,7 @@ namespace deniszykov.CommandLine.Binding
 			[CanBeNull] TypeInfo targetType,
 			[NotNull, ItemNotNull] IReadOnlyCollection<VerbParameter> boundParameters,
 			[NotNull, ItemNotNull] IReadOnlyCollection<VerbParameter> serviceParameters,
-			[NotNull] Func<object, object[], int> invoker,
+			[NotNull] Func<object, object[], Task<int>> invoker,
 			bool isHidden,
 			bool hasSubVerbs)
 		{
@@ -116,7 +117,19 @@ namespace deniszykov.CommandLine.Binding
 			{
 				try
 				{
-					return (int)method.Invoke(target, args);
+					var result = method.Invoke(target, args);
+					if (result is int exitCode)
+					{
+						return Task.FromResult(exitCode);
+					}
+					else if (result is Task<int> asyncExitCode)
+					{
+						return asyncExitCode;
+					}
+					else
+					{
+						throw new InvalidOperationException("Invalid method's result type. System.Int32 or Task<System.Int32> is expected.");
+					}
 				}
 				catch (TargetInvocationException te)
 				{

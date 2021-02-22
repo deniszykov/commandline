@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using deniszykov.CommandLine.Binding;
 using deniszykov.CommandLine.Builders;
 using deniszykov.CommandLine.Formatting;
@@ -79,7 +80,7 @@ namespace deniszykov.CommandLine
 		/// Run verb on configured type and return exit code of executed verb.
 		/// </summary>
 		/// <returns>Exit code of verb-or-<see cref="DOT_NET_EXCEPTION_EXIT_CODE"/> if exception happened-or-<see cref="CommandLineConfiguration.FailureExitCode"/> if verb not found and description is shown.</returns>
-		public int Run()
+		public async Task<int> RunAsync()
 		{
 			try
 			{
@@ -101,7 +102,7 @@ namespace deniszykov.CommandLine
 						this.verbBinder.ProvideContext(bound.Verb, bound.Arguments, context, cancellationToken);
 
 						// execute verb
-						return bound.Invoke();
+						return await bound.InvokeAsync();
 					case VerbBindingResult.NoVerbSpecified noVerb:
 						return this.WriteBindingError(noVerb, verbSet);
 					case VerbBindingResult.FailedToBind failed:

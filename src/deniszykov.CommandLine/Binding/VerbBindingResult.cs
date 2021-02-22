@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
@@ -40,7 +41,7 @@ namespace deniszykov.CommandLine.Binding
 				this.Verb = verb;
 			}
 
-			public int Invoke()
+			public Task<int> InvokeAsync()
 			{
 				return this.Verb.Invoker(this.Target, this.Arguments);
 			}

@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace deniszykov.CommandLine.Example
 {
-	[Description("Usage: myApp SayHelloTo [--name] Mike")]
+	[Description("This test application. Type /? for help.")]
 	public class Program
 	{
 		[Browsable(false)] // hide it from Describe method
@@ -11,10 +11,6 @@ namespace deniszykov.CommandLine.Example
 		{
 			var result = CommandLine
 				.CreateFromArguments(arguments)
-				.Configure(config =>
-				{
-					config.DefaultVerbName = nameof(SayHelloTo);
-				})
 				.Use<Program>()
 				.Run();
 			return result;

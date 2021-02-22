@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using deniszykov.CommandLine.Formatting;
 using deniszykov.TypeConversion;
 
@@ -95,7 +97,20 @@ namespace deniszykov.CommandLine.Builders
 		/// <inheritdoc />
 		public int Run()
 		{
-			return this.Build().Run();
+			try
+			{
+				return this.Build().RunAsync().Result;
+			}
+			catch (AggregateException aggregateException)
+			{
+				ExceptionDispatchInfo.Capture((aggregateException.InnerException ?? aggregateException)).Throw();
+				throw;
+			}
+		}
+		/// <inheritdoc />
+		public Task<int> RunAsync()
+		{
+			return this.Build().RunAsync();
 		}
 
 		private IServiceProvider CreateDefaultServiceProviderFactory()
