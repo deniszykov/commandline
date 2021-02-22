@@ -22,8 +22,8 @@ namespace deniszykov.CommandLine.Binding
 		public readonly IReadOnlyCollection<VerbParameter> ServiceParameters;
 		[NotNull]
 		public readonly Func<object, object[], int> Invoker;
-
 		public readonly bool IsHidden;
+		public readonly bool HasSubVerbs;
 
 		public Verb([NotNull] MethodInfo method)
 		{
@@ -50,6 +50,7 @@ namespace deniszykov.CommandLine.Binding
 				}
 			}
 
+			this.HasSubVerbs = serviceParameters.Any(parameterInfo => parameterInfo.ValueType.AsType() == typeof(ICommandLineBuilder));
 			this.TargetType = method.IsStatic ? null : method.DeclaringType?.GetTypeInfo();
 			this.BoundParameters = boundParameters;
 			this.ServiceParameters = serviceParameters;

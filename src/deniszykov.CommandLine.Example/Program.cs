@@ -13,7 +13,7 @@ namespace deniszykov.CommandLine.Example
 				.CreateFromArguments(arguments)
 				.Configure(config =>
 				{
-					config.DefaultVerbName = nameof(Help);
+					config.DefaultVerbName = nameof(SayHelloTo);
 				})
 				.Use<Program>()
 				.Run();
@@ -30,21 +30,10 @@ namespace deniszykov.CommandLine.Example
 
 		// ### Sub Verb ###
 		[Description("Math related verbs.")]
-		public static int Math(VerbExecutionContext context)
+		public static int Math(ICommandLineBuilder subVerbBuilder)
 		{
-			return CommandLine
-				.CreateFromContext(context)
-				.Use<MathVerbs>()
+			return subVerbBuilder.Use<MathVerbs>()
 				.Run();
-		}
-
-		// ### Help Verb ###
-		[Description("Display this help.")]
-		public static int Help(VerbExecutionContext context, string verbName = null)
-		{
-			return CommandLine
-				.CreateFromContext(context)
-				.Describe(verbName);
 		}
 	}
 }

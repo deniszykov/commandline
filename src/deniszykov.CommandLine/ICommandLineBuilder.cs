@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
@@ -45,11 +46,5 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		/// <returns>Verb's exit code.</returns>
 		int Run();
-
-		/// <summary>
-		/// Write description of available verbs on type into <see cref="IConsole.WriteLine"/>-or-Write detailed description of <paramref name="verbToDescribe"/> into <see cref="IConsole.WriteLine"/>.
-		/// </summary>
-		/// <returns>Verb's exit code.</returns>
-		int Describe(string verbToDescribe);
 	}
 }

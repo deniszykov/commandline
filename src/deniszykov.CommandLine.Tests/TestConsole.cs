@@ -11,8 +11,8 @@ namespace deniszykov.CommandLine.Tests
 	{
 		private readonly ITestOutputHelper testOutputHelper;
 
-		public int OutWritten;
-		public int ErrorWritten;
+		public readonly StringBuilder Output;
+		public readonly StringBuilder Error;
 
 		/// <inheritdoc />
 		public CancellationToken InterruptToken => CancellationToken.None;
@@ -22,6 +22,8 @@ namespace deniszykov.CommandLine.Tests
 			if (testOutputHelper == null) throw new ArgumentNullException(nameof(testOutputHelper));
 
 			this.testOutputHelper = testOutputHelper;
+			this.Output = new StringBuilder();
+			this.Error = new StringBuilder();
 		}
 
 
@@ -30,7 +32,7 @@ namespace deniszykov.CommandLine.Tests
 		{
 			var textStr = Convert.ToString(text) ?? string.Empty;
 			this.testOutputHelper.WriteLine(textStr);
-			this.OutWritten += textStr.Length;
+			this.Output.AppendLine(textStr);
 		}
 
 		/// <inheritdoc />
@@ -38,7 +40,7 @@ namespace deniszykov.CommandLine.Tests
 		{
 			var textStr = Convert.ToString(text) ?? string.Empty;
 			this.testOutputHelper.WriteLine(textStr);
-			this.ErrorWritten += textStr.Length;
+			this.Error.AppendLine(textStr);
 		}
 	}
 }

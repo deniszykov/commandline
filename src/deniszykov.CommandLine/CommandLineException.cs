@@ -48,11 +48,15 @@ namespace deniszykov.CommandLine
 		}
 #endif
 
+		internal static CommandLineException NoVerbSpecified()
+		{
+			return new CommandLineException("No verb specified.");
+		}
 		internal static CommandLineException VerbNotFound(string verbName)
 		{
 			if (verbName == null) throw new ArgumentNullException(nameof(verbName));
 
-			return new CommandLineException($"Command '{verbName}' is not found.");
+			return new CommandLineException($"Verb '{verbName}' is not found.");
 		}
 		internal static CommandLineException InvalidVerbParameters(Verb verb, ParameterBindingResult[] parameterBindResults)
 		{
@@ -123,7 +127,7 @@ namespace deniszykov.CommandLine
 			if (verb == null) throw new ArgumentNullException(nameof(verb));
 			if (serviceType == null) throw new ArgumentNullException(nameof(serviceType));
 
-			return new CommandLineException($"Unable to resolve required service of type '{serviceType}' for '{verb.Name}' command.");
+			return new CommandLineException($"Unable to resolve required service of type '{serviceType}' for '{verb.Name}' verb.");
 		}
 		internal static CommandLineException RecursiveVerbChain(IEnumerable<string> currentChain, string newVerb)
 		{

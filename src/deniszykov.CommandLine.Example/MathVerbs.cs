@@ -21,14 +21,5 @@ namespace deniszykov.CommandLine.Example
 			Console.WriteLine(values.Sum());
 			return 0;
 		}
-
-		// ### Help Verb ###
-		[Description("Display this help.")]
-		public static int Help(VerbExecutionContext context, string verbName = null)
-		{
-			return CommandLine
-				.CreateFromContext(context)
-				.Describe(verbName);
-		}
 	}
 }

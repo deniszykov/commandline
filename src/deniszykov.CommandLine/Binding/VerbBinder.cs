@@ -38,50 +38,12 @@ namespace deniszykov.CommandLine.Binding
 			this.serviceProvider = serviceProvider;
 		}
 
-		public VerbBindingResult Bind(VerbSet verbSet, string defaultVerbName, string[] arguments)
+		public void ProvideContext([NotNull] Verb verb, [NotNull] object[] verArguments, [NotNull] VerbExecutionContext context, CancellationToken cancellationToken)
 		{
-			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
-
-			var verbName = default(string);
-			var bestMatchResult = default(VerbBindingResult);
-			if (arguments.Length > 0)
-			{
-				verbName = this.typeConversionProvider.ConvertToString(arguments[0]);
-				var result = this.FindAndBindVerb(verbSet.Verbs, verbName, arguments.Skip(1).ToArray());
-				if (result.IsSuccess)
-					return result;
-
-				bestMatchResult = result;
-			}
-
-			if (string.IsNullOrEmpty(defaultVerbName) == false)
-			{
-				verbName = defaultVerbName;
-				var result = this.FindAndBindVerb(verbSet.Verbs, defaultVerbName, arguments);
-				if (result.IsSuccess)
-				{
-					return result;
-				}
-
-				bestMatchResult = result;
-			}
-
-			if (string.IsNullOrEmpty(verbName))
-			{
-				verbName = CommandLine.UnknownVerbName;
-			}
-
-			bestMatchResult ??= new VerbBindingResult(verbName, VerbBindingResult.EmptyFailedMethodBindings);
-
-			return bestMatchResult;
-		}
-		public void ProvideContext(VerbBindingResult bindResult, VerbExecutionContext context, CancellationToken cancellationToken)
-		{
-			if (bindResult == null) throw new ArgumentNullException(nameof(bindResult));
+			if (verb == null) throw new ArgumentNullException(nameof(verb));
+			if (verArguments == null) throw new ArgumentNullException(nameof(verArguments));
 			if (context == null) throw new ArgumentNullException(nameof(context));
 
-			var verb = bindResult.Verb;
-			var verArguments = bindResult.Arguments;
 			foreach (var serviceParameter in verb.ServiceParameters)
 			{
 				var argumentIndex = serviceParameter.ArgumentIndex;
@@ -89,11 +51,49 @@ namespace deniszykov.CommandLine.Binding
 				{
 					verArguments[argumentIndex] = context;
 				}
+				if (serviceParameter.ValueType.AsType() == typeof(ICommandLineBuilder))
+				{
+					verArguments[argumentIndex] = CommandLine.CreateSubVerb(context);
+				}
 				else if (serviceParameter.ValueType.AsType() == typeof(CancellationToken))
 				{
 					verArguments[argumentIndex] = cancellationToken;
 				}
 			}
+		}
+
+		public VerbBindingResult Bind(VerbSet verbSet, string defaultVerbName, string[] arguments)
+		{
+			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
+
+			var result = default(VerbBindingResult);
+			if (this.TryGetVerbName(arguments, out var verbName, out var isHelpRequested) && verbSet.FindVerb(verbName) != null)
+			{
+				result = this.FindAndBindVerb(verbSet.Verbs, verbName, arguments.Skip(1).ToArray());
+
+				if (isHelpRequested && result is VerbBindingResult.FailedToBind)
+				{
+					return new VerbBindingResult.HelpRequested(verbName);
+				}
+			}
+			else if (string.IsNullOrEmpty(defaultVerbName) == false && !isHelpRequested)
+			{
+				result = this.FindAndBindVerb(verbSet.Verbs, defaultVerbName, arguments);
+			}
+			else if (isHelpRequested)
+			{
+				return new VerbBindingResult.HelpRequested(string.IsNullOrEmpty(verbName) ? CommandLine.UnknownVerbName : verbName);
+			}
+			else if (!string.IsNullOrEmpty(verbName))
+			{
+				return new VerbBindingResult.FailedToBind(verbName, VerbBindingResult.EmptyFailedMethodBindings);
+			}
+			else
+			{
+				return new VerbBindingResult.NoVerbSpecified();
+			}
+
+			return result;
 		}
 
 		private VerbBindingResult FindAndBindVerb(IReadOnlyCollection<Verb> verbs, string verbName, string[] arguments)
@@ -112,6 +112,12 @@ namespace deniszykov.CommandLine.Binding
 
 				var getOptionArity = new Func<string, ValueArity?>(optionName => verb.FindBoundParameter(optionName, optionName.Length > 1 ? LongOptionNameMatchingMode : ShortOptionNameMatchingMode)?.ValueArity);
 				var parsedArguments = this.parser.Parse(arguments, getOptionArity);
+
+				if (parsedArguments.HasHelpOption && !verb.HasSubVerbs)
+				{
+					return new VerbBindingResult.HelpRequested(verb.Name);
+				}
+
 				var boundParameters = verb.BoundParameters;
 				var serviceParameters = verb.ServiceParameters;
 				var parameterBindings = new ParameterBindingResult[boundParameters.Count];
@@ -141,19 +147,20 @@ namespace deniszykov.CommandLine.Binding
 				foreach (var serviceParameter in serviceParameters)
 				{
 					if (serviceParameter.ValueType.AsType() == typeof(VerbExecutionContext) ||
+						serviceParameter.ValueType.AsType() == typeof(ICommandLineBuilder) ||
 						serviceParameter.ValueType.AsType() == typeof(CancellationToken))
 					{
-						continue;
+						continue; // late bound/special services
 					}
 
 					var argumentIndex = serviceParameter.ArgumentIndex;
 					verbArguments[argumentIndex] = this.ResolveService(verb, serviceParameter.ValueType.AsType(), serviceParameter.IsOptional);
 				}
 
-				return new VerbBindingResult(verb, target, verbArguments);
+				return new VerbBindingResult.Bound(verb, target, verbArguments, parsedArguments.HasHelpOption);
 			}
 
-			return new VerbBindingResult(verbName, failedVerbs);
+			return new VerbBindingResult.FailedToBind(verbName, failedVerbs);
 		}
 		private ParameterBindingResult BindParameter(VerbParameter parameter, ParsedArguments parsedArguments, HashSet<int> takenValues)
 		{
@@ -251,7 +258,26 @@ namespace deniszykov.CommandLine.Binding
 			return new ParameterBindingResult(parameter, null, value);
 		}
 
+		private bool TryGetVerbName([NotNull] string[] arguments, out string verbName, out bool isHelpRequested)
+		{
+			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
+			var getOptionArity = new Func<string, ValueArity?>(name => ValueArity.ZeroOrOne);
+			var parsedArguments = this.parser.Parse(arguments, getOptionArity);
+
+			isHelpRequested = parsedArguments.HasHelpOption;
+
+			if (parsedArguments.Values.Count > 0 &&
+				arguments.Length > 0 &&
+				string.Equals(parsedArguments.Values.First(), arguments[0], StringComparison.Ordinal))
+			{
+				verbName = arguments[0];
+				return true;
+			}
+
+			verbName = default;
+			return false;
+		}
 		private object ResolveService(Verb verb, Type serviceType, bool isOptional)
 		{
 			var instance = this.serviceProvider.GetService(serviceType);
@@ -314,7 +340,6 @@ namespace deniszykov.CommandLine.Binding
 
 			return false;
 		}
-
 		private static bool IsArityMatching(ValueArity parameterValueArity, int rawCount)
 		{
 			switch (parameterValueArity)

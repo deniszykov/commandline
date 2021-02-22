@@ -16,45 +16,81 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
 {
-	internal class VerbBindingResult
+	internal abstract class VerbBindingResult
 	{
 		public static readonly Dictionary<Verb, ParameterBindingResult[]> EmptyFailedMethodBindings = new Dictionary<Verb, ParameterBindingResult[]>();
 
-		public bool IsSuccess => this.Verb != null;
-
-		public Verb Verb { get; }
-		public string VerbName { get; }
-		public object Target { get; }
-		public object[] Arguments { get; }
-		public Dictionary<Verb, ParameterBindingResult[]> BindingFailures { get; }
-
-		public VerbBindingResult([NotNull] string verbName, [NotNull]Dictionary<Verb, ParameterBindingResult[]> bindingFailures)
+		public sealed class Bound : VerbBindingResult
 		{
-			if (verbName == null) throw new ArgumentNullException(nameof(verbName));
-			if (bindingFailures == null) throw new ArgumentNullException(nameof(bindingFailures));
+			[CanBeNull] public object Target { get; }
+			[NotNull] public Verb Verb { get; }
+			[NotNull, ItemCanBeNull] public object[] Arguments { get; }
+			public bool HasHelpOption { get; }
+			/// <inheritdoc />
+			public override string VerbName => this.Verb.Name;
 
-			this.VerbName = verbName;
-			this.BindingFailures = bindingFailures;
+			public Bound([NotNull] Verb verb, [CanBeNull] object target, [NotNull, ItemCanBeNull]object[] arguments, bool hasHelpOption)
+			{
+				if (verb == null) throw new ArgumentNullException(nameof(verb));
+				if (arguments == null) throw new ArgumentNullException(nameof(arguments));
+
+				this.Target = target;
+				this.Arguments = arguments;
+				this.HasHelpOption = hasHelpOption;
+				this.Verb = verb;
+			}
+
+			public int Invoke()
+			{
+				return this.Verb.Invoker(this.Target, this.Arguments);
+			}
+
+			/// <inheritdoc />
+			public override string ToString() => $"Successful binding to verb '{this.Verb}' with '{string.Join(", ", this.Arguments)}' arguments.";
 		}
-		public VerbBindingResult([NotNull] Verb verb, [CanBeNull]object target, [NotNull]object[] arguments)
+		public sealed class FailedToBind : VerbBindingResult
 		{
-			this.BindingFailures = EmptyFailedMethodBindings;
-			this.Verb = verb;
-			this.Arguments = arguments;
-			this.Target = target;
+			[NotNull] public Dictionary<Verb, ParameterBindingResult[]> BindingFailures { get; }
+			public override string VerbName { get; }
+
+			public FailedToBind([NotNull] string verbName, [NotNull] Dictionary<Verb, ParameterBindingResult[]> bindingFailures)
+			{
+				if (verbName == null) throw new ArgumentNullException(nameof(verbName));
+				if (bindingFailures == null) throw new ArgumentNullException(nameof(bindingFailures));
+
+				this.BindingFailures = bindingFailures;
+				this.VerbName = verbName;
+			}
+
+			public override string ToString() => $"Failure binding to verb '{this.VerbName}'." +
+				string.Join(Environment.NewLine, this.BindingFailures.Select(kv => $"{kv.Key.Name}: {string.Join(", ", kv.Value.Where(p => !p.IsSuccess).Select(p => p.ToString()))}")) + ".";
+		}
+		public sealed class HelpRequested : VerbBindingResult
+		{
+			public override string VerbName { get; }
+
+			public HelpRequested([NotNull] string verbName)
+			{
+				if (verbName == null) throw new ArgumentNullException(nameof(verbName));
+
+				this.VerbName = verbName;
+			}
+
+			/// <inheritdoc />
+			public override string ToString() => $"Help requested for '{this.VerbName}'.";
+		}
+		public sealed class NoVerbSpecified : VerbBindingResult
+		{
+			public override string VerbName { get; }
+
+			public NoVerbSpecified()
+			{
+				this.VerbName = CommandLine.UnknownVerbName;
+			}
+
+			public override string ToString() => "No verb specified.";
 		}
 
-		public int Invoke()
-		{
-			return this.Verb.Invoker(this.Target, this.Arguments);
-		}
-
-		public override string ToString()
-		{
-			if (this.IsSuccess)
-				return $"Successful binding to verb '{this.Verb}' with '{string.Join(", ", this.Arguments)}' arguments.";
-			else
-				return $"Failure binding to verb '{this.VerbName}'." + string.Join(Environment.NewLine, this.BindingFailures.Select(kv => $"{kv.Key.Name}: {string.Join(", ", kv.Value.Where(p => !p.IsSuccess).Select(p => p.ToString()))}"));
-		}
+		[NotNull] public abstract string VerbName { get; }
 	}
 }

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using deniszykov.CommandLine.Binding;
 using deniszykov.CommandLine.Builders;
-using deniszykov.CommandLine.Renderers;
+using deniszykov.CommandLine.Formatting;
 using deniszykov.TypeConversion;
 using JetBrains.Annotations;
 
@@ -41,7 +41,7 @@ namespace deniszykov.CommandLine
 		[NotNull] private readonly IConsole console;
 		[NotNull] private readonly IServiceProvider serviceProvider;
 		[NotNull] private readonly VerbBinder verbBinder;
-		[NotNull] private readonly VerbRenderer verbRenderer;
+		[NotNull] private readonly HelpFormatter verbRenderer;
 
 
 		public CommandLine(
@@ -50,6 +50,7 @@ namespace deniszykov.CommandLine
 			[NotNull] CommandLineConfiguration configuration,
 			[NotNull] ITypeConversionProvider typeConversionProvider,
 			[NotNull] IConsole console,
+			[NotNull] IHelpTextProvider helpTextProvider,
 			[NotNull] IServiceProvider serviceProvider,
 			[NotNull] IDictionary<object, object> properties
 			)
@@ -59,6 +60,7 @@ namespace deniszykov.CommandLine
 			if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 			if (typeConversionProvider == null) throw new ArgumentNullException(nameof(typeConversionProvider));
 			if (console == null) throw new ArgumentNullException(nameof(console));
+			if (helpTextProvider == null) throw new ArgumentNullException(nameof(helpTextProvider));
 			if (properties == null) throw new ArgumentNullException(nameof(properties));
 
 			this.verbSetBuilder = verbSetBuilder;
@@ -68,7 +70,7 @@ namespace deniszykov.CommandLine
 			this.serviceProvider = serviceProvider;
 			this.properties = properties;
 			this.verbBinder = new VerbBinder(configuration, typeConversionProvider, this.serviceProvider);
-			this.verbRenderer = new VerbRenderer(configuration, console, typeConversionProvider);
+			this.verbRenderer = new HelpFormatter(configuration, console, helpTextProvider, typeConversionProvider);
 		}
 
 		/// <summary>
@@ -81,22 +83,32 @@ namespace deniszykov.CommandLine
 			{
 				var verbSet = this.verbSetBuilder.Build();
 				var bindResult = this.verbBinder.Bind(verbSet, this.configuration.DefaultVerbName, this.arguments);
-				if (bindResult.IsSuccess)
+
+				switch (bindResult)
 				{
-					// prepare scoped services
-					var context = new VerbExecutionContext(this.verbSetBuilder, bindResult.Verb, this.arguments,
-						this.serviceProvider, this.configuration, this.properties);
-					var cancellationToken = this.console.InterruptToken;
+					case VerbBindingResult.Bound bound:
+						// prepare scoped services
+						var properties = new Dictionary<object, object>(this.properties);
+						properties.AddVertToChain(bound.Verb); // add current verb to chain
+						var context = new VerbExecutionContext(this.verbSetBuilder, bound.Verb, this.arguments,
+							this.serviceProvider, this.configuration, properties);
+						var cancellationToken = this.console.InterruptToken;
+						//
 
-					// resolve service parameters on verb
-					this.verbBinder.ProvideContext(bindResult, context, cancellationToken);
+						// resolve service parameters on verb
+						this.verbBinder.ProvideContext(bound.Verb, bound.Arguments, context, cancellationToken);
 
-					// execute verb
-					return bindResult.Invoke();
+						// execute verb
+						return bound.Invoke();
+					case VerbBindingResult.NoVerbSpecified noVerb:
+						return this.WriteBindingError(noVerb, verbSet);
+					case VerbBindingResult.FailedToBind failed:
+						return this.WriteBindingError(failed, verbSet);
+					case VerbBindingResult.HelpRequested help:
+						return this.WriteHelp(help.VerbName);
+					default:
+						throw CommandLineException.NoVerbSpecified();
 				}
-
-				this.PrintOrThrowNotFoundException(bindResult);
-				return this.configuration.BindFailureExitCode;
 			}
 			catch (Exception exception)
 			{
@@ -106,29 +118,25 @@ namespace deniszykov.CommandLine
 				return DotNetExceptionExitCode;
 			}
 		}
-		/// <summary>
-		/// Write description of available verbds on type into <see cref="IConsole.WriteLine"/>-or-Write detailed description of <paramref name="verbToDescribe"/> into <see cref="IConsole.WriteLine"/>.
-		/// </summary>
-		/// <param name="verbToDescribe">Optional verb name for detailed description.</param>
-		/// <returns><see cref="CommandLineConfiguration.DescribeExitCode"/></returns>
-		public int Describe(string verbToDescribe = null)
+
+		private int WriteHelp(string verbName)
 		{
 			try
 			{
 				var verbSet = this.verbSetBuilder.Build();
-				var verb = verbSet.Verbs.FirstOrDefault(otherVerb => string.Equals(otherVerb.Name, verbToDescribe, StringComparison.OrdinalIgnoreCase));
 				var verbChain = this.properties.GetVerbChain().ToList();
+				var verb = string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UnknownVerbName) ? default(Verb) : verbSet.FindVerb(verbName);
 				if (verb != null)
 				{
-					this.verbRenderer.Render(verbSet, verb, verbChain);
+					this.verbRenderer.VerbDescription(verbSet, verb, verbChain);
 				}
-				else if (string.IsNullOrEmpty(verbToDescribe) == false)
+				else if (string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UnknownVerbName))
 				{
-					this.verbRenderer.RenderNotFound(verbSet, verbToDescribe, verbChain);
+					this.verbRenderer.VerbList(verbSet, verbChain, includeTypeHelpText: verbChain.Count == 0);
 				}
 				else
 				{
-					this.verbRenderer.RenderList(verbSet, verbChain, includeTypeHelpText: verbChain.Count == 0);
+					this.verbRenderer.VerbNotFound(verbSet, verbName, verbChain);
 				}
 				return this.configuration.DescribeExitCode;
 			}
@@ -139,6 +147,55 @@ namespace deniszykov.CommandLine
 
 				return DotNetExceptionExitCode;
 			}
+		}
+		private int WriteBindingError(VerbBindingResult.FailedToBind bindResult, VerbSet verbSet)
+		{
+			var bestMatchMethod = (from bindingKeyValue in bindResult.BindingFailures
+								   let parameters = bindingKeyValue.Value
+								   let method = bindingKeyValue.Key
+								   orderby parameters.Count(parameter => parameter.IsSuccess) descending
+								   select method).FirstOrDefault();
+
+			var error = default(CommandLineException);
+			if (bestMatchMethod == null)
+			{
+				error = CommandLineException.VerbNotFound(bindResult.VerbName);
+			}
+			else
+			{
+				error = CommandLineException.InvalidVerbParameters(bestMatchMethod, bindResult.BindingFailures[bestMatchMethod]);
+			}
+
+			if (this.configuration.DescribeOnBindFailure)
+			{
+				var verbChain = this.properties.GetVerbChain().ToList();
+
+				if (bestMatchMethod != null)
+				{
+					this.verbRenderer.InvalidVerbParameters(bestMatchMethod, bindResult.BindingFailures[bestMatchMethod], error);
+				}
+				else
+				{
+					this.verbRenderer.VerbNotFound(verbSet, bindResult.VerbName, verbChain);
+				}
+			}
+			else
+			{
+				throw error;
+			}
+			return this.configuration.BindFailureExitCode;
+		}
+		private int WriteBindingError(VerbBindingResult.NoVerbSpecified _, VerbSet verbSet)
+		{
+			if (!this.configuration.DescribeOnBindFailure)
+			{
+				throw CommandLineException.NoVerbSpecified();
+			}
+
+			var verbChain = this.properties.GetVerbChain().ToList();
+			this.verbRenderer.VerbNotSpecified(verbSet, verbChain);
+
+			return this.configuration.BindFailureExitCode;
 		}
 
 		[NotNull]
@@ -153,7 +210,7 @@ namespace deniszykov.CommandLine
 		}
 
 		[NotNull]
-		public static ICommandLineBuilder CreateFromContext([NotNull] VerbExecutionContext context)
+		internal static ICommandLineBuilder CreateSubVerb([NotNull] VerbExecutionContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
 
@@ -177,74 +234,10 @@ namespace deniszykov.CommandLine
 				commandLineBuilder.Properties[contextProperty.Key] = contextProperty.Value;
 			}
 
-			// add current verb to chain
-			commandLineBuilder.Properties.AddVertToChain(context.Verb);
-
 			// copy verb set
 			commandLineBuilder.Use(() => context.VerbSetBuilder);
 
 			return commandLineBuilder;
-		}
-
-		private void PrintOrThrowNotFoundException(VerbBindingResult bindResult)
-		{
-			var bestMatchMethod = (from bindingKeyValue in bindResult.BindingFailures
-								   let parameters = bindingKeyValue.Value
-								   let method = bindingKeyValue.Key
-								   orderby parameters.Count(parameter => parameter.IsSuccess) descending
-								   select method).FirstOrDefault();
-
-			var error = default(CommandLineException);
-			if (bestMatchMethod == null)
-			{
-				error = CommandLineException.VerbNotFound(bindResult.VerbName);
-			}
-			else
-			{
-				error = CommandLineException.InvalidVerbParameters(bestMatchMethod, bindResult.BindingFailures[bestMatchMethod]);
-			}
-
-			if (this.configuration.DescribeOnBindFailure)
-			{
-				if (bindResult.VerbName == UnknownVerbName)
-				{
-					this.console.WriteLine(" Error:");
-					this.console.WriteLine("  No verb is specified.");
-					this.console.WriteLine();
-
-					if (this.configuration.DetailedBindFailureMessage)
-					{
-						this.console.WriteErrorLine(error);
-						this.console.WriteErrorLine();
-					}
-
-					this.Describe();
-				}
-				else if (bestMatchMethod != null)
-				{
-					this.console.WriteLine(" Error:");
-					this.console.WriteLine($"  Invalid parameters specified for '{bindResult.VerbName}' verb.");
-					this.console.WriteLine();
-
-					if (this.configuration.DetailedBindFailureMessage)
-					{
-						this.console.WriteErrorLine(error);
-						this.console.WriteErrorLine();
-					}
-
-					this.Describe(bindResult.VerbName);
-				}
-				else
-				{
-					this.console.WriteLine(" Error:");
-					this.console.WriteLine(error.Message);
-					this.console.WriteLine();
-				}
-			}
-			else
-			{
-				throw error;
-			}
 		}
 
 		private void DefaultUnhandledExceptionHandler(object source, ExceptionEventArgs eventArgs)

@@ -23,7 +23,7 @@ namespace deniszykov.CommandLine.Binding
 			var verbs = new List<Verb>();
 			foreach (var method in type.GetAllMethods().OrderBy(m => m, Comparer<MethodInfo>.Create(CompareMethods)))
 			{
-				if (HasInvalidSignature(method))
+				if (HasInvalidSignature(method) || method.DeclaringType == typeof(object))
 					continue;
 
 				var verb = new Verb(method);
@@ -48,6 +48,11 @@ namespace deniszykov.CommandLine.Binding
 				}
 			}
 			return null;
+		}
+
+		public IEnumerable<Verb> GetNonHiddenVerbs()
+		{
+			return this.Verbs.Where(v => !v.IsHidden);
 		}
 
 		private static bool HasInvalidSignature(MethodInfo method)

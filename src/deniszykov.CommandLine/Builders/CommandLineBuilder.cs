@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using deniszykov.CommandLine.Renderers;
+using deniszykov.CommandLine.Formatting;
 using deniszykov.TypeConversion;
 
 namespace deniszykov.CommandLine.Builders
@@ -77,6 +77,7 @@ namespace deniszykov.CommandLine.Builders
 			var serviceProvider = this.serviceProviderFactory?.Invoke() ?? this.CreateDefaultServiceProviderFactory();
 			var typeConversionProvider = (ITypeConversionProvider)serviceProvider.GetService(typeof(ITypeConversionProvider)) ?? new TypeConversionProvider();
 			var console = (IConsole)serviceProvider.GetService(typeof(IConsole)) ?? new DefaultConsole(this.configuration.HookConsoleCancelKeyPress);
+			var helpTextProvider = (IHelpTextProvider)serviceProvider.GetService(typeof(IHelpTextProvider)) ?? new DefaultHelpTextProvider();
 
 			var commandLine = new CommandLine(
 				this.verbSetBuilder,
@@ -84,6 +85,7 @@ namespace deniszykov.CommandLine.Builders
 				this.configuration,
 				typeConversionProvider,
 				console,
+				helpTextProvider,
 				serviceProvider,
 				this.properties
 			);
@@ -94,12 +96,6 @@ namespace deniszykov.CommandLine.Builders
 		public int Run()
 		{
 			return this.Build().Run();
-		}
-
-		/// <inheritdoc />
-		public int Describe(string verbToDescribe)
-		{
-			return this.Build().Describe(verbToDescribe);
 		}
 
 		private IServiceProvider CreateDefaultServiceProviderFactory()

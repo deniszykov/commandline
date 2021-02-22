@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using deniszykov.CommandLine.Annotations;
+using deniszykov.CommandLine.Formatting;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -9,6 +10,10 @@ namespace deniszykov.CommandLine.Tests
 {
 	public class CommandLineTests
 	{
+		private const string TEST_API_DESCRIPTION = "This is test api!";
+		private const string TEST_HELP_HEADER_TEXT = "##HEADER_TEXT##";
+		private const string TEST_HELP_FOOTER_TEXT = "##FOOTER_TEXT##";
+
 		[Flags]
 		public enum MyFlags
 		{
@@ -117,21 +122,55 @@ namespace deniszykov.CommandLine.Tests
 			}
 		}
 
-		[Description("This is test api!")]
+		internal class TestHelpTextProvider : DefaultHelpTextProvider, IHelpTextProvider
+		{
+			private readonly string helpHeaderText;
+			private readonly string helpFooterText;
+
+			/// <inheritdoc />
+			string IHelpTextProvider.HelpHeaderText => this.helpHeaderText;
+			/// <inheritdoc />
+			string IHelpTextProvider.HelpFooterText => this.helpFooterText;
+
+			public TestHelpTextProvider(string helpHeaderText, string helpFooterText)
+			{
+				this.helpHeaderText = helpHeaderText;
+				this.helpFooterText = helpFooterText;
+			}
+		}
+
+		[Description(TEST_API_DESCRIPTION)]
 		public class DescribeTestApi
 		{
 
-			[Description("This is test verb description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet turpis at ex malesuada facilisis sed ac eros. Suspendisse pretium congue quam non dapibus. Pellentesque vel consequat mi. Vestibulum id bibendum augue, a pellentesque erat. Integer vel tempor lacus. Duis ut sapien non nulla interdum cursus. Maecenas vel laoreet lectus. ")]
+			[Description("This is test verb description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. \r\nNunc sit amet turpis at ex malesuada facilisis sed ac eros. \r\nSuspendisse pretium congue quam non dapibus. Pellentesque vel consequat mi. Vestibulum id bibendum augue, a pellentesque erat. Integer vel tempor lacus. Duis ut sapien non nulla interdum cursus. Maecenas vel laoreet lectus. ")]
 			public static int TestVerb()
 			{
 				return 0;
 			}
+
 			[Description("This is test verb description.")]
 			public static int TestVerb(int param1)
 			{
 				Assert.Equal(1, param1);
 				return 0;
 			}
+
+			[Description("This is test sub verb description.")]
+			public static int TestSubVerb(ICommandLineBuilder subVerbBuilder)
+			{
+				return subVerbBuilder
+					.Use<DescribeTestApi>()
+					.Run();
+			}
+
+			[Description("This is test verb description.")]
+			public static int TestVerbOneParam(int param1)
+			{
+				Assert.Equal(1, param1);
+				return 0;
+			}
+
 
 			[Description("This is test verb with multiple params description.")]
 			public static int MultiparamVerb(
@@ -156,7 +195,7 @@ namespace deniszykov.CommandLine.Tests
 				return 0;
 			}
 
-			[Description("This is hidden verb.")]
+			[Description("This is hidden verb."), Hidden]
 			public static int HiddenVerb()
 			{
 				return 0;
@@ -225,30 +264,218 @@ namespace deniszykov.CommandLine.Tests
 			Assert.Equal(0, exitCode);
 		}
 
-		[Theory]
-		[InlineData(nameof(DescribeTestApi.TestVerb))]
-		[InlineData(nameof(DescribeTestApi.MultiparamVerb))]
-		public void DescribeTest(string verbName)
+		[Fact]
+		public void FailedToBindTest()
 		{
-			var exitCode = CommandLine.CreateFromArguments(verbName)
+			var expectedExitCode = 11;
+			var testConsole = new TestConsole(this.output);
+			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
+			var exitCode = CommandLine.CreateFromArguments(new[] { nameof(DescribeTestApi.TestVerbOneParam), "aaa" })
+				.Configure(config =>
+				{
+					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
+					config.DescribeOnBindFailure = true;
+					config.DescribeExitCode = 1;
+					config.BindFailureExitCode = expectedExitCode;
+				})
+				.UseServiceProvider(() =>
+				{
+					var services = new ServiceContainer();
+					services.AddService(typeof(IConsole), testConsole);
+					services.AddService(typeof(IHelpTextProvider), helpTextProvider);
+					return services;
+				})
+				.Use<DescribeTestApi>()
+				.Run();
+
+			Assert.Contains(TEST_HELP_HEADER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_FOOTER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Equal(expectedExitCode, exitCode);
+		}
+
+		[Theory]
+		[InlineData(nameof(DescribeTestApi.TestVerbOneParam))]
+		[InlineData(nameof(DescribeTestApi.MultiparamVerb))]
+		public void DescribeVerbHelpTest(string name)
+		{
+
+			var testConsole = new TestConsole(this.output);
+			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
+			var expectedExitCode = 11;
+			var exitCode = CommandLine.CreateFromArguments(new[] { name, "/?" })
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
 					config.DescribeOnBindFailure = false;
-					config.DefaultVerbName = verbName;
-					config.DescribeExitCode = 0;
+					config.DescribeExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
 				{
-					var testConsole = new TestConsole(this.output);
 					var services = new ServiceContainer();
 					services.AddService(typeof(IConsole), testConsole);
+					services.AddService(typeof(IHelpTextProvider), helpTextProvider);
 					return services;
 				})
 				.Use<DescribeTestApi>()
-				.Describe(verbName);
+				.Run();
 
-			Assert.Equal(0, exitCode);
+			Assert.Equal(expectedExitCode, exitCode);
+			Assert.Contains(name, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_HEADER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_FOOTER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.DoesNotContain("param6Hidden", testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void HelpSubVerbTest()
+		{
+			var testConsole = new TestConsole(this.output);
+			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
+			var expectedExitCode = 11;
+			var exitCode = CommandLine.CreateFromArguments(new[] { nameof(DescribeTestApi.TestSubVerb), nameof(DescribeTestApi.TestVerb), "/?" })
+				.Configure(config =>
+				{
+					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
+					config.DescribeOnBindFailure = false;
+					config.DescribeExitCode = expectedExitCode;
+				})
+				.UseServiceProvider(() =>
+				{
+					var services = new ServiceContainer();
+					services.AddService(typeof(IConsole), testConsole);
+					services.AddService(typeof(IHelpTextProvider), helpTextProvider);
+					return services;
+				})
+				.Use<DescribeTestApi>()
+				.Run();
+
+			Assert.Equal(expectedExitCode, exitCode);
+			Assert.Contains(TEST_HELP_HEADER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_FOOTER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(nameof(DescribeTestApi.TestSubVerb) + " " + nameof(DescribeTestApi.TestVerb), testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void ListVerbsHelpTest()
+		{
+			var testConsole = new TestConsole(this.output);
+			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
+			var expectedExitCode = 11;
+			var exitCode = CommandLine.CreateFromArguments(new[] { "/?" })
+				.Configure(config =>
+				{
+					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
+					config.DescribeOnBindFailure = false;
+					config.DescribeExitCode = expectedExitCode;
+				})
+				.UseServiceProvider(() =>
+				{
+					var services = new ServiceContainer();
+					services.AddService(typeof(IConsole), testConsole);
+					services.AddService(typeof(IHelpTextProvider), helpTextProvider);
+					return services;
+				})
+				.Use<DescribeTestApi>()
+				.Run();
+
+			Assert.Equal(expectedExitCode, exitCode);
+			Assert.Contains(TEST_API_DESCRIPTION, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_HEADER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_FOOTER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(nameof(DescribeTestApi.TestSubVerb), testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(nameof(DescribeTestApi.TestVerb), testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(nameof(DescribeTestApi.TestVerbOneParam), testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.DoesNotContain(nameof(DescribeTestApi.HiddenVerb), testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void ListSubVerbsHelpTest()
+		{
+			var testConsole = new TestConsole(this.output);
+			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
+			var expectedExitCode = 11;
+			var exitCode = CommandLine.CreateFromArguments(new[] { nameof(DescribeTestApi.TestSubVerb), "/?" })
+				.Configure(config =>
+				{
+					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
+					config.DescribeOnBindFailure = false;
+					config.DescribeExitCode = expectedExitCode;
+				})
+				.UseServiceProvider(() =>
+				{
+					var services = new ServiceContainer();
+					services.AddService(typeof(IConsole), testConsole);
+					services.AddService(typeof(IHelpTextProvider), helpTextProvider);
+					return services;
+				})
+				.Use<DescribeTestApi>()
+				.Run();
+
+			Assert.Equal(expectedExitCode, exitCode);
+			Assert.Contains(TEST_HELP_HEADER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_FOOTER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(nameof(DescribeTestApi.TestSubVerb) + " " + nameof(DescribeTestApi.TestVerb), testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.DoesNotContain(nameof(DescribeTestApi.HiddenVerb), testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void NoVerbSpecifiedTest()
+		{
+			var expectedExitCode = 11;
+			var testConsole = new TestConsole(this.output);
+			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
+			var exitCode = CommandLine.CreateFromArguments(new string[0])
+				.Configure(config =>
+				{
+					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
+					config.DescribeOnBindFailure = true;
+					config.DescribeExitCode = 1;
+					config.BindFailureExitCode = expectedExitCode;
+				})
+				.UseServiceProvider(() =>
+				{
+					var services = new ServiceContainer();
+					services.AddService(typeof(IConsole), testConsole);
+					services.AddService(typeof(IHelpTextProvider), helpTextProvider);
+					return services;
+				})
+				.Use<DescribeTestApi>()
+				.Run();
+
+			Assert.Contains(TEST_HELP_HEADER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_FOOTER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Equal(expectedExitCode, exitCode);
+		}
+
+		[Fact]
+		public void VerbNotFoundHelpTest()
+		{
+			const string NOT_EXISTENT_VERB_NAME = "__XXX__";
+			var expectedExitCode = 11;
+			var testConsole = new TestConsole(this.output);
+			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
+			var exitCode = CommandLine.CreateFromArguments(new[] { NOT_EXISTENT_VERB_NAME })
+				.Configure(config =>
+				{
+					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
+					config.DescribeOnBindFailure = true;
+					config.DescribeExitCode = 1;
+					config.BindFailureExitCode = expectedExitCode;
+				})
+				.UseServiceProvider(() =>
+				{
+					var services = new ServiceContainer();
+					services.AddService(typeof(IConsole), testConsole);
+					services.AddService(typeof(IHelpTextProvider), helpTextProvider);
+					return services;
+				})
+				.Use<DescribeTestApi>()
+				.Run();
+
+			Assert.Contains(NOT_EXISTENT_VERB_NAME, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_HEADER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(TEST_HELP_FOOTER_TEXT, testConsole.Output.ToString(), StringComparison.OrdinalIgnoreCase);
+			Assert.Equal(expectedExitCode, exitCode);
 		}
 	}
 }

@@ -74,12 +74,16 @@ namespace deniszykov.CommandLine.Tests
 			(
 				[Name("param-1-int")]
 				int param1,
+				[FromService]
+				IConsole console,
 				[Name("param-2-int")]
 				int param2
 			)
 			{
 				this.Param1 = param1;
 				this.Param3Value = param2;
+
+				console.WriteLine($"{nameof(this.TwoParamBindVerb)} {param1} {param2}");
 
 				return 0;
 			}
@@ -155,12 +159,15 @@ namespace deniszykov.CommandLine.Tests
 
 			this.output.WriteLine(bindingResult.ToString());
 
-			Assert.Equal(success, bindingResult.IsSuccess);
-			if (!success)
+			if (success)
+			{
+				Assert.IsType<VerbBindingResult.Bound>(bindingResult);
+			}
+			else
 			{
 				return;
 			}
-			Assert.Equal(0, bindingResult.Invoke());
+			Assert.Equal(0, ((VerbBindingResult.Bound)bindingResult).Invoke());
 
 			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
 			Assert.Equal(propertyValue, expectedPropertyValue);
@@ -194,12 +201,15 @@ namespace deniszykov.CommandLine.Tests
 
 			this.output.WriteLine(bindingResult.ToString());
 
-			Assert.Equal(success, bindingResult.IsSuccess);
-			if (!success)
+			if (success)
+			{
+				Assert.IsType<VerbBindingResult.Bound>(bindingResult);
+			}
+			else
 			{
 				return;
 			}
-			Assert.Equal(0, bindingResult.Invoke());
+			Assert.Equal(0, ((VerbBindingResult.Bound)bindingResult).Invoke());
 
 			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
 			Assert.Equal(propertyValue, expectedPropertyValue);
@@ -242,12 +252,15 @@ namespace deniszykov.CommandLine.Tests
 
 			this.output.WriteLine(bindingResult.ToString());
 
-			Assert.Equal(success, bindingResult.IsSuccess);
-			if (!success)
+			if (success)
+			{
+				Assert.IsType<VerbBindingResult.Bound>(bindingResult);
+			}
+			else
 			{
 				return;
 			}
-			Assert.Equal(0, bindingResult.Invoke());
+			Assert.Equal(0, ((VerbBindingResult.Bound)bindingResult).Invoke());
 
 			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
 
@@ -257,5 +270,10 @@ namespace deniszykov.CommandLine.Tests
 			else
 				Assert.Equal(propertyValue, expectedPropertyValue);
 		}
+
+		// case insensitive parameter binding
+
+		// bind command by name
+		// bind command by case sensitive name
 	}
 }

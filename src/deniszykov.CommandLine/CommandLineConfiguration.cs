@@ -23,7 +23,7 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public int BindFailureExitCode { get; set; }
 		/// <summary>
-		/// Exit code used by <see cref="CommandLine.Describe"/> method as return value. Defaults to <c>2</c>.
+		/// Exit code used by <see cref="CommandLine.WriteHelp"/> method as return value. Defaults to <c>2</c>.
 		/// </summary>
 		public int DescribeExitCode { get; set; }
 		/// <summary>
@@ -77,6 +77,7 @@ namespace deniszykov.CommandLine
 
 		public void SetToDefault()
 		{
+			this.DescribeOnBindFailure = true;
 			this.BindFailureExitCode = 1;
 			this.DescribeExitCode = 2;
 			this.ShortOptionNameMatchingMode = StringComparison.Ordinal;
