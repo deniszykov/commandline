@@ -39,7 +39,6 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "-o", "1", "-k", "2" }, "o", new[] { "1" }, 1)]
 		// special symbols
 		[InlineData(new[] { "-k", "-" }, "k", new[] { "-" }, 1)]
-		[InlineData(new[] { "-k", "-" }, "k", new[] { "-" }, 1)]
 		[InlineData(new[] { "-k", "@" }, "k", new[] { "@" }, 1)]
 		[InlineData(new[] { "-k", "/" }, "k", new[] { "/" }, 1)]
 		[InlineData(new[] { "-k", "?" }, "k", new[] { "?" }, 1)]

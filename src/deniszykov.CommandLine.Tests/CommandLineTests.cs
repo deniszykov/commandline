@@ -240,8 +240,6 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "-1", "--param2", "-param2" }, nameof(TestApi.IntNegativeStringParameter))]
 		[InlineData(new[] { "-1", "--", "-param2" }, nameof(TestApi.IntNegativeStringParameter))]
 		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
-		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
-		[InlineData(new[] { "--", "-1", "-param2", "--" }, nameof(TestApi.IntNegativeStringParameter))]
 		public void BindTest(string[] arguments, string verbName)
 		{
 			var exitCode = CommandLine.CreateFromArguments(arguments)
