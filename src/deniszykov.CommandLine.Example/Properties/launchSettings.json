@@ -2,7 +2,7 @@
   "profiles": {
     "CommandLine.Example": {
       "commandName": "Project",
-      "commandLineArgs": "A"
+      "commandLineArgs": "SAYHELLOTO /?"
     }
   }
 }

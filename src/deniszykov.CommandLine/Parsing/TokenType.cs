@@ -1,6 +1,6 @@
 ﻿namespace deniszykov.CommandLine.Parsing
 {
-	public enum TokenType
+	internal enum TokenType
 	{
 		Value,
 		ShortOption,

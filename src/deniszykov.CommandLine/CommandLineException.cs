@@ -18,8 +18,8 @@ using deniszykov.CommandLine.Binding;
 namespace deniszykov.CommandLine
 {
 	/// <summary>
-	/// Exception occurred while executing verb during <see cref="CommandLine.Run"/>.
-	/// There is extra information in <see cref="Exception.Data"/> dictionary under "method", "methodToken" and "bindingErrors" keys.
+	/// Exception type which is raised while executing verb.
+	/// There is extra information in <see cref="Exception.Data"/> dictionary under "verb", and "bindingErrors" keys.
 	/// </summary>
 #if !NETSTANDARD1_6
 	[Serializable]

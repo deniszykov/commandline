@@ -85,7 +85,7 @@ namespace deniszykov.CommandLine.Binding
 
 			public NoVerbSpecified()
 			{
-				this.VerbName = CommandLine.UnknownVerbName;
+				this.VerbName = CommandLine.UNKNOWN_VERB_NAME;
 			}
 
 			public override string ToString() => "No verb specified.";

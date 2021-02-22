@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Parsing
 {
-	public struct ParsedArguments
+	internal struct ParsedArguments
 	{
 		[NotNull]
 		public readonly IDictionary<string, OptionValue> ShortOptions;
@@ -43,7 +43,7 @@ namespace deniszykov.CommandLine.Parsing
 			{
 				return false;
 			}
-			optionValue = new OptionValue(new [] { this.Values.ElementAt(position) }, 1);
+			optionValue = new OptionValue(new[] { this.Values.ElementAt(position) }, 1);
 			return true;
 		}
 

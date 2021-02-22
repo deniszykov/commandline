@@ -12,6 +12,9 @@ namespace deniszykov.CommandLine.Formatting
 {
 	internal sealed class HelpFormatter // TODO support xdoc.xml lookup
 	{
+		private static readonly string[] EmptyValues = new string[0];
+		private static readonly char[] EmptyChars = new char[0];
+
 		[NotNull] private readonly IConsole console;
 		[NotNull] private readonly IHelpTextProvider helpTextProvider;
 		[NotNull] private readonly ITypeConversionProvider typeConversionProvider;
@@ -37,10 +40,10 @@ namespace deniszykov.CommandLine.Formatting
 			this.helpTextProvider = helpTextProvider;
 			this.typeConversionProvider = typeConversionProvider;
 			this.VerbNameMatchingMode = configuration.VerbNameMatchingMode;
-			this.ShortOptionNamePrefix = configuration.ShortOptionNamePrefixes.First();
-			this.LongOptionNamePrefix = configuration.LongOptionNamePrefixes.First();
-			this.OptionArgumentSplitter = configuration.OptionArgumentSplitters.First();
-			this.DetailedBindFailureMessage = configuration.DetailedBindFailureMessage;
+			this.ShortOptionNamePrefix = (configuration.ShortOptionNamePrefixes ?? EmptyValues).First();
+			this.LongOptionNamePrefix = (configuration.LongOptionNamePrefixes ?? EmptyValues).First();
+			this.OptionArgumentSplitter = (configuration.OptionArgumentSplitters ?? EmptyChars).First();
+			this.DetailedBindFailureMessage = configuration.WriteFailureErrors;
 		}
 
 		public void VerbDescription(VerbSet verbSet, Verb foundVerb, IList<Verb> callChain)

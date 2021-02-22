@@ -2,6 +2,9 @@
 
 namespace deniszykov.CommandLine
 {
+	/// <summary>
+	/// Service providing localizable text during display of help for verbs.
+	/// </summary>
 	public interface IHelpTextProvider
 	{
 		/// <summary>

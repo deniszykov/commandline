@@ -7,15 +7,43 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
 {
+	/// <summary>
+	/// Set of <see cref="Verbs"/>.
+	/// </summary>
 	public sealed class VerbSet
 	{
+		/// <summary>
+		/// Name of verb's set. Not used for help text.
+		/// </summary>
 		[NotNull]
 		public readonly string Name;
+		/// <summary>
+		/// Description or help text for this verb set.
+		/// </summary>
 		[NotNull]
 		public readonly string Description;
+		/// <summary>
+		/// Collection of <see cref="Verb"/> in thi set.
+		/// </summary>
 		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<Verb> Verbs;
 
+		public VerbSet(
+			[NotNull] string name,
+			[NotNull] string description,
+			[NotNull, ItemNotNull] IReadOnlyCollection<Verb> verbs)
+		{
+			if (name == null) throw new ArgumentNullException(nameof(name));
+			if (description == null) throw new ArgumentNullException(nameof(description));
+			if (verbs == null) throw new ArgumentNullException(nameof(verbs));
+
+			this.Name = name;
+			this.Description = description;
+			this.Verbs = verbs;
+		}
+		/// <summary>
+		/// Constructor of <see cref="VerbSet"/> from <see cref="TypeInfo"/>.
+		/// </summary>
 		public VerbSet([NotNull] TypeInfo type)
 		{
 			if (type == null) throw new ArgumentNullException(nameof(type));
@@ -35,6 +63,12 @@ namespace deniszykov.CommandLine.Binding
 			this.Description = type.GetDescription() ?? string.Empty;
 		}
 
+		/// <summary>
+		/// Find <see cref="Verb"/> in <see cref="Verbs"/> by it's name.
+		/// </summary>
+		/// <param name="name">Verb's name.</param>
+		/// <param name="comparison">Name's comparison mode.</param>
+		/// <returns>Found <see cref="Verb"/> or null.</returns>
 		[CanBeNull]
 		public Verb FindVerb([NotNull] string name, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
 		{
@@ -50,7 +84,7 @@ namespace deniszykov.CommandLine.Binding
 			return null;
 		}
 
-		public IEnumerable<Verb> GetNonHiddenVerbs()
+		internal IEnumerable<Verb> GetNonHiddenVerbs()
 		{
 			return this.Verbs.Where(v => !v.IsHidden);
 		}

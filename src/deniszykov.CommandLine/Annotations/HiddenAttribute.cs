@@ -13,7 +13,7 @@ using System;
 namespace deniszykov.CommandLine.Annotations
 {
 	/// <summary>
-	/// Attribute used to hide member from <see cref="CommandLine.WriteHelp"/> and <see cref="CommandLine.Run"/> methods.
+	/// Attribute used to hide member from help option (/?, --help, -h, etc...).
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
 	public sealed class HiddenAttribute : Attribute

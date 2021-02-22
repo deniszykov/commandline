@@ -42,6 +42,11 @@ namespace deniszykov.CommandLine
 		ICommandLineBuilder Use(Func<IVerbSetBuilder> buildDelegate);
 
 		/// <summary>
+		/// Build <see cref="CommandLine"/> with specified parameters. Each call will create new instance of <see cref="CommandLine"/>.
+		/// </summary>
+		CommandLine Build();
+
+		/// <summary>
 		/// Run <see cref="CommandLine"/> with specified parameters and return exit code.
 		/// </summary>
 		/// <returns>Verb's exit code.</returns>

@@ -6,15 +6,39 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
+	/// <summary>
+	/// Contextual information about currently executed verb.
+	/// </summary>
 	public sealed class VerbExecutionContext
 	{
-		[NotNull] public IVerbSetBuilder VerbSetBuilder{ get; }
+		/// <summary>
+		/// Current <see cref="Binding.Verb"/> set provider.
+		/// </summary>
+		[NotNull] public IVerbSetBuilder VerbSetBuilder { get; }
+		/// <summary>
+		/// Current executing verb.
+		/// </summary>
 		[NotNull] public Verb Verb { get; }
+		/// <summary>
+		/// Arguments passed to <see cref="Verb"/>.
+		/// </summary>
 		[NotNull] public string[] Arguments { get; }
+		/// <summary>
+		/// Service provider instance used to resolve services.
+		/// </summary>
 		[NotNull] public IServiceProvider ServiceProvider { get; }
+		/// <summary>
+		/// Configuration used to bind and execute current verb.
+		/// </summary>
 		[NotNull] public CommandLineConfiguration Configuration { get; }
+		/// <summary>
+		/// Arbitrary collection of properties passed with <see cref="ICommandLineBuilder.Properties"/>  while preparing verb execution.
+		/// </summary>
 		[NotNull] public IDictionary<object, object> Properties { get; }
 
+		/// <summary>
+		/// Constructor of <see cref="VerbExecutionContext"/>.
+		/// </summary>
 		public VerbExecutionContext(
 			[NotNull] IVerbSetBuilder verbSetBuilder,
 			[NotNull] Verb verb,

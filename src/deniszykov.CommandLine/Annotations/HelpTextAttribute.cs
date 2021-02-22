@@ -13,7 +13,7 @@ using System;
 namespace deniszykov.CommandLine.Annotations
 {
 	/// <summary>
-	/// Attribute used to provide help text for class, verb or parameter.
+	/// Attribute used to provide help text for verb set, verb or parameter.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method | AttributeTargets.Class)]
 	public class HelpTextAttribute : Attribute

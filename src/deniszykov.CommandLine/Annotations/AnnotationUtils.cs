@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Annotations
 {
-	public static class AnnotationUtils
+	internal static class AnnotationUtils
 	{
 		public static bool IsHidden([NotNull] this ICustomAttributeProvider customAttributeProvider)
 		{

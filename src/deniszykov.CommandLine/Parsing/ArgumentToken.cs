@@ -1,6 +1,6 @@
 ﻿namespace deniszykov.CommandLine.Parsing
 {
-	public struct ArgumentToken
+	internal struct ArgumentToken
 	{
 		public readonly TokenType Type;
 		public readonly string Value;

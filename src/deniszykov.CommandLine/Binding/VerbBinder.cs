@@ -82,7 +82,7 @@ namespace deniszykov.CommandLine.Binding
 			}
 			else if (isHelpRequested)
 			{
-				return new VerbBindingResult.HelpRequested(string.IsNullOrEmpty(verbName) ? CommandLine.UnknownVerbName : verbName);
+				return new VerbBindingResult.HelpRequested(string.IsNullOrEmpty(verbName) ? CommandLine.UNKNOWN_VERB_NAME : verbName);
 			}
 			else if (!string.IsNullOrEmpty(verbName))
 			{

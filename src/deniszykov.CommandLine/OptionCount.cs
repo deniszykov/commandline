@@ -1,9 +1,18 @@
 ﻿namespace deniszykov.CommandLine
 {
+	/// <summary>
+	/// Special type used to capture number of times the option was specified. 
+	/// </summary>
 	public readonly struct OptionCount
 	{
+		/// <summary>
+		/// Count of option specifications.
+		/// </summary>
 		public readonly int Value;
 
+		/// <summary>
+		/// Constructor for <see cref="OptionCount"/>.
+		/// </summary>
 		public OptionCount(int value)
 		{
 			this.Value = value;

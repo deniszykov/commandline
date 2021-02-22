@@ -248,7 +248,7 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.DescribeOnBindFailure = false;
+					config.WriteHelpOfFailure = false;
 					config.DefaultVerbName = verbName;
 				})
 				.UseServiceProvider(() =>
@@ -274,9 +274,9 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.DescribeOnBindFailure = true;
-					config.DescribeExitCode = 1;
-					config.BindFailureExitCode = expectedExitCode;
+					config.WriteHelpOfFailure = true;
+					config.HelpExitCode = 1;
+					config.FailureExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -306,8 +306,8 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.DescribeOnBindFailure = false;
-					config.DescribeExitCode = expectedExitCode;
+					config.WriteHelpOfFailure = false;
+					config.HelpExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -336,8 +336,8 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.DescribeOnBindFailure = false;
-					config.DescribeExitCode = expectedExitCode;
+					config.WriteHelpOfFailure = false;
+					config.HelpExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -365,8 +365,8 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.DescribeOnBindFailure = false;
-					config.DescribeExitCode = expectedExitCode;
+					config.WriteHelpOfFailure = false;
+					config.HelpExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -398,8 +398,8 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.DescribeOnBindFailure = false;
-					config.DescribeExitCode = expectedExitCode;
+					config.WriteHelpOfFailure = false;
+					config.HelpExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -428,9 +428,9 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.DescribeOnBindFailure = true;
-					config.DescribeExitCode = 1;
-					config.BindFailureExitCode = expectedExitCode;
+					config.WriteHelpOfFailure = true;
+					config.HelpExitCode = 1;
+					config.FailureExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -458,9 +458,9 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.DescribeOnBindFailure = true;
-					config.DescribeExitCode = 1;
-					config.BindFailureExitCode = expectedExitCode;
+					config.WriteHelpOfFailure = true;
+					config.HelpExitCode = 1;
+					config.FailureExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
 				{

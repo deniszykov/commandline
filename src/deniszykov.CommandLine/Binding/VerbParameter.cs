@@ -7,28 +7,102 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
 {
+	/// <summary>
+	/// Verb's parameter. It is an option, values or bound service.
+	/// </summary>
 	public sealed class VerbParameter
 	{
+		/// <summary>
+		/// Option/value's name. Could be long or alias(short) name.
+		/// </summary>
 		[NotNull]
 		public readonly string Name;
+		/// <summary>
+		/// Option's alias. Could be null.
+		/// </summary>
 		[CanBeNull]
 		public readonly string Alias;
+		/// <summary>
+		/// Description or help text for this option/values.
+		/// </summary>
 		[NotNull]
-		public string Description;
+		public readonly string Description;
+		/// <summary>
+		/// Option's position. Used for positional binding of options.
+		/// </summary>
 		public readonly int Position;
+		/// <summary>
+		/// Parameter's index in argument array for <see cref="Verb.Invoker"/>.
+		/// </summary>
 		public readonly int ArgumentIndex;
+		/// <summary>
+		/// Type of option/values/service.
+		/// </summary>
 		[NotNull]
 		public readonly TypeInfo ValueType;
+		/// <summary>
+		/// Default value for option.
+		/// </summary>
 		[CanBeNull]
 		public readonly object DefaultValue;
+		/// <summary>
+		/// Arity of option.
+		/// </summary>
 		public readonly ValueArity ValueArity;
+		/// <summary>
+		/// Flag indication that this option is non-required for providing.
+		/// </summary>
 		public readonly bool IsOptional;
+		/// <summary>
+		/// Flag indication that this option is hidden from help display.
+		/// </summary>
 		public readonly bool IsHidden;
+		/// <summary>
+		/// Flag indication that this parameter will collect all remaining values.
+		/// </summary>
 		public readonly bool IsValueCollector;
 #if !NETSTANDARD1_6
+		/// <summary>
+		/// <see cref="System.ComponentModel.TypeConverter"/> used to convert value for this option from string representation.
+		/// </summary>
 		public readonly System.ComponentModel.TypeConverter TypeConverter;
 #endif
 
+		/// <summary>
+		/// Constructor for <see cref="VerbParameter"/>.
+		/// </summary>
+		public VerbParameter(
+			[NotNull] string name,
+			[CanBeNull] string alias,
+			[NotNull] string description,
+			int position,
+			int argumentIndex,
+			[NotNull] TypeInfo valueType,
+			[CanBeNull] object defaultValue,
+			ValueArity valueArity,
+			bool isOptional,
+			bool isHidden,
+			bool isValueCollector)
+		{
+			if (name == null) throw new ArgumentNullException(nameof(name));
+			if (description == null) throw new ArgumentNullException(nameof(description));
+			if (valueType == null) throw new ArgumentNullException(nameof(valueType));
+
+			this.Name = name;
+			this.Alias = alias;
+			this.Description = description;
+			this.Position = position;
+			this.ArgumentIndex = argumentIndex;
+			this.ValueType = valueType;
+			this.DefaultValue = defaultValue;
+			this.ValueArity = valueArity;
+			this.IsOptional = isOptional;
+			this.IsHidden = isHidden;
+			this.IsValueCollector = isValueCollector;
+		}
+		/// <summary>
+		/// Constructor for <see cref="VerbParameter"/> from <see cref="ParameterInfo"/> and position.
+		/// </summary>
 		public VerbParameter(ParameterInfo parameterInfo, int position)
 		{
 			if (parameterInfo == null) throw new ArgumentNullException(nameof(parameterInfo));
@@ -48,7 +122,7 @@ namespace deniszykov.CommandLine.Binding
 			var isFlags = this.ValueType.IsEnum && this.ValueType.IsFlags();
 			var isBool = this.ValueType.AsType() == typeof(bool);
 			var isCount = this.ValueType.AsType() == typeof(OptionCount);
-			this.ValueArity = 
+			this.ValueArity =
 				isCount ? ValueArity.Zero :
 				isBool ? ValueArity.ZeroOrOne :
 				isList ? ValueArity.ZeroOrMany :

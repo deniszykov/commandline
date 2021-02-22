@@ -27,7 +27,7 @@ namespace deniszykov.CommandLine.Parsing
 			this.LongNamePrefixes = configuration.LongOptionNamePrefixes ?? new string[0];
 			this.OptionsBreaks = configuration.OptionsBreaks ?? new string[0];
 			this.HelpOptions = configuration.HelpOptions ?? new string[0];
-			this.OptionArgumentSplitter = configuration.OptionArgumentSplitters ?? "=".ToCharArray();
+			this.OptionArgumentSplitter = configuration.OptionArgumentSplitters ?? new char[0];
 			this.TreatUnknownOptionsAsValues = configuration.TreatUnknownOptionsAsValues;
 		}
 

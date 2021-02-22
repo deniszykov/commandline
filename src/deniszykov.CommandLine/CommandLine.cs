@@ -28,11 +28,11 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Exit code used when unhandled .NET Exception occurred during verb execution.
 		/// </summary>
-		public const int DotNetExceptionExitCode = -2147023895;
+		public const int DOT_NET_EXCEPTION_EXIT_CODE = -2147023895;
 		/// <summary>
 		/// Method name used as placeholder for missing verb name in exception text and <see cref="VerbBindingResult.VerbName"/> property.
 		/// </summary>
-		public const string UnknownVerbName = "<no name specified>";
+		public const string UNKNOWN_VERB_NAME = "<no name specified>";
 
 		[NotNull] private readonly IVerbSetBuilder verbSetBuilder;
 		[NotNull] private readonly string[] arguments;
@@ -43,7 +43,9 @@ namespace deniszykov.CommandLine
 		[NotNull] private readonly VerbBinder verbBinder;
 		[NotNull] private readonly HelpFormatter verbRenderer;
 
-
+		/// <summary>
+		/// Constructor of <see cref="CommandLine"/>. Not intended for primary use. Use <see cref="CreateFromArguments"/> builder instead.
+		/// </summary>
 		public CommandLine(
 			[NotNull] IVerbSetBuilder verbSetBuilder,
 			[NotNull] string[] arguments,
@@ -76,7 +78,7 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Run verb on configured type and return exit code of executed verb.
 		/// </summary>
-		/// <returns>Exit code of verb-or-<see cref="DotNetExceptionExitCode"/> if exception happened-or-<see cref="CommandLineConfiguration.BindFailureExitCode"/> if verb not found and description is shown.</returns>
+		/// <returns>Exit code of verb-or-<see cref="DOT_NET_EXCEPTION_EXIT_CODE"/> if exception happened-or-<see cref="CommandLineConfiguration.FailureExitCode"/> if verb not found and description is shown.</returns>
 		public int Run()
 		{
 			try
@@ -115,7 +117,7 @@ namespace deniszykov.CommandLine
 				var handler = this.configuration.UnhandledExceptionHandler ?? this.DefaultUnhandledExceptionHandler;
 				handler(null, new ExceptionEventArgs(exception));
 
-				return DotNetExceptionExitCode;
+				return DOT_NET_EXCEPTION_EXIT_CODE;
 			}
 		}
 
@@ -125,12 +127,12 @@ namespace deniszykov.CommandLine
 			{
 				var verbSet = this.verbSetBuilder.Build();
 				var verbChain = this.properties.GetVerbChain().ToList();
-				var verb = string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UnknownVerbName) ? default(Verb) : verbSet.FindVerb(verbName);
+				var verb = string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UNKNOWN_VERB_NAME) ? default(Verb) : verbSet.FindVerb(verbName);
 				if (verb != null)
 				{
 					this.verbRenderer.VerbDescription(verbSet, verb, verbChain);
 				}
-				else if (string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UnknownVerbName))
+				else if (string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UNKNOWN_VERB_NAME))
 				{
 					this.verbRenderer.VerbList(verbSet, verbChain, includeTypeHelpText: verbChain.Count == 0);
 				}
@@ -138,14 +140,14 @@ namespace deniszykov.CommandLine
 				{
 					this.verbRenderer.VerbNotFound(verbSet, verbName, verbChain);
 				}
-				return this.configuration.DescribeExitCode;
+				return this.configuration.HelpExitCode;
 			}
 			catch (Exception exception)
 			{
 				var handler = this.configuration.UnhandledExceptionHandler ?? this.DefaultUnhandledExceptionHandler;
 				handler(null, new ExceptionEventArgs(exception));
 
-				return DotNetExceptionExitCode;
+				return DOT_NET_EXCEPTION_EXIT_CODE;
 			}
 		}
 		private int WriteBindingError(VerbBindingResult.FailedToBind bindResult, VerbSet verbSet)
@@ -166,7 +168,7 @@ namespace deniszykov.CommandLine
 				error = CommandLineException.InvalidVerbParameters(bestMatchMethod, bindResult.BindingFailures[bestMatchMethod]);
 			}
 
-			if (this.configuration.DescribeOnBindFailure)
+			if (this.configuration.WriteHelpOfFailure)
 			{
 				var verbChain = this.properties.GetVerbChain().ToList();
 
@@ -183,11 +185,11 @@ namespace deniszykov.CommandLine
 			{
 				throw error;
 			}
-			return this.configuration.BindFailureExitCode;
+			return this.configuration.FailureExitCode;
 		}
 		private int WriteBindingError(VerbBindingResult.NoVerbSpecified _, VerbSet verbSet)
 		{
-			if (!this.configuration.DescribeOnBindFailure)
+			if (!this.configuration.WriteHelpOfFailure)
 			{
 				throw CommandLineException.NoVerbSpecified();
 			}
@@ -195,9 +197,14 @@ namespace deniszykov.CommandLine
 			var verbChain = this.properties.GetVerbChain().ToList();
 			this.verbRenderer.VerbNotSpecified(verbSet, verbChain);
 
-			return this.configuration.BindFailureExitCode;
+			return this.configuration.FailureExitCode;
 		}
 
+		/// <summary>
+		/// Creates new <see cref="ICommandLineBuilder"/> from specified command line arguments.
+		/// Building should be terminated with <see cref="ICommandLineBuilder.Run"/> method.
+		/// </summary>
+		/// <param name="arguments">List of command line arguments.</param>
 		[NotNull]
 		public static ICommandLineBuilder CreateFromArguments([NotNull, ItemNotNull] params string[] arguments)
 		{
