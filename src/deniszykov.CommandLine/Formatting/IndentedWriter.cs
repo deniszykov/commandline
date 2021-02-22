@@ -4,15 +4,31 @@ using System.Globalization;
 using System.Text;
 using JetBrains.Annotations;
 
-namespace deniszykov.CommandLine.Renderers
+namespace deniszykov.CommandLine.Formatting
 {
 	internal class IndentedWriter
 	{
+		private class Indent : IDisposable
+		{
+			private IndentedWriter indentedWriter;
+			public Indent(IndentedWriter indentedWriter)
+			{
+				this.indentedWriter = indentedWriter;
+			}
+
+			/// <inheritdoc />
+			public void Dispose()
+			{
+				this.indentedWriter?.RestoreIndent();
+				this.indentedWriter = null;
+			}
+		}
+
 		[NotNull] private readonly StringBuilder output;
 		[NotNull] private readonly Stack<int> indents;
 		[NotNull] private readonly string newLine;
 		private int indent;
-		
+
 		public IndentedWriter([NotNull] string newLine)
 		{
 			if (newLine == null) throw new ArgumentNullException(nameof(newLine));
@@ -27,23 +43,28 @@ namespace deniszykov.CommandLine.Renderers
 		{
 			this.EnsureIndent();
 
-			this.output.Append(FormatTextAndCountIndent(textObj));
+			this.AppendTextAndCountIndent(textObj);
 		}
 		public void WriteLine(object textObj = null)
 		{
 			this.EnsureIndent();
 
-			this.output.Append(FormatTextAndCountIndent(textObj));
+			this.AppendTextAndCountIndent(textObj);
 			this.output.Append(this.newLine);
 
 			this.indent = 0;
 		}
 
-		public void KeepIndent()
+		public IDisposable KeepIndent(string padding = null)
 		{
+			if (!string.IsNullOrEmpty(padding))
+			{
+				this.Write(padding);
+			}
 			this.indents.Push(this.indent);
+			return new Indent(this);
 		}
-		public void RestoreIndent()
+		private void RestoreIndent()
 		{
 			if (this.indents.Count == 0)
 			{
@@ -66,12 +87,26 @@ namespace deniszykov.CommandLine.Renderers
 			}
 
 			this.output.Append(' ', requiredIndent);
+			this.indent += requiredIndent;
 		}
-		private string FormatTextAndCountIndent(object text)
+		private void AppendTextAndCountIndent(object text)
 		{
 			var str = Convert.ToString(text, CultureInfo.InvariantCulture) ?? string.Empty;
-			this.indent += str.Length;
-			return str;
+			var offset = 0;
+			var newLineIndex = -1;
+			while ((newLineIndex = str.IndexOf(this.newLine, offset, StringComparison.Ordinal)) >= 0)
+			{
+				this.EnsureIndent();
+
+				this.output.Append(str, offset, newLineIndex - offset);
+				this.output.Append(this.newLine);
+				this.indent = 0;
+				offset = newLineIndex + this.newLine.Length;
+			}
+
+			this.EnsureIndent();
+			this.indent += str.Length - offset;
+			this.output.Append(str, offset, str.Length - offset);
 		}
 
 		/// <inheritdoc />

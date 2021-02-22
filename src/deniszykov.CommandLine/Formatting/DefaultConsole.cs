@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using System.Threading;
 using JetBrains.Annotations;
 
-namespace deniszykov.CommandLine.Renderers
+namespace deniszykov.CommandLine.Formatting
 {
 	internal class DefaultConsole : IConsole, IDisposable
 	{

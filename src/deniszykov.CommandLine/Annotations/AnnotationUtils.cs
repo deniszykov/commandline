@@ -39,6 +39,7 @@ namespace deniszykov.CommandLine.Annotations
 			var isServiceDependency = parameterInfo.GetCustomAttributes(typeof(FromServiceAttribute), true).FirstOrDefault() is FromServiceAttribute;
 			return isServiceDependency ||
 				parameterInfo.ParameterType == typeof(VerbExecutionContext) ||
+				parameterInfo.ParameterType == typeof(ICommandLineBuilder) ||
 				parameterInfo.ParameterType == typeof(CancellationToken);
 		}
 		[CanBeNull]
