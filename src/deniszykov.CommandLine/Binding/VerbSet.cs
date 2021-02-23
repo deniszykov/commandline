@@ -11,28 +11,27 @@ namespace deniszykov.CommandLine.Binding
 	/// <summary>
 	/// Set of <see cref="Verbs"/>.
 	/// </summary>
+	/// 
+	[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 	public sealed class VerbSet
 	{
 		/// <summary>
 		/// Name of verb's set. Not used for help text.
 		/// </summary>
-		[NotNull]
 		public readonly string Name;
 		/// <summary>
 		/// Description or help text for this verb set.
 		/// </summary>
-		[NotNull]
 		public readonly string Description;
 		/// <summary>
 		/// Collection of <see cref="Verb"/> in thi set.
 		/// </summary>
-		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<Verb> Verbs;
 
 		public VerbSet(
-			[NotNull] string name,
-			[NotNull] string description,
-			[NotNull, ItemNotNull] IReadOnlyCollection<Verb> verbs)
+			 string name,
+			 string description,
+			 IReadOnlyCollection<Verb> verbs)
 		{
 			if (name == null) throw new ArgumentNullException(nameof(name));
 			if (description == null) throw new ArgumentNullException(nameof(description));
@@ -45,7 +44,7 @@ namespace deniszykov.CommandLine.Binding
 		/// <summary>
 		/// Constructor of <see cref="VerbSet"/> from <see cref="TypeInfo"/>.
 		/// </summary>
-		public VerbSet([NotNull] TypeInfo type)
+		public VerbSet(TypeInfo type)
 		{
 			if (type == null) throw new ArgumentNullException(nameof(type));
 
@@ -70,8 +69,7 @@ namespace deniszykov.CommandLine.Binding
 		/// <param name="name">Verb's name.</param>
 		/// <param name="comparison">Name's comparison mode.</param>
 		/// <returns>Found <see cref="Verb"/> or null.</returns>
-		[CanBeNull]
-		public Verb FindVerb([NotNull] string name, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+		public Verb? FindVerb(string name, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
 		{
 			if (name == null) throw new ArgumentNullException(nameof(name));
 

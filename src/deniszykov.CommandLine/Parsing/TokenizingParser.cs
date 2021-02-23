@@ -44,11 +44,13 @@ namespace deniszykov.CommandLine.Parsing
 					case TokenType.ShortOption:
 						var shortOptionName = argumentToken.Value;
 						IncrementOptionCount(shortOptions, shortOptionName);
+						// ReSharper disable once AccessToModifiedClosure
 						appendOption = optionArgument => AppendOptionArgument(shortOptions, shortOptionName, optionArgument);
 						break;
 					case TokenType.LongOption:
 						var longOptionName = argumentToken.Value;
 						IncrementOptionCount(longOptions, longOptionName);
+						// ReSharper disable once AccessToModifiedClosure
 						appendOption = optionArgument => AppendOptionArgument(longOptions, longOptionName, optionArgument);
 						break;
 					case TokenType.OptionArgument:

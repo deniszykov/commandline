@@ -11,7 +11,7 @@ namespace deniszykov.CommandLine.Annotations
 		/// <summary>
 		/// Alias value. Not null.
 		/// </summary>
-		public virtual string Alias { get; private set; }
+		public virtual string Alias { get; }
 
 		/// <summary>
 		/// Verb's short name aka alias. 

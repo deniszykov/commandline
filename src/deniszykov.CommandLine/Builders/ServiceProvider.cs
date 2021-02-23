@@ -5,10 +5,10 @@ namespace deniszykov.CommandLine.Builders
 {
 	internal sealed class ServiceProvider : IServiceProvider
 	{
-		private readonly IServiceProvider nextServiceProvider;
+		private readonly IServiceProvider? nextServiceProvider;
 		private readonly Dictionary<Type, Func<object>> services;
 
-		public ServiceProvider(IServiceProvider nextServiceProvider = null)
+		public ServiceProvider(IServiceProvider? nextServiceProvider = null)
 		{
 			this.nextServiceProvider = nextServiceProvider;
 			this.services = new Dictionary<Type, Func<object>>();
@@ -21,6 +21,8 @@ namespace deniszykov.CommandLine.Builders
 
 			this.services[serviceType] = () => service;
 		}
+
+		/*
 		public void Register(Type serviceType, Func<object> serviceFactory)
 		{
 			if (serviceType == null) throw new ArgumentNullException(nameof(serviceType));
@@ -33,11 +35,13 @@ namespace deniszykov.CommandLine.Builders
 			if (serviceFactory == null) throw new ArgumentNullException(nameof(serviceFactory));
 
 			this.services[typeof(ServiceT)] = serviceFactory;
-		}
+		}*/
 
 		/// <inheritdoc />
-		public object GetService(Type serviceType)
+		public object? GetService(Type serviceType)
 		{
+			if (serviceType == null) throw new ArgumentNullException(nameof(serviceType));
+
 			if (this.services.TryGetValue(serviceType, out var serviceFactory))
 			{
 				return serviceFactory();

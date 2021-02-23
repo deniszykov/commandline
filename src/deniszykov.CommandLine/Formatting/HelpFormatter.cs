@@ -6,18 +6,17 @@ using System.Text;
 using deniszykov.CommandLine.Annotations;
 using deniszykov.CommandLine.Binding;
 using deniszykov.TypeConversion;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Formatting
 {
-	internal sealed class HelpFormatter // TODO support xdoc.xml lookup
+	internal sealed class HelpFormatter // TODO support XML Documentation lookup
 	{
 		private static readonly string[] EmptyValues = new string[0];
 		private static readonly char[] EmptyChars = new char[0];
 
-		[NotNull] private readonly IConsole console;
-		[NotNull] private readonly IHelpTextProvider helpTextProvider;
-		[NotNull] private readonly ITypeConversionProvider typeConversionProvider;
+		private readonly IConsole console;
+		private readonly IHelpTextProvider helpTextProvider;
+		private readonly ITypeConversionProvider typeConversionProvider;
 
 		public StringComparison VerbNameMatchingMode { get; }
 		public string ShortOptionNamePrefix { get; }
@@ -26,10 +25,10 @@ namespace deniszykov.CommandLine.Formatting
 		public bool DetailedBindFailureMessage { get; }
 
 		public HelpFormatter(
-			[NotNull] CommandLineConfiguration configuration,
-			[NotNull] IConsole console,
-			[NotNull] IHelpTextProvider helpTextProvider,
-			[NotNull] ITypeConversionProvider typeConversionProvider)
+			 CommandLineConfiguration configuration,
+			 IConsole console,
+			 IHelpTextProvider helpTextProvider,
+			 ITypeConversionProvider typeConversionProvider)
 		{
 			if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 			if (console == null) throw new ArgumentNullException(nameof(console));
@@ -40,9 +39,9 @@ namespace deniszykov.CommandLine.Formatting
 			this.helpTextProvider = helpTextProvider;
 			this.typeConversionProvider = typeConversionProvider;
 			this.VerbNameMatchingMode = configuration.VerbNameMatchingMode;
-			this.ShortOptionNamePrefix = (configuration.ShortOptionNamePrefixes ?? EmptyValues).First();
-			this.LongOptionNamePrefix = (configuration.LongOptionNamePrefixes ?? EmptyValues).First();
-			this.OptionArgumentSplitter = (configuration.OptionArgumentSplitters ?? EmptyChars).First();
+			this.ShortOptionNamePrefix = (configuration.ShortOptionNamePrefixes ?? EmptyValues).DefaultIfEmpty("").First();
+			this.LongOptionNamePrefix = (configuration.LongOptionNamePrefixes ?? EmptyValues).DefaultIfEmpty("").First();
+			this.OptionArgumentSplitter = (configuration.OptionArgumentSplitters ?? EmptyChars).DefaultIfEmpty(' ').First();
 			this.DetailedBindFailureMessage = configuration.WriteFailureErrors;
 		}
 
@@ -264,7 +263,7 @@ namespace deniszykov.CommandLine.Formatting
 							writer.Write(paramName);
 							using (writer.KeepIndent("    "))
 							{
-								writer.WriteLine(bindingResult.Error.Message);
+								writer.WriteLine(bindingResult.Error?.Message);
 							}
 						}
 					}
@@ -331,8 +330,7 @@ namespace deniszykov.CommandLine.Formatting
 			this.console.WriteLine(writer);
 		}
 
-		[NotNull]
-		private string GetParameterUsage([NotNull] VerbParameter parameter)
+		private string GetParameterUsage(VerbParameter parameter)
 		{
 			if (parameter.IsValueCollector)
 			{
@@ -361,7 +359,7 @@ namespace deniszykov.CommandLine.Formatting
 					parameterUsage.Append("<");
 					if (!this.helpTextProvider.TryGetParameterTypeFriendlyName(parameter, out var parameterTypeFriendlyName))
 						parameterTypeFriendlyName = GetParameterTypeFriendlyName(parameter);
-					parameterUsage.Append(parameterTypeFriendlyName.ToUpperInvariant());
+					parameterUsage.Append(parameterTypeFriendlyName!.ToUpperInvariant());
 					parameterUsage.Append(">");
 					if (parameter.ValueArity == ValueArity.ZeroOrMany || parameter.ValueArity == ValueArity.ZeroOrOne)
 					{
@@ -377,8 +375,7 @@ namespace deniszykov.CommandLine.Formatting
 			}
 			return parameterUsage.ToString();
 		}
-		[NotNull]
-		private string GetParameterNames([NotNull] VerbParameter parameter)
+		private string GetParameterNames(VerbParameter parameter)
 		{
 			if (parameter == null) throw new ArgumentNullException(nameof(parameter));
 
@@ -394,11 +391,10 @@ namespace deniszykov.CommandLine.Formatting
 			}
 			else
 			{
-				return $"{this.GetPrefixedOptionName(parameter.Alias)}, {this.GetPrefixedOptionName(parameter.Name)}";
+				return $"{this.GetPrefixedOptionName(parameter.Alias!)}, {this.GetPrefixedOptionName(parameter.Name)}";
 			}
 		}
-		[NotNull]
-		private string GetPrefixedOptionName([NotNull] string optionName)
+		private string GetPrefixedOptionName(string optionName)
 		{
 			if (optionName == null) throw new ArgumentNullException(nameof(optionName));
 
@@ -445,8 +441,7 @@ namespace deniszykov.CommandLine.Formatting
 			}
 		}
 
-		[NotNull]
-		private static Type UnwrapType([NotNull] Type type)
+		private static Type UnwrapType(Type type)
 		{
 			if (type.IsArray)
 			{

@@ -11,12 +11,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using deniszykov.CommandLine.Binding;
 using deniszykov.CommandLine.Builders;
 using deniszykov.CommandLine.Formatting;
 using deniszykov.TypeConversion;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
@@ -35,27 +35,27 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public const string UNKNOWN_VERB_NAME = "<no name specified>";
 
-		[NotNull] private readonly IVerbSetBuilder verbSetBuilder;
-		[NotNull] private readonly string[] arguments;
-		[NotNull] private readonly CommandLineConfiguration configuration;
-		[NotNull] private readonly IDictionary<object, object> properties;
-		[NotNull] private readonly IConsole console;
-		[NotNull] private readonly IServiceProvider serviceProvider;
-		[NotNull] private readonly VerbBinder verbBinder;
-		[NotNull] private readonly HelpFormatter verbRenderer;
+		private readonly IVerbSetBuilder verbSetBuilder;
+		private readonly string[] arguments;
+		private readonly CommandLineConfiguration configuration;
+		private readonly IDictionary<object, object> properties;
+		private readonly IConsole console;
+		private readonly IServiceProvider serviceProvider;
+		private readonly VerbBinder verbBinder;
+		private readonly HelpFormatter verbRenderer;
 
 		/// <summary>
 		/// Constructor of <see cref="CommandLine"/>. Not intended for primary use. Use <see cref="CreateFromArguments"/> builder instead.
 		/// </summary>
 		public CommandLine(
-			[NotNull] IVerbSetBuilder verbSetBuilder,
-			[NotNull] string[] arguments,
-			[NotNull] CommandLineConfiguration configuration,
-			[NotNull] ITypeConversionProvider typeConversionProvider,
-			[NotNull] IConsole console,
-			[NotNull] IHelpTextProvider helpTextProvider,
-			[NotNull] IServiceProvider serviceProvider,
-			[NotNull] IDictionary<object, object> properties
+			 IVerbSetBuilder verbSetBuilder,
+			 string[] arguments,
+			 CommandLineConfiguration configuration,
+			 ITypeConversionProvider typeConversionProvider,
+			 IConsole console,
+			 IHelpTextProvider helpTextProvider,
+			 IServiceProvider serviceProvider,
+			 IDictionary<object, object> properties
 			)
 		{
 			if (verbSetBuilder == null) throw new ArgumentNullException(nameof(verbSetBuilder));
@@ -80,7 +80,7 @@ namespace deniszykov.CommandLine
 		/// Run verb on configured type and return exit code of executed verb.
 		/// </summary>
 		/// <returns>Exit code of verb-or-<see cref="DOT_NET_EXCEPTION_EXIT_CODE"/> if exception happened-or-<see cref="CommandLineConfiguration.FailureExitCode"/> if verb not found and description is shown.</returns>
-		public async Task<int> RunAsync()
+		public async Task<int> RunAsync(CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -92,14 +92,14 @@ namespace deniszykov.CommandLine
 					case VerbBindingResult.Bound bound:
 						// prepare scoped services
 						var properties = new Dictionary<object, object>(this.properties);
-						properties.AddVertToChain(bound.Verb); // add current verb to chain
+						properties.AddVerbToChain(bound.Verb); // add current verb to chain
 						var context = new VerbExecutionContext(this.verbSetBuilder, bound.Verb, this.arguments,
 							this.serviceProvider, this.configuration, properties);
-						var cancellationToken = this.console.InterruptToken;
+						var interruptionTokenSource = CancellationTokenSource.CreateLinkedTokenSource(this.console.InterruptToken, cancellationToken);
 						//
 
 						// resolve service parameters on verb
-						this.verbBinder.ProvideContext(bound.Verb, bound.Arguments, context, cancellationToken);
+						this.verbBinder.ProvideContext(bound.Verb, bound.Arguments, context, interruptionTokenSource.Token);
 
 						// execute verb
 						return await bound.InvokeAsync();
@@ -116,19 +116,19 @@ namespace deniszykov.CommandLine
 			catch (Exception exception)
 			{
 				var handler = this.configuration.UnhandledExceptionHandler ?? this.DefaultUnhandledExceptionHandler;
-				handler(null, new ExceptionEventArgs(exception));
+				handler(this, new ExceptionEventArgs(exception));
 
 				return DOT_NET_EXCEPTION_EXIT_CODE;
 			}
 		}
 
-		private int WriteHelp(string verbName)
+		private int WriteHelp(string? verbName)
 		{
 			try
 			{
 				var verbSet = this.verbSetBuilder.Build();
 				var verbChain = this.properties.GetVerbChain().ToList();
-				var verb = string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UNKNOWN_VERB_NAME) ? default(Verb) : verbSet.FindVerb(verbName);
+				var verb = string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UNKNOWN_VERB_NAME) ? default : verbSet.FindVerb(verbName!);
 				if (verb != null)
 				{
 					this.verbRenderer.VerbDescription(verbSet, verb, verbChain);
@@ -139,14 +139,14 @@ namespace deniszykov.CommandLine
 				}
 				else
 				{
-					this.verbRenderer.VerbNotFound(verbSet, verbName, verbChain);
+					this.verbRenderer.VerbNotFound(verbSet, verbName!, verbChain);
 				}
 				return this.configuration.HelpExitCode;
 			}
 			catch (Exception exception)
 			{
 				var handler = this.configuration.UnhandledExceptionHandler ?? this.DefaultUnhandledExceptionHandler;
-				handler(null, new ExceptionEventArgs(exception));
+				handler(this, new ExceptionEventArgs(exception));
 
 				return DOT_NET_EXCEPTION_EXIT_CODE;
 			}
@@ -169,7 +169,7 @@ namespace deniszykov.CommandLine
 				error = CommandLineException.InvalidVerbParameters(bestMatchMethod, bindResult.BindingFailures[bestMatchMethod]);
 			}
 
-			if (this.configuration.WriteHelpOfFailure)
+			if (this.configuration.WriteHelpOnFailure)
 			{
 				var verbChain = this.properties.GetVerbChain().ToList();
 
@@ -188,9 +188,10 @@ namespace deniszykov.CommandLine
 			}
 			return this.configuration.FailureExitCode;
 		}
+		// ReSharper disable once UnusedParameter.Local
 		private int WriteBindingError(VerbBindingResult.NoVerbSpecified _, VerbSet verbSet)
 		{
-			if (!this.configuration.WriteHelpOfFailure)
+			if (!this.configuration.WriteHelpOnFailure)
 			{
 				throw CommandLineException.NoVerbSpecified();
 			}
@@ -206,19 +207,14 @@ namespace deniszykov.CommandLine
 		/// Building should be terminated with <see cref="ICommandLineBuilder.Run"/> method.
 		/// </summary>
 		/// <param name="arguments">List of command line arguments.</param>
-		[NotNull]
-		public static ICommandLineBuilder CreateFromArguments([NotNull, ItemNotNull] params string[] arguments)
+		public static ICommandLineBuilder CreateFromArguments(params string[] arguments)
 		{
 			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
-			return new CommandLineBuilder(arguments).Configure(config =>
-			{
-				config.SetToDefault();
-			});
+			return new CommandLineBuilder(arguments);
 		}
 
-		[NotNull]
-		internal static ICommandLineBuilder CreateSubVerb([NotNull] VerbExecutionContext context)
+		internal static ICommandLineBuilder CreateSubVerb(VerbExecutionContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
 

@@ -12,38 +12,33 @@ namespace deniszykov.CommandLine.Binding
 	/// <summary>
 	/// Verb's descriptor. Used for binding and execution verbs in <see cref="CommandLine"/>.
 	/// </summary>
+	[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 	public sealed class Verb
 	{
 		/// <summary>
 		/// Name of verb. 
 		/// </summary>
-		[NotNull]
 		public readonly string Name;
 		/// <summary>
 		/// Description or help text for this verb.
 		/// </summary>
-		[NotNull]
 		public readonly string Description;
 		/// <summary>
 		/// Type on which this verb should be executed. Used to instantiate or resolve target instance during execution and passed as first parameter to <see cref="Invoker"/> method.
 		/// </summary>
-		[CanBeNull]
-		public readonly TypeInfo TargetType;
+		public readonly TypeInfo? TargetType;
 		/// <summary>
 		/// List of bound parameters(options or values) of verb.
 		/// </summary>
-		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<VerbParameter> BoundParameters;
 		/// <summary>
 		/// List of service parameters of verb.
 		/// </summary>
-		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<VerbParameter> ServiceParameters;
 		/// <summary>
 		/// Verb invocation function. First parameter is target instance, second is all <see cref="BoundParameters"/> and <see cref="ServiceParameters"/> in right order. Exit code is expected as result.
 		/// </summary>
-		[NotNull]
-		public readonly Func<object, object[], Task<int>> Invoker;
+		public readonly Func<object?, object?[], Task<int>> Invoker;
 		/// <summary>
 		/// Flag indication that this verb is hidden from help display/listing.
 		/// </summary>
@@ -57,12 +52,12 @@ namespace deniszykov.CommandLine.Binding
 		/// Verb's constructor.
 		/// </summary>
 		public Verb(
-			[NotNull] string name,
-			[NotNull] string description,
-			[CanBeNull] TypeInfo targetType,
-			[NotNull, ItemNotNull] IReadOnlyCollection<VerbParameter> boundParameters,
-			[NotNull, ItemNotNull] IReadOnlyCollection<VerbParameter> serviceParameters,
-			[NotNull] Func<object, object[], Task<int>> invoker,
+			 string name,
+			 string description,
+			 TypeInfo? targetType,
+			 IReadOnlyCollection<VerbParameter> boundParameters,
+			 IReadOnlyCollection<VerbParameter> serviceParameters,
+			 Func<object?, object?[], Task<int>> invoker,
 			bool isHidden,
 			bool hasSubVerbs)
 		{
@@ -84,7 +79,7 @@ namespace deniszykov.CommandLine.Binding
 		/// <summary>
 		/// Verb's constructor from <see cref="MethodInfo"/>.
 		/// </summary>
-		public Verb([NotNull] MethodInfo method)
+		public Verb(MethodInfo method)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
@@ -140,14 +135,12 @@ namespace deniszykov.CommandLine.Binding
 		}
 
 
-		[NotNull, ItemNotNull]
 		internal IEnumerable<VerbParameter> GetNonHiddenBoundParameter()
 		{
 			return this.BoundParameters.Where(param => !param.IsHidden);
 		}
 
-		[CanBeNull]
-		internal VerbParameter FindBoundParameter([NotNull]string name, StringComparison stringComparison)
+		internal VerbParameter? FindBoundParameter(string name, StringComparison stringComparison)
 		{
 			if (name == null) throw new ArgumentNullException(nameof(name));
 

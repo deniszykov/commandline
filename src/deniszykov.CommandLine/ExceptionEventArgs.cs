@@ -23,7 +23,7 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Gets the unhandled exception object.
 		/// </summary>
-		public Exception Exception { get; private set; }
+		public Exception Exception { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the ExceptionEventArgs class with

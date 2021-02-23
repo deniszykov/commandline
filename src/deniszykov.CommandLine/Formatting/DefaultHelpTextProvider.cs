@@ -38,7 +38,7 @@ namespace deniszykov.CommandLine.Formatting
 		public string HelpFooterText => "";
 
 		/// <inheritdoc />
-		public bool TryGetParameterTypeFriendlyName(VerbParameter parameter, out string friendlyName)
+		public bool TryGetParameterTypeFriendlyName(VerbParameter parameter, out string? friendlyName)
 		{
 			friendlyName = default;
 			return false;

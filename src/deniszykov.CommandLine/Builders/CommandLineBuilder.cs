@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using deniszykov.CommandLine.Formatting;
 using deniszykov.TypeConversion;
@@ -14,8 +14,7 @@ namespace deniszykov.CommandLine.Builders
 		private readonly Dictionary<object, object> properties;
 		private readonly string[] arguments;
 		private readonly CommandLineConfiguration configuration;
-		private IVerbSetBuilder verbSetBuilder;
-
+		private IVerbSetBuilder? verbSetBuilder;
 		private Func<IServiceProvider> serviceProviderFactory;
 
 		/// <inheritdoc />
@@ -27,9 +26,9 @@ namespace deniszykov.CommandLine.Builders
 
 			this.properties = new Dictionary<object, object>();
 			this.arguments = arguments;
-			this.verbSetBuilder = default(IVerbSetBuilder);
+			this.verbSetBuilder = default;
 			this.configuration = new CommandLineConfiguration();
-			this.serviceProviderFactory = this.CreateDefaultServiceProviderFactory;
+			this.serviceProviderFactory = CreateDefaultServiceProviderFactory;
 		}
 
 		/// <inheritdoc />
@@ -73,13 +72,20 @@ namespace deniszykov.CommandLine.Builders
 			this.verbSetBuilder = builder;
 			return this;
 		}
-
+		/// <inheritdoc />
 		public CommandLine Build()
 		{
-			var serviceProvider = this.serviceProviderFactory?.Invoke() ?? this.CreateDefaultServiceProviderFactory();
+			if (this.verbSetBuilder == null) throw new InvalidOperationException("No verb list are set. Call one of ICommandLineBuilder.Use() methods before calling Run()/Build().");
+
+			var serviceProvider = this.serviceProviderFactory?.Invoke() ?? CreateDefaultServiceProviderFactory();
 			var typeConversionProvider = (ITypeConversionProvider)serviceProvider.GetService(typeof(ITypeConversionProvider)) ?? new TypeConversionProvider();
 			var console = (IConsole)serviceProvider.GetService(typeof(IConsole)) ?? new DefaultConsole(this.configuration.HookConsoleCancelKeyPress);
 			var helpTextProvider = (IHelpTextProvider)serviceProvider.GetService(typeof(IHelpTextProvider)) ?? new DefaultHelpTextProvider();
+
+			var scopedServiceProvider = new ServiceProvider(serviceProvider);
+			scopedServiceProvider.RegisterInstance(typeof(ITypeConversionProvider), typeConversionProvider);
+			scopedServiceProvider.RegisterInstance(typeof(IConsole), console);
+			scopedServiceProvider.RegisterInstance(typeof(IHelpTextProvider), helpTextProvider);
 
 			var commandLine = new CommandLine(
 				this.verbSetBuilder,
@@ -88,7 +94,7 @@ namespace deniszykov.CommandLine.Builders
 				typeConversionProvider,
 				console,
 				helpTextProvider,
-				serviceProvider,
+				scopedServiceProvider,
 				this.properties
 			);
 			return commandLine;
@@ -99,7 +105,7 @@ namespace deniszykov.CommandLine.Builders
 		{
 			try
 			{
-				return this.Build().RunAsync().Result;
+				return this.Build().RunAsync(CancellationToken.None).Result;
 			}
 			catch (AggregateException aggregateException)
 			{
@@ -108,12 +114,12 @@ namespace deniszykov.CommandLine.Builders
 			}
 		}
 		/// <inheritdoc />
-		public Task<int> RunAsync()
+		public Task<int> RunAsync(CancellationToken cancellationToken)
 		{
-			return this.Build().RunAsync();
+			return this.Build().RunAsync(cancellationToken);
 		}
 
-		private IServiceProvider CreateDefaultServiceProviderFactory()
+		private static IServiceProvider CreateDefaultServiceProviderFactory()
 		{
 			var defaultServiceProvider = new ServiceProvider();
 			defaultServiceProvider.RegisterInstance(typeof(ITypeConversionProvider), new TypeConversionProvider());

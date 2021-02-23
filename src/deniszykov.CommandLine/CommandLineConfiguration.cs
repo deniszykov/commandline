@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
@@ -10,13 +9,13 @@ namespace deniszykov.CommandLine
 	public sealed class CommandLineConfiguration
 	{
 		/// <summary>
-		/// Exception handling for <see cref="CommandLine.Run"/>.
+		/// Exception handling for <see cref="CommandLine.RunAsync"/>.
 		/// </summary>
-		[CanBeNull] public ExceptionEventHandler UnhandledExceptionHandler { get; set; }
+		public ExceptionEventHandler? UnhandledExceptionHandler { get; set; }
 		/// <summary>
 		/// Try to describe API into <see cref="IConsole.WriteLine"/> when bind error occurs (verb name mistype or wrong arguments).
 		/// </summary>
-		public bool WriteHelpOfFailure { get; set; }
+		public bool WriteHelpOnFailure { get; set; }
 		/// <summary>
 		/// Output whole error message to <see cref="IConsole.WriteErrorLine"/> when bind error occurs (verb name mistype or wrong arguments).
 		/// </summary>
@@ -32,7 +31,7 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Set default action name to use if non are passed.
 		/// </summary>
-		[CanBeNull] public string DefaultVerbName { get; set; }
+		public string? DefaultVerbName { get; set; }
 		/// <summary>
 		/// Set to true to hook <see cref="Console.CancelKeyPress"/> event and redirect it as <see cref="CancellationToken"/> for running verb.
 		/// </summary>
@@ -56,49 +55,27 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// List of prefixes for short options. Should be at least one prefix for short options.
 		/// </summary>
-		[CanBeNull, ItemNotNull] public string[] ShortOptionNamePrefixes { get; set; }
+		public string[]? ShortOptionNamePrefixes { get; set; }
 		/// <summary>
 		/// List of prefixes for short options. Should be at least one prefix for long options.
 		/// </summary>
-		[CanBeNull, ItemNotNull] public string[] LongOptionNamePrefixes { get; set; }
+		public string[]? LongOptionNamePrefixes { get; set; }
 		/// <summary>
 		/// List of string used to separate options from values. Could be empty list.
 		/// </summary>
-		[CanBeNull, ItemNotNull] public string[] OptionsBreaks { get; set; }
+		public string[]? OptionsBreaks { get; set; }
 		/// <summary>
 		/// List of options used to request help. Could be empty list.
 		/// </summary>
-		[CanBeNull, ItemNotNull] public string[] HelpOptions { get; set; }
+		public string[]? HelpOptions { get; set; }
 		/// <summary>
 		/// Splitter chars used to separate option's name from value. Could be empty list.
 		/// </summary>
-		[CanBeNull] public char[] OptionArgumentSplitters { get; set; }
+		public char[]? OptionArgumentSplitters { get; set; }
 
-		internal void CopyTo([NotNull]CommandLineConfiguration config)
+		public CommandLineConfiguration()
 		{
-			if (config == null) throw new ArgumentNullException(nameof(config));
-
-			config.UnhandledExceptionHandler = this.UnhandledExceptionHandler;
-			config.WriteHelpOfFailure = this.WriteHelpOfFailure;
-			config.WriteFailureErrors = this.WriteFailureErrors;
-			config.FailureExitCode = this.FailureExitCode;
-			config.HelpExitCode = this.HelpExitCode;
-			config.DefaultVerbName = this.DefaultVerbName;
-			config.HookConsoleCancelKeyPress = this.HookConsoleCancelKeyPress;
-			config.LongOptionNameMatchingMode = this.LongOptionNameMatchingMode;
-			config.ShortOptionNameMatchingMode = this.ShortOptionNameMatchingMode;
-			config.VerbNameMatchingMode = this.VerbNameMatchingMode;
-			config.TreatUnknownOptionsAsValues = this.TreatUnknownOptionsAsValues;
-			config.ShortOptionNamePrefixes = this.ShortOptionNamePrefixes;
-			config.LongOptionNamePrefixes = this.LongOptionNamePrefixes;
-			config.OptionsBreaks = this.OptionsBreaks;
-			config.HelpOptions = this.HelpOptions;
-			config.OptionArgumentSplitters = this.OptionArgumentSplitters;
-		}
-
-		internal void SetToDefault()
-		{
-			this.WriteHelpOfFailure = true;
+			this.WriteHelpOnFailure = true;
 			this.FailureExitCode = 1;
 			this.HelpExitCode = 2;
 			this.ShortOptionNameMatchingMode = StringComparison.Ordinal;
@@ -109,6 +86,28 @@ namespace deniszykov.CommandLine
 			this.OptionsBreaks = new[] { "--" };
 			this.OptionArgumentSplitters = new[] { ' ', '=' };
 			this.HelpOptions = new[] { "-h", "/h", "--help", "-?", "/?" };
+		}
+
+		internal void CopyTo(CommandLineConfiguration config)
+		{
+			if (config == null) throw new ArgumentNullException(nameof(config));
+
+			config.UnhandledExceptionHandler = this.UnhandledExceptionHandler ?? config.UnhandledExceptionHandler;
+			config.WriteHelpOnFailure = this.WriteHelpOnFailure;
+			config.WriteFailureErrors = this.WriteFailureErrors;
+			config.FailureExitCode = this.FailureExitCode;
+			config.HelpExitCode = this.HelpExitCode;
+			config.DefaultVerbName = this.DefaultVerbName ?? config.DefaultVerbName;
+			config.HookConsoleCancelKeyPress = this.HookConsoleCancelKeyPress;
+			config.LongOptionNameMatchingMode = this.LongOptionNameMatchingMode;
+			config.ShortOptionNameMatchingMode = this.ShortOptionNameMatchingMode;
+			config.VerbNameMatchingMode = this.VerbNameMatchingMode;
+			config.TreatUnknownOptionsAsValues = this.TreatUnknownOptionsAsValues;
+			config.ShortOptionNamePrefixes = this.ShortOptionNamePrefixes;
+			config.LongOptionNamePrefixes = this.LongOptionNamePrefixes;
+			config.OptionsBreaks = this.OptionsBreaks;
+			config.HelpOptions = this.HelpOptions;
+			config.OptionArgumentSplitters = this.OptionArgumentSplitters;
 		}
 	}
 }

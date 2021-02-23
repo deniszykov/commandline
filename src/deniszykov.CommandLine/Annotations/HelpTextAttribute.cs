@@ -21,7 +21,7 @@ namespace deniszykov.CommandLine.Annotations
 		/// <summary>
 		/// Help text. Should ends with dot.
 		/// </summary>
-		public virtual string Text { get; private set; }
+		public virtual string Text { get; }
 
 		/// <summary>
 		/// Create new instance of <see cref="HelpTextAttribute"/>.

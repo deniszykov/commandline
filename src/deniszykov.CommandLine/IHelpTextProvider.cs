@@ -76,6 +76,6 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Tries to provide friendly name of parameter's type.
 		/// </summary>
-		bool TryGetParameterTypeFriendlyName(VerbParameter parameter, out string friendlyName);
+		bool TryGetParameterTypeFriendlyName(VerbParameter parameter, out string? friendlyName);
 	}
 }

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Threading;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Formatting
 {
 	internal class DefaultConsole : IConsole, IDisposable
 	{
-		[NotNull]
 		private readonly CancellationTokenSource interruptTokenSource;
-		[CanBeNull]
-		private ConsoleCancelEventHandler cancelKeyHandler;
+		private ConsoleCancelEventHandler? cancelKeyHandler;
 
 		public int Width { get; }
 		public CancellationToken InterruptToken => this.interruptTokenSource.Token;
@@ -42,13 +39,13 @@ namespace deniszykov.CommandLine.Formatting
 		}
 
 		/// <inheritdoc />
-		public void WriteLine(object text = null)
+		public void WriteLine(object? text = null)
 		{
 			Console.Out.WriteLine(text);
 		}
 
 		/// <inheritdoc />
-		public void WriteErrorLine(object text = null)
+		public void WriteErrorLine(object? text = null)
 		{
 			Console.Error.WriteLine(text);
 		}

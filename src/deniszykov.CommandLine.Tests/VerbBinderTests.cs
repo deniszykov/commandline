@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
@@ -19,11 +18,11 @@ namespace deniszykov.CommandLine.Tests
 			public int Param1;
 			public bool Param2;
 			public int Param3Value;
-			public string[] Param4;
+			public string[]? Param4;
 			public int Param5Value;
-			public string Param6;
-			public int[] ExtraIntsParam;
-			public string[] ExtraStringsParam;
+			public string? Param6;
+			public int[]? ExtraIntegersParam;
+			public string[]? ExtraStringsParam;
 
 			public int NamedBindVerb
 			(
@@ -34,11 +33,11 @@ namespace deniszykov.CommandLine.Tests
 				[Alias("z"), Name("param-3-count")]
 				OptionCount param3 = default,
 				[Alias("m"), Name("param-4-string-array")]
-				string[] param4 = default,
+				string[]? param4 = default,
 				[Alias("Z"), Name("param-5-count")]
 				OptionCount param5 = default,
 				[Alias("s"), Name("param-6-string")]
-				string param6 = default
+				string? param6 = default
 			)
 			{
 				this.Param1 = param1;
@@ -56,9 +55,9 @@ namespace deniszykov.CommandLine.Tests
 				int param1 = default,
 				bool param2 = default,
 				int param3 = default,
-				string[] param4 = default,
+				string[]? param4 = default,
 				int param5 = default,
-				string param6 = default
+				string? param6 = default
 			)
 			{
 				this.Param1 = param1;
@@ -114,11 +113,11 @@ namespace deniszykov.CommandLine.Tests
 				[ Name("param-1-int")]
 				int param1,
 				[Name("extra")]
-				params int[] extraIntsParam
+				params int[] extraIntegersParam
 			)
 			{
 				this.Param1 = param1;
-				this.ExtraIntsParam = extraIntsParam;
+				this.ExtraIntegersParam = extraIntegersParam;
 
 				return 0;
 			}
@@ -149,7 +148,6 @@ namespace deniszykov.CommandLine.Tests
 		{
 			var testApi = new TestApi();
 			var configuration = new CommandLineConfiguration();
-			configuration.SetToDefault();
 			var typeConversionProvider = new TypeConversionProvider();
 			var container = new ServiceContainer();
 			container.AddService(testApi.GetType(), testApi);
@@ -191,7 +189,6 @@ namespace deniszykov.CommandLine.Tests
 		{
 			var testApi = new TestApi();
 			var configuration = new CommandLineConfiguration();
-			configuration.SetToDefault();
 			var typeConversionProvider = new TypeConversionProvider();
 			var container = new ServiceContainer();
 			container.AddService(testApi.GetType(), testApi);
@@ -234,7 +231,7 @@ namespace deniszykov.CommandLine.Tests
 		// binding rest parameters
 		[InlineData(new[] { "100500", "true", "120", "any", "extra", "params" }, nameof(TestApi.ExtraStringParamBindVerb), nameof(TestApi.ExtraStringsParam), new[] { "any", "extra", "params" }, true)]
 		// binding typed values
-		[InlineData(new[] { "100500", "1", "2", "3" }, nameof(TestApi.ExtraIntParamsBindVerb), nameof(TestApi.ExtraIntsParam), new[] { 1, 2, 3 }, true)]
+		[InlineData(new[] { "100500", "1", "2", "3" }, nameof(TestApi.ExtraIntParamsBindVerb), nameof(TestApi.ExtraIntegersParam), new[] { 1, 2, 3 }, true)]
 		// partial binding on required parameters
 		[InlineData(new[] { "--param-1-int", "120" }, nameof(TestApi.TwoParamBindVerb), nameof(TestApi.Param1), 120, false)]
 		[InlineData(new[] { "--param-2-int", "120" }, nameof(TestApi.TwoParamBindVerb), nameof(TestApi.Param2), 120, false)]
@@ -242,7 +239,6 @@ namespace deniszykov.CommandLine.Tests
 		{
 			var testApi = new TestApi();
 			var configuration = new CommandLineConfiguration();
-			configuration.SetToDefault();
 			var typeConversionProvider = new TypeConversionProvider();
 			var container = new ServiceContainer();
 			container.AddService(testApi.GetType(), testApi);

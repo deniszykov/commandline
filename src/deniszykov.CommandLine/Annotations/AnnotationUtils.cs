@@ -5,13 +5,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Annotations
 {
 	internal static class AnnotationUtils
 	{
-		public static bool IsHidden([NotNull] this ICustomAttributeProvider customAttributeProvider)
+		public static bool IsHidden(this ICustomAttributeProvider customAttributeProvider)
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
 
@@ -26,13 +25,13 @@ namespace deniszykov.CommandLine.Annotations
 			return browsableAttributes.Any(a => a.Browsable == false);
 #endif
 		}
-		public static bool IsFlags([NotNull] this ICustomAttributeProvider customAttributeProvider)
+		public static bool IsFlags(this ICustomAttributeProvider customAttributeProvider)
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
 
 			return customAttributeProvider.GetCustomAttributes(typeof(FlagsAttribute), true).Any();
 		}
-		public static bool IsServiceParameter([NotNull] this ParameterInfo parameterInfo)
+		public static bool IsServiceParameter(this ParameterInfo parameterInfo)
 		{
 			if (parameterInfo == null) throw new ArgumentNullException(nameof(parameterInfo));
 
@@ -42,8 +41,7 @@ namespace deniszykov.CommandLine.Annotations
 				parameterInfo.ParameterType == typeof(ICommandLineBuilder) ||
 				parameterInfo.ParameterType == typeof(CancellationToken);
 		}
-		[CanBeNull]
-		public static string GetName([NotNull] this ICustomAttributeProvider customAttributeProvider)
+		public static string? GetName(this ICustomAttributeProvider customAttributeProvider)
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
 
@@ -54,8 +52,7 @@ namespace deniszykov.CommandLine.Annotations
 			}
 			return null;
 		}
-		[CanBeNull]
-		public static string GetAlias([NotNull] this ICustomAttributeProvider customAttributeProvider)
+		public static string? GetAlias(this ICustomAttributeProvider customAttributeProvider)
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
 
@@ -66,8 +63,7 @@ namespace deniszykov.CommandLine.Annotations
 			}
 			return null;
 		}
-		[CanBeNull]
-		public static string GetDescription([NotNull] this ICustomAttributeProvider customAttributeProvider)
+		public static string? GetDescription(this ICustomAttributeProvider customAttributeProvider)
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
 

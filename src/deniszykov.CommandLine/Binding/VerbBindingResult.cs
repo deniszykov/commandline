@@ -11,9 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Binding
 {
@@ -23,14 +21,14 @@ namespace deniszykov.CommandLine.Binding
 
 		public sealed class Bound : VerbBindingResult
 		{
-			[CanBeNull] public object Target { get; }
-			[NotNull] public Verb Verb { get; }
-			[NotNull, ItemCanBeNull] public object[] Arguments { get; }
+			public object? Target { get; }
+			public Verb Verb { get; }
+			public object?[] Arguments { get; }
 			public bool HasHelpOption { get; }
 			/// <inheritdoc />
 			public override string VerbName => this.Verb.Name;
 
-			public Bound([NotNull] Verb verb, [CanBeNull] object target, [NotNull, ItemCanBeNull]object[] arguments, bool hasHelpOption)
+			public Bound(Verb verb, object? target, object?[] arguments, bool hasHelpOption)
 			{
 				if (verb == null) throw new ArgumentNullException(nameof(verb));
 				if (arguments == null) throw new ArgumentNullException(nameof(arguments));
@@ -51,10 +49,10 @@ namespace deniszykov.CommandLine.Binding
 		}
 		public sealed class FailedToBind : VerbBindingResult
 		{
-			[NotNull] public Dictionary<Verb, ParameterBindingResult[]> BindingFailures { get; }
+			public Dictionary<Verb, ParameterBindingResult[]> BindingFailures { get; }
 			public override string VerbName { get; }
 
-			public FailedToBind([NotNull] string verbName, [NotNull] Dictionary<Verb, ParameterBindingResult[]> bindingFailures)
+			public FailedToBind(string verbName, Dictionary<Verb, ParameterBindingResult[]> bindingFailures)
 			{
 				if (verbName == null) throw new ArgumentNullException(nameof(verbName));
 				if (bindingFailures == null) throw new ArgumentNullException(nameof(bindingFailures));
@@ -70,7 +68,7 @@ namespace deniszykov.CommandLine.Binding
 		{
 			public override string VerbName { get; }
 
-			public HelpRequested([NotNull] string verbName)
+			public HelpRequested(string verbName)
 			{
 				if (verbName == null) throw new ArgumentNullException(nameof(verbName));
 
@@ -92,6 +90,6 @@ namespace deniszykov.CommandLine.Binding
 			public override string ToString() => "No verb specified.";
 		}
 
-		[NotNull] public abstract string VerbName { get; }
+		public abstract string VerbName { get; }
 	}
 }

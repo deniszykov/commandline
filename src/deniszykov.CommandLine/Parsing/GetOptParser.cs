@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using deniszykov.CommandLine.Binding;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Parsing
 {
@@ -10,14 +9,14 @@ namespace deniszykov.CommandLine.Parsing
 	{
 		public override StringComparison LongNameMatchingMode { get; }
 		public override StringComparison ShortNameMatchingMode { get; }
-		[NotNull] public string[] ShortNamePrefixes { get; }
-		[NotNull] public string[] LongNamePrefixes { get; }
-		[NotNull] public string[] OptionsBreaks { get; }
-		[NotNull] public string[] HelpOptions { get; }
-		[NotNull] public char[] OptionArgumentSplitter { get; }
+		public string[] ShortNamePrefixes { get; }
+		public string[] LongNamePrefixes { get; }
+		public string[] OptionsBreaks { get; }
+		public string[] HelpOptions { get; }
+		public char[] OptionArgumentSplitter { get; }
 		public bool TreatUnknownOptionsAsValues { get; }
 
-		public GetOptParser([NotNull] CommandLineConfiguration configuration)
+		public GetOptParser(CommandLineConfiguration configuration)
 		{
 			if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -61,16 +60,16 @@ namespace deniszykov.CommandLine.Parsing
 							yield return new ArgumentToken(TokenType.HelpOption, argument);
 							yield break;
 						}
-						else if (this.IsLongNameOption(argument, out longName, out var optionArgument) && getOptionArity(longName) != null)
+						else if (this.IsLongNameOption(argument, out longName, out var optionArgument) && getOptionArity(longName!) != null)
 						{
-							yield return new ArgumentToken(TokenType.LongOption, longName);
+							yield return new ArgumentToken(TokenType.LongOption, longName!);
 
 							if (!string.IsNullOrEmpty(optionArgument))
 							{
-								yield return new ArgumentToken(TokenType.OptionArgument, optionArgument);
+								yield return new ArgumentToken(TokenType.OptionArgument, optionArgument!);
 							}
 
-							switch (getOptionArity(longName) ?? ValueArity.ZeroOrMany)
+							switch (getOptionArity(longName!) ?? ValueArity.ZeroOrMany)
 							{
 								case ValueArity.Zero:
 									mode = MODE_VALUE_OR_OPTION;
@@ -89,7 +88,7 @@ namespace deniszykov.CommandLine.Parsing
 						}
 						else if (this.IsShortNameOption(argument, out shortNameLetters, out optionArgument))
 						{
-							for (var l = 0; l < shortNameLetters.Length; l++)
+							for (var l = 0; l < shortNameLetters!.Length; l++)
 							{
 								var isLast = l == shortNameLetters.Length - 1;
 								var letter = shortNameLetters[l];
@@ -104,12 +103,12 @@ namespace deniszykov.CommandLine.Parsing
 
 									if (this.TreatUnknownOptionsAsValues || longName.All(char.IsDigit))
 									{
-										yield return new ArgumentToken(TokenType.Value, l == 0 ? argument : longName);
+										yield return new ArgumentToken(TokenType.Value, l == 0 ? argument : longName!);
 										l = shortNameLetters.Length;
 									}
 									else
 									{
-										yield return new ArgumentToken(TokenType.UnknownOption, longName);
+										yield return new ArgumentToken(TokenType.UnknownOption, longName!);
 										mode = MODE_ZERO_OR_MORE_EXPLICIT_ARGUMENTS;
 										l = shortNameLetters.Length;
 									}
@@ -153,7 +152,7 @@ namespace deniszykov.CommandLine.Parsing
 
 							if (!string.IsNullOrEmpty(optionArgument))
 							{
-								yield return new ArgumentToken(TokenType.OptionArgument, optionArgument);
+								yield return new ArgumentToken(TokenType.OptionArgument, optionArgument!);
 
 								if (mode == MODE_ONE_OR_MORE_ARGUMENTS)
 								{
@@ -171,8 +170,8 @@ namespace deniszykov.CommandLine.Parsing
 						mode = MODE_ZERO_OR_MORE_ARGUMENTS;
 						continue;
 					case MODE_ZERO_OR_MORE_ARGUMENTS:
-						if ((this.IsLongNameOption(argument, out longName, out _) && getOptionArity(longName) != null) ||
-							(this.IsShortNameOption(argument, out shortNameLetters, out _) && getOptionArity(shortNameLetters[0].ToString()) != null) ||
+						if ((this.IsLongNameOption(argument, out longName, out _) && getOptionArity(longName!) != null) ||
+							(this.IsShortNameOption(argument, out shortNameLetters, out _) && getOptionArity(shortNameLetters![0].ToString()) != null) ||
 							this.IsOptionsBreak(argument) ||
 							this.IsHelpOption(argument))
 						{
@@ -205,8 +204,11 @@ namespace deniszykov.CommandLine.Parsing
 			}
 			return false;
 		}
-		private bool IsOption(string[] prefixes, string argument, out string optionName, out string optionArgument)
+		private bool IsOption(string[] prefixes, string argument, out string? optionName, out string? optionArgument)
 		{
+			if (prefixes == null) throw new ArgumentNullException(nameof(prefixes));
+			if (argument == null) throw new ArgumentNullException(nameof(argument));
+
 			optionName = default;
 			optionArgument = default;
 
@@ -232,11 +234,11 @@ namespace deniszykov.CommandLine.Parsing
 
 			return false;
 		}
-		private bool IsShortNameOption(string argument, out string optionName, out string optionArgument)
+		private bool IsShortNameOption(string argument, out string? optionName, out string? optionArgument)
 		{
 			return this.IsOption(this.ShortNamePrefixes, argument, out optionName, out optionArgument);
 		}
-		private bool IsLongNameOption(string argument, out string optionName, out string optionArgument)
+		private bool IsLongNameOption(string argument, out string? optionName, out string? optionArgument)
 		{
 			return this.IsOption(this.LongNamePrefixes, argument, out optionName, out optionArgument);
 		}

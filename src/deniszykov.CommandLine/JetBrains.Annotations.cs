@@ -14,7 +14,7 @@ copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -23,14 +23,9 @@ SOFTWARE. */
 using System;
 
 #pragma warning disable 1591
-// ReSharper disable UnusedMember.Global
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-// ReSharper disable IntroduceOptionalParameters.Global
-// ReSharper disable MemberCanBeProtected.Global
-// ReSharper disable InconsistentNaming
-// ReSharper disable InheritdocConsiderUsage
-// ReSharper disable once CheckNamespace
+
+// ReSharper disable All
+
 namespace JetBrains.Annotations
 {
   /// <summary>
@@ -125,13 +120,13 @@ internal sealed class StringFormatMethodAttribute : Attribute
     /// <param name="formatParameterName">
     /// Specifies which parameter of an annotated method should be treated as the format string
     /// </param>
-    public StringFormatMethodAttribute([NotNull] string formatParameterName)
+    public StringFormatMethodAttribute(string formatParameterName)
     {
       FormatParameterName = formatParameterName;
     }
 
-    [NotNull] public string FormatParameterName { get; }
-  }
+		public string FormatParameterName { get; }
+	}
 
   /// <summary>
   /// Use this annotation to specify a type that contains static or const fields
@@ -165,13 +160,13 @@ internal sealed class StringFormatMethodAttribute : Attribute
     AllowMultiple = true)]
 internal sealed class ValueProviderAttribute : Attribute
   {
-    public ValueProviderAttribute([NotNull] string name)
+    public ValueProviderAttribute(string name)
     {
       Name = name;
     }
 
-    [NotNull] public string Name { get; }
-  }
+		public string Name { get; }
+	}
 
   /// <summary>
   /// Indicates that the integral value falls into the specified interval.
@@ -288,13 +283,13 @@ internal sealed class InvokerParameterNameAttribute : Attribute { }
 internal sealed class NotifyPropertyChangedInvocatorAttribute : Attribute
   {
     public NotifyPropertyChangedInvocatorAttribute() { }
-    public NotifyPropertyChangedInvocatorAttribute([NotNull] string parameterName)
+    public NotifyPropertyChangedInvocatorAttribute(string parameterName)
     {
       ParameterName = parameterName;
     }
 
-    [CanBeNull] public string ParameterName { get; }
-  }
+		public string? ParameterName { get; }
+	}
 
   /// <summary>
   /// Describes dependency between method input and output.
@@ -343,18 +338,18 @@ internal sealed class NotifyPropertyChangedInvocatorAttribute : Attribute
   [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 internal sealed class ContractAnnotationAttribute : Attribute
   {
-    public ContractAnnotationAttribute([NotNull] string contract)
+    public ContractAnnotationAttribute(string contract)
       : this(contract, false) { }
 
-    public ContractAnnotationAttribute([NotNull] string contract, bool forceFullStates)
+    public ContractAnnotationAttribute(string contract, bool forceFullStates)
     {
       Contract = contract;
       ForceFullStates = forceFullStates;
     }
 
-    [NotNull] public string Contract { get; }
+		public string Contract { get; }
 
-    public bool ForceFullStates { get; }
+		public bool ForceFullStates { get; }
   }
 
   /// <summary>
@@ -417,13 +412,13 @@ internal sealed class CannotApplyEqualityOperatorAttribute : Attribute { }
   [BaseTypeRequired(typeof(Attribute))]
 internal sealed class BaseTypeRequiredAttribute : Attribute
   {
-    public BaseTypeRequiredAttribute([NotNull] Type baseType)
+    public BaseTypeRequiredAttribute(Type baseType)
     {
       BaseType = baseType;
     }
 
-    [NotNull] public Type BaseType { get; }
-  }
+		public Type BaseType { get; }
+	}
 
   /// <summary>
   /// Indicates that the marked symbol is used implicitly (e.g. via reflection, in external library),
@@ -529,13 +524,13 @@ internal sealed class PublicAPIAttribute : Attribute
   {
     public PublicAPIAttribute() { }
 
-    public PublicAPIAttribute([NotNull] string comment)
+    public PublicAPIAttribute(string comment)
     {
       Comment = comment;
     }
 
-    [CanBeNull] public string Comment { get; }
-  }
+		public string? Comment { get; }
+	}
 
   /// <summary>
   /// Tells code analysis engine if the parameter is completely handled when the invoked method is on stack.
@@ -575,13 +570,13 @@ internal sealed class MustUseReturnValueAttribute : Attribute
   {
     public MustUseReturnValueAttribute() { }
 
-    public MustUseReturnValueAttribute([NotNull] string justification)
+    public MustUseReturnValueAttribute(string justification)
     {
       Justification = justification;
     }
 
-    [CanBeNull] public string Justification { get; }
-  }
+		public string? Justification { get; }
+	}
 
   /// <summary>
   /// Indicates the type member or parameter of some type, that should be used instead of all other ways
@@ -612,13 +607,13 @@ internal sealed class PathReferenceAttribute : Attribute
   {
     public PathReferenceAttribute() { }
 
-    public PathReferenceAttribute([NotNull, PathReference] string basePath)
+    public PathReferenceAttribute([PathReference] string basePath)
     {
       BasePath = basePath;
     }
 
-    [CanBeNull] public string BasePath { get; }
-  }
+		public string? BasePath { get; }
+	}
 
   /// <summary>
   /// An extension method marked with this attribute is processed by code completion
@@ -677,94 +672,94 @@ internal sealed class SourceTemplateAttribute : Attribute { }
   [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method, AllowMultiple = true)]
 internal sealed class MacroAttribute : Attribute
   {
-    /// <summary>
-    /// Allows specifying a macro that will be executed for a <see cref="SourceTemplateAttribute">source template</see>
-    /// parameter when the template is expanded.
-    /// </summary>
-    [CanBeNull] public string Expression { get; set; }
+		/// <summary>
+		/// Allows specifying a macro that will be executed for a <see cref="SourceTemplateAttribute">source template</see>
+		/// parameter when the template is expanded.
+		/// </summary>
+		public string? Expression { get; set; }
 
-    /// <summary>
-    /// Allows specifying which occurrence of the target parameter becomes editable when the template is deployed.
-    /// </summary>
-    /// <remarks>
-    /// If the target parameter is used several times in the template, only one occurrence becomes editable;
-    /// other occurrences are changed synchronously. To specify the zero-based index of the editable occurrence,
-    /// use values >= 0. To make the parameter non-editable when the template is expanded, use -1.
-    /// </remarks>
-    public int Editable { get; set; }
+		/// <summary>
+		/// Allows specifying which occurrence of the target parameter becomes editable when the template is deployed.
+		/// </summary>
+		/// <remarks>
+		/// If the target parameter is used several times in the template, only one occurrence becomes editable;
+		/// other occurrences are changed synchronously. To specify the zero-based index of the editable occurrence,
+		/// use values >= 0. To make the parameter non-editable when the template is expanded, use -1.
+		/// </remarks>
+		public int Editable { get; set; }
 
-    /// <summary>
-    /// Identifies the target parameter of a <see cref="SourceTemplateAttribute">source template</see> if the
-    /// <see cref="MacroAttribute"/> is applied on a template method.
-    /// </summary>
-    [CanBeNull] public string Target { get; set; }
-  }
+		/// <summary>
+		/// Identifies the target parameter of a <see cref="SourceTemplateAttribute">source template</see> if the
+		/// <see cref="MacroAttribute"/> is applied on a template method.
+		/// </summary>
+		public string? Target { get; set; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
 internal sealed class AspMvcAreaMasterLocationFormatAttribute : Attribute
   {
-    public AspMvcAreaMasterLocationFormatAttribute([NotNull] string format)
+    public AspMvcAreaMasterLocationFormatAttribute(string format)
     {
       Format = format;
     }
 
-    [NotNull] public string Format { get; }
-  }
+		public string Format { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
 internal sealed class AspMvcAreaPartialViewLocationFormatAttribute : Attribute
   {
-    public AspMvcAreaPartialViewLocationFormatAttribute([NotNull] string format)
+    public AspMvcAreaPartialViewLocationFormatAttribute(string format)
     {
       Format = format;
     }
 
-    [NotNull] public string Format { get; }
-  }
+		public string Format { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
 internal sealed class AspMvcAreaViewLocationFormatAttribute : Attribute
   {
-    public AspMvcAreaViewLocationFormatAttribute([NotNull] string format)
+    public AspMvcAreaViewLocationFormatAttribute(string format)
     {
       Format = format;
     }
 
-    [NotNull] public string Format { get; }
-  }
+		public string Format { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
 internal sealed class AspMvcMasterLocationFormatAttribute : Attribute
   {
-    public AspMvcMasterLocationFormatAttribute([NotNull] string format)
+    public AspMvcMasterLocationFormatAttribute(string format)
     {
       Format = format;
     }
 
-    [NotNull] public string Format { get; }
-  }
+		public string Format { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
 internal sealed class AspMvcPartialViewLocationFormatAttribute : Attribute
   {
-    public AspMvcPartialViewLocationFormatAttribute([NotNull] string format)
+    public AspMvcPartialViewLocationFormatAttribute(string format)
     {
       Format = format;
     }
 
-    [NotNull] public string Format { get; }
-  }
+		public string Format { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
 internal sealed class AspMvcViewLocationFormatAttribute : Attribute
   {
-    public AspMvcViewLocationFormatAttribute([NotNull] string format)
+    public AspMvcViewLocationFormatAttribute(string format)
     {
       Format = format;
     }
 
-    [NotNull] public string Format { get; }
-  }
+		public string Format { get; }
+	}
 
   /// <summary>
   /// ASP.NET MVC attribute. If applied to a parameter, indicates that the parameter
@@ -777,13 +772,13 @@ internal sealed class AspMvcActionAttribute : Attribute
   {
     public AspMvcActionAttribute() { }
 
-    public AspMvcActionAttribute([NotNull] string anonymousProperty)
+    public AspMvcActionAttribute(string anonymousProperty)
     {
       AnonymousProperty = anonymousProperty;
     }
 
-    [CanBeNull] public string AnonymousProperty { get; }
-  }
+		public string? AnonymousProperty { get; }
+	}
 
   /// <summary>
   /// ASP.NET MVC attribute. Indicates that the marked parameter is an MVC area.
@@ -795,13 +790,13 @@ internal sealed class AspMvcAreaAttribute : Attribute
   {
     public AspMvcAreaAttribute() { }
 
-    public AspMvcAreaAttribute([NotNull] string anonymousProperty)
+    public AspMvcAreaAttribute(string anonymousProperty)
     {
       AnonymousProperty = anonymousProperty;
     }
 
-    [CanBeNull] public string AnonymousProperty { get; }
-  }
+		public string? AnonymousProperty { get; }
+	}
 
   /// <summary>
   /// ASP.NET MVC attribute. If applied to a parameter, indicates that the parameter is
@@ -814,13 +809,13 @@ internal sealed class AspMvcControllerAttribute : Attribute
   {
     public AspMvcControllerAttribute() { }
 
-    public AspMvcControllerAttribute([NotNull] string anonymousProperty)
+    public AspMvcControllerAttribute(string anonymousProperty)
     {
       AnonymousProperty = anonymousProperty;
     }
 
-    [CanBeNull] public string AnonymousProperty { get; }
-  }
+		public string? AnonymousProperty { get; }
+	}
 
   /// <summary>
   /// ASP.NET MVC attribute. Indicates that the marked parameter is an MVC Master. Use this attribute
@@ -917,24 +912,24 @@ internal sealed class HtmlElementAttributesAttribute : Attribute
   {
     public HtmlElementAttributesAttribute() { }
 
-    public HtmlElementAttributesAttribute([NotNull] string name)
+    public HtmlElementAttributesAttribute(string name)
     {
       Name = name;
     }
 
-    [CanBeNull] public string Name { get; }
-  }
+		public string? Name { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field | AttributeTargets.Property)]
 internal sealed class HtmlAttributeValueAttribute : Attribute
   {
-    public HtmlAttributeValueAttribute([NotNull] string name)
+    public HtmlAttributeValueAttribute(string name)
     {
       Name = name;
     }
 
-    [NotNull] public string Name { get; }
-  }
+		public string Name { get; }
+	}
 
   /// <summary>
   /// Razor attribute. Indicates that the marked parameter or method is a Razor section.
@@ -1124,16 +1119,16 @@ internal sealed class XamlItemStyleOfItemsControlAttribute : Attribute { }
   [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 internal sealed class AspChildControlTypeAttribute : Attribute
   {
-    public AspChildControlTypeAttribute([NotNull] string tagName, [NotNull] Type controlType)
+    public AspChildControlTypeAttribute(string tagName, Type controlType)
     {
       TagName = tagName;
       ControlType = controlType;
     }
 
-    [NotNull] public string TagName { get; }
+		public string TagName { get; }
 
-    [NotNull] public Type ControlType { get; }
-  }
+		public Type ControlType { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
 internal sealed class AspDataFieldAttribute : Attribute { }
@@ -1147,13 +1142,13 @@ internal sealed class AspMethodPropertyAttribute : Attribute { }
   [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 internal sealed class AspRequiredAttributeAttribute : Attribute
   {
-    public AspRequiredAttributeAttribute([NotNull] string attribute)
+    public AspRequiredAttributeAttribute(string attribute)
     {
       Attribute = attribute;
     }
 
-    [NotNull] public string Attribute { get; }
-  }
+		public string Attribute { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Property)]
 internal sealed class AspTypePropertyAttribute : Attribute
@@ -1169,55 +1164,55 @@ internal sealed class AspTypePropertyAttribute : Attribute
   [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 internal sealed class RazorImportNamespaceAttribute : Attribute
   {
-    public RazorImportNamespaceAttribute([NotNull] string name)
+    public RazorImportNamespaceAttribute(string name)
     {
       Name = name;
     }
 
-    [NotNull] public string Name { get; }
-  }
+		public string Name { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 internal sealed class RazorInjectionAttribute : Attribute
   {
-    public RazorInjectionAttribute([NotNull] string type, [NotNull] string fieldName)
+    public RazorInjectionAttribute(string type, string fieldName)
     {
       Type = type;
       FieldName = fieldName;
     }
 
-    [NotNull] public string Type { get; }
+		public string Type { get; }
 
-    [NotNull] public string FieldName { get; }
-  }
+		public string FieldName { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 internal sealed class RazorDirectiveAttribute : Attribute
   {
-    public RazorDirectiveAttribute([NotNull] string directive)
+    public RazorDirectiveAttribute(string directive)
     {
       Directive = directive;
     }
 
-    [NotNull] public string Directive { get; }
-  }
+		public string Directive { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 internal sealed class RazorPageBaseTypeAttribute : Attribute
   {
-      public RazorPageBaseTypeAttribute([NotNull] string baseType)
+      public RazorPageBaseTypeAttribute(string baseType)
       {
         BaseType = baseType;
       }
-      public RazorPageBaseTypeAttribute([NotNull] string baseType, string pageName)
+      public RazorPageBaseTypeAttribute(string baseType, string pageName)
       {
           BaseType = baseType;
           PageName = pageName;
       }
 
-      [NotNull] public string BaseType { get; }
-      [CanBeNull] public string PageName { get; }
-  }
+		public string BaseType { get; }
+		public string? PageName { get; }
+	}
 
   [AttributeUsage(AttributeTargets.Method)]
 internal sealed class RazorHelperCommonAttribute : Attribute { }

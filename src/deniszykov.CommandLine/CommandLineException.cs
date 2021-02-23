@@ -36,6 +36,7 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Create new instance of <see cref="CommandLineException"/>.
 		/// </summary>
+		// ReSharper disable once UnusedMember.Global
 		public CommandLineException(string message, Exception innerException) : base(message, innerException)
 		{
 		}
@@ -83,19 +84,12 @@ namespace deniszykov.CommandLine
 			foreach (var parameterBindResult in parameterBindResults)
 			{
 				builder.Append("\t").Append(parameterBindResult.Parameter.Name).Append(": ");
-				if (parameterBindResult.IsSuccess)
-				{
-					var value = Convert.ToString(parameterBindResult.Value, CultureInfo.InvariantCulture) ?? "<null>";
-					if (value.Length > 32)
-						builder.Append(value.Substring(0, 32)).AppendLine("...");
-					else
-						builder.AppendLine(value);
-				}
-				else
+
+				if (parameterBindResult.Error != null)
 				{
 					bindingErrors[parameterBindResult.Parameter.Name] = parameterBindResult.Error;
 
-					var errorMessage = parameterBindResult.Error.Message;
+					var errorMessage = parameterBindResult.Error?.Message;
 					var parameterType = parameterBindResult.Parameter.ValueType;
 					parameterType = Nullable.GetUnderlyingType(parameterType.AsType())?.GetTypeInfo() ?? parameterType;
 					builder.Append("(").Append(parameterType.Name).Append(") ");
@@ -114,6 +108,14 @@ namespace deniszykov.CommandLine
 					{
 						builder.AppendLine(errorMessage);
 					}
+				}
+				else
+				{
+					var value = Convert.ToString(parameterBindResult.Value, CultureInfo.InvariantCulture) ?? "<null>";
+					if (value.Length > 32)
+						builder.Append(value.Substring(0, 32)).AppendLine("...");
+					else
+						builder.AppendLine(value);
 				}
 			}
 

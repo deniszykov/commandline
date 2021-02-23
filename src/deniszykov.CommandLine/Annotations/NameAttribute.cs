@@ -12,7 +12,7 @@ namespace deniszykov.CommandLine.Annotations
 		/// <summary>
 		/// Name of verb/option.
 		/// </summary>
-		public virtual string Name { get; private set; }
+		public virtual string Name { get; }
 
 		/// <summary>
 		/// Verb or option's name.

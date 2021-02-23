@@ -21,17 +21,17 @@ namespace deniszykov.CommandLine.Binding
 		{
 			if (type == null) throw new ArgumentNullException(nameof(type));
 
+			var baseType = default(TypeInfo?);
 			do
 			{
 				foreach (var method in type.DeclaredMethods)
 				{
 					yield return method;
 				}
-				type = type.BaseType == null || type.BaseType == typeof(object) ? null : type.BaseType.GetTypeInfo();
-			} while (type != null);
+				baseType = baseType?.BaseType == null || baseType.BaseType == typeof(object) ? null : baseType.BaseType.GetTypeInfo();
+			} while (baseType != null);
 		}
 #else
-
 		public static IEnumerable<MethodInfo> GetAllMethods(this Type type)
 		{
 			if (type == null) throw new ArgumentNullException(nameof(type));
@@ -81,14 +81,6 @@ namespace deniszykov.CommandLine.Binding
 			}
 
 			return false;
-		}
-
-		public static bool IsSignedNumber(this Type numberType)
-		{
-			if (numberType == null) throw new ArgumentNullException(nameof(numberType));
-
-			return numberType == typeof(sbyte) || numberType == typeof(short) || numberType == typeof(int) || numberType == typeof(long)
-				|| numberType == typeof(float) || numberType == typeof(double) || numberType == typeof(decimal);
 		}
 	}
 }

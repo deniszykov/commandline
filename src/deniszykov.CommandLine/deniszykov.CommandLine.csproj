@@ -66,5 +66,9 @@
 	<ItemGroup>
 		<PackageReference Include="deniszykov.TypeConversion" Version="3.0.0">
 		</PackageReference>
+		<PackageReference Include="ResharperCodeContractNullability" Version="2.0.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 </Project>

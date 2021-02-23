@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 
+// ReSharper disable UnusedMember.Global
+
 namespace deniszykov.CommandLine.Example
 {
 	[Description("This test application. Type /? for help.")]
@@ -18,7 +20,7 @@ namespace deniszykov.CommandLine.Example
 
 		// ### Basic Verb ###
 		[Description("Says hello to specified 'name'.")]
-		public static int SayHelloTo(string name)
+		public static int Hello(string name)
 		{
 			Console.WriteLine("Hello " + name + "!");
 			return 0;

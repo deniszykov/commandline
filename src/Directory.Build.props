@@ -15,7 +15,7 @@
 		<Copyright>(c) Denis Zykov 2021</Copyright>
 		<RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		
+		<Nullable>enable</Nullable>
 		<NetFrameworkBottomTarget>net45</NetFrameworkBottomTarget>
 		<NetFrameworkTopTarget>net461</NetFrameworkTopTarget>
 		<NetCoreAppTarget>netcoreapp2.1</NetCoreAppTarget>

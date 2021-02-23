@@ -10,22 +10,20 @@ namespace deniszykov.CommandLine.Binding
 	/// <summary>
 	/// Verb's parameter. It is an option, values or bound service.
 	/// </summary>
+	[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 	public sealed class VerbParameter
 	{
 		/// <summary>
 		/// Option/value's name. Could be long or alias(short) name.
 		/// </summary>
-		[NotNull]
 		public readonly string Name;
 		/// <summary>
 		/// Option's alias. Could be null.
 		/// </summary>
-		[CanBeNull]
-		public readonly string Alias;
+		public readonly string? Alias;
 		/// <summary>
 		/// Description or help text for this option/values.
 		/// </summary>
-		[NotNull]
 		public readonly string Description;
 		/// <summary>
 		/// Option's position. Used for positional binding of options.
@@ -38,13 +36,11 @@ namespace deniszykov.CommandLine.Binding
 		/// <summary>
 		/// Type of option/values/service.
 		/// </summary>
-		[NotNull]
 		public readonly TypeInfo ValueType;
 		/// <summary>
 		/// Default value for option.
 		/// </summary>
-		[CanBeNull]
-		public readonly object DefaultValue;
+		public readonly object? DefaultValue;
 		/// <summary>
 		/// Arity of option.
 		/// </summary>
@@ -65,20 +61,23 @@ namespace deniszykov.CommandLine.Binding
 		/// <summary>
 		/// <see cref="System.ComponentModel.TypeConverter"/> used to convert value for this option from string representation.
 		/// </summary>
-		public readonly System.ComponentModel.TypeConverter TypeConverter;
+		public readonly System.ComponentModel.TypeConverter? TypeConverter;
 #endif
 
 		/// <summary>
 		/// Constructor for <see cref="VerbParameter"/>.
 		/// </summary>
 		public VerbParameter(
-			[NotNull] string name,
-			[CanBeNull] string alias,
-			[NotNull] string description,
+			 string name,
+			 string? alias,
+			 string description,
 			int position,
 			int argumentIndex,
-			[NotNull] TypeInfo valueType,
-			[CanBeNull] object defaultValue,
+			 TypeInfo valueType,
+#if !NETSTANDARD1_6
+			System.ComponentModel.TypeConverter? typeConverter,
+#endif
+			 object? defaultValue,
 			ValueArity valueArity,
 			bool isOptional,
 			bool isHidden,
@@ -94,6 +93,9 @@ namespace deniszykov.CommandLine.Binding
 			this.Position = position;
 			this.ArgumentIndex = argumentIndex;
 			this.ValueType = valueType;
+#if !NETSTANDARD1_6
+			this.TypeConverter = typeConverter;
+#endif
 			this.DefaultValue = defaultValue;
 			this.ValueArity = valueArity;
 			this.IsOptional = isOptional;

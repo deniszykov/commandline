@@ -16,10 +16,10 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Write specified <paramref name="text"/> to standard output and start new line.
 		/// </summary>
-		void WriteLine(object text = null);
+		void WriteLine(object? text = null);
 		/// <summary>
 		/// Write specified <paramref name="text"/> to standard error output and start new line.
 		/// </summary>
-		void WriteErrorLine(object text = null);
+		void WriteErrorLine(object? text = null);
 	}
 }

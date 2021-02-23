@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using deniszykov.CommandLine.Binding;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
@@ -11,14 +10,13 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Name of property with list of preceding verbs of current <see cref="IVerbSetBuilder"/>. Type is array of <see cref="Verb"/>.
 		/// </summary>
-		public const string VerbChainPropertyName = "__verb_chain__";
+		public const string VERB_CHAIN_PROPERTY_NAME = "__verb_chain__";
 
-		[NotNull, ItemNotNull]
-		public static IEnumerable<Verb> GetVerbChain([NotNull] this IDictionary<object, object> properties)
+		public static IEnumerable<Verb> GetVerbChain(this IDictionary<object, object> properties)
 		{
 			if (properties == null) throw new ArgumentNullException(nameof(properties));
 
-			if (properties.TryGetValue(VerbChainPropertyName, out var verbChainObj) &&
+			if (properties.TryGetValue(VERB_CHAIN_PROPERTY_NAME, out var verbChainObj) &&
 				verbChainObj is Verb[] verbChain)
 			{
 				return verbChain;
@@ -28,7 +26,7 @@ namespace deniszykov.CommandLine
 				return Enumerable.Empty<Verb>();
 			}
 		}
-		public static void AddVertToChain([NotNull] this IDictionary<object, object> properties, [NotNull] Verb verb)
+		public static void AddVerbToChain(this IDictionary<object, object> properties, Verb verb)
 		{
 			if (properties == null) throw new ArgumentNullException(nameof(properties));
 			if (verb == null) throw new ArgumentNullException(nameof(verb));
@@ -39,7 +37,7 @@ namespace deniszykov.CommandLine
 				throw CommandLineException.RecursiveVerbChain(verbChain.Select(otherVerb => otherVerb.Name), verb.Name);
 			}
 			verbChain.Add(verb);
-			properties[VerbChainPropertyName] = verbChain.ToArray();
+			properties[VERB_CHAIN_PROPERTY_NAME] = verbChain.ToArray();
 		}
 	}
 }

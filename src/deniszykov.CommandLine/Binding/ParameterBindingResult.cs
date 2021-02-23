@@ -18,15 +18,15 @@ namespace deniszykov.CommandLine.Binding
 		public bool IsSuccess => this.Error == null;
 
 		public VerbParameter Parameter { get; }
-		public object Value { get; }
-		public Exception Error { get; }
+		public object? Value { get; }
+		public Exception? Error { get; }
 
-		public ParameterBindingResult(VerbParameter parameter, Exception error, object value)
+		public ParameterBindingResult(VerbParameter parameter, Exception? error, object? value)
 		{
 			if (parameter == null) throw new ArgumentNullException(nameof(parameter));
 
-			if (error is TargetInvocationException)
-				error = ((TargetInvocationException)error).InnerException;
+			if (error is TargetInvocationException invocationException)
+				error = invocationException.InnerException;
 
 			this.Parameter = parameter;
 			this.Error = error;
@@ -38,7 +38,7 @@ namespace deniszykov.CommandLine.Binding
 			if (this.IsSuccess)
 				return $"Successful binding to parameter '{this.Parameter.Name}'.";
 			else
-				return $"Failure binding to parameter '{this.Parameter.Name}': {this.Error.Message}";
+				return $"Failure binding to parameter '{this.Parameter.Name}': {this.Error?.Message}";
 		}
 	}
 }

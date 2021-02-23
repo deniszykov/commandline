@@ -5,6 +5,7 @@ using deniszykov.CommandLine.Annotations;
 using deniszykov.CommandLine.Binding;
 using deniszykov.CommandLine.Parsing;
 using Xunit;
+// ReSharper disable StringLiteralTypo
 
 namespace deniszykov.CommandLine.Tests
 {
@@ -79,11 +80,10 @@ namespace deniszykov.CommandLine.Tests
 		public void ParseShortOptions(string[] args, string optionName, string[] expectedArguments, int expectedCount)
 		{
 			var configuration = new CommandLineConfiguration();
-			configuration.SetToDefault();
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var getOptionArity = new Func<string, ValueArity?>(n => verb!.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -108,11 +108,10 @@ namespace deniszykov.CommandLine.Tests
 		public void ParseLongOptions(string[] args, string optionName, string[] expectedArguments, int expectedCount)
 		{
 			var configuration = new CommandLineConfiguration();
-			configuration.SetToDefault();
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var getOptionArity = new Func<string, ValueArity?>(n => verb!.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -141,13 +140,13 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "-Zz", "--zero-param", "--", "-1", "-1.2", "+100500", "http://example.com", "-Zz" }, new[] { "-1", "-1.2", "+100500", "http://example.com", "-Zz" })]
 		public void ParseValues(string[] args, string[] expectedValues)
 		{
-			var configuration = new CommandLineConfiguration();
-			configuration.SetToDefault();
-			configuration.TreatUnknownOptionsAsValues = true;
+			var configuration = new CommandLineConfiguration {
+				TreatUnknownOptionsAsValues = true
+			};
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var getOptionArity = new Func<string, ValueArity?>(n => verb!.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 
@@ -167,11 +166,10 @@ namespace deniszykov.CommandLine.Tests
 		public void HelpOption(string[] args, bool hasHelpOption)
 		{
 			var configuration = new CommandLineConfiguration();
-			configuration.SetToDefault();
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
-			var getOptionArity = new Func<string, ValueArity?>(n => verb.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
+			var getOptionArity = new Func<string, ValueArity?>(n => verb!.FindBoundParameter(n, n.Length > 1 ? configuration.LongOptionNameMatchingMode : configuration.ShortOptionNameMatchingMode)?.ValueArity);
 
 			var parsedArguments = parser.Parse(args, getOptionArity);
 

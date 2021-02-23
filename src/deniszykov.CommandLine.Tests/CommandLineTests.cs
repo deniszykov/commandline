@@ -62,7 +62,7 @@ namespace deniszykov.CommandLine.Tests
 				Assert.Equal("-param", param1);
 				return 0;
 			}
-			public static int StringNullParameter(string param1 = null)
+			public static int StringNullParameter(string? param1 = null)
 			{
 				Assert.Null(param1);
 				return 0;
@@ -90,7 +90,7 @@ namespace deniszykov.CommandLine.Tests
 				Assert.Empty(param1);
 				return 0;
 			}
-			public static int StringArrayNullParameter(string[] param1 = null)
+			public static int StringArrayNullParameter(string[]? param1 = null)
 			{
 				Assert.Null(param1);
 				return 0;
@@ -173,7 +173,7 @@ namespace deniszykov.CommandLine.Tests
 
 
 			[Description("This is test verb with multiple params description.")]
-			public static int MultiparamVerb(
+			public static int MultiParamVerb(
 				[Description("This is parameter1 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet turpis at ex malesuada facilisis sed ac eros.")]
 				[Alias("p")]
 				[Name("param-renamed")]
@@ -184,9 +184,9 @@ namespace deniszykov.CommandLine.Tests
 				[Description("This is parameter4 description.")]
 				MyFlags param4 = MyFlags.One,
 				[Description("This is parameter3 description.")]
-				string param5 = null,
+				string? param5 = null,
 				[Description("This is parameter3 description."), Hidden]
-				string param6Hidden = null,
+				string? param6Hidden = null,
 				[Description("This is rest parameters.")]
 				params string[] otherParams
 			)
@@ -246,7 +246,7 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOfFailure = false;
+					config.WriteHelpOnFailure = false;
 					config.DefaultVerbName = verbName;
 				})
 				.UseServiceProvider(() =>
@@ -268,11 +268,11 @@ namespace deniszykov.CommandLine.Tests
 			var expectedExitCode = 11;
 			var testConsole = new TestConsole(this.output);
 			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
-			var exitCode = CommandLine.CreateFromArguments(new[] { nameof(DescribeTestApi.TestVerbOneParam), "aaa" })
+			var exitCode = CommandLine.CreateFromArguments(nameof(DescribeTestApi.TestVerbOneParam), "aaa")
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOfFailure = true;
+					config.WriteHelpOnFailure = true;
 					config.HelpExitCode = 1;
 					config.FailureExitCode = expectedExitCode;
 				})
@@ -293,18 +293,18 @@ namespace deniszykov.CommandLine.Tests
 
 		[Theory]
 		[InlineData(nameof(DescribeTestApi.TestVerbOneParam))]
-		[InlineData(nameof(DescribeTestApi.MultiparamVerb))]
+		[InlineData(nameof(DescribeTestApi.MultiParamVerb))]
 		public void DescribeVerbHelpTest(string name)
 		{
 
 			var testConsole = new TestConsole(this.output);
 			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
 			var expectedExitCode = 11;
-			var exitCode = CommandLine.CreateFromArguments(new[] { name, "/?" })
+			var exitCode = CommandLine.CreateFromArguments(name, "/?")
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOfFailure = false;
+					config.WriteHelpOnFailure = false;
 					config.HelpExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
@@ -330,11 +330,11 @@ namespace deniszykov.CommandLine.Tests
 			var testConsole = new TestConsole(this.output);
 			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
 			var expectedExitCode = 11;
-			var exitCode = CommandLine.CreateFromArguments(new[] { nameof(DescribeTestApi.TestSubVerb), nameof(DescribeTestApi.TestVerb), "/?" })
+			var exitCode = CommandLine.CreateFromArguments(nameof(DescribeTestApi.TestSubVerb), nameof(DescribeTestApi.TestVerb), "/?")
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOfFailure = false;
+					config.WriteHelpOnFailure = false;
 					config.HelpExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
@@ -359,11 +359,11 @@ namespace deniszykov.CommandLine.Tests
 			var testConsole = new TestConsole(this.output);
 			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
 			var expectedExitCode = 11;
-			var exitCode = CommandLine.CreateFromArguments(new[] { "/?" })
+			var exitCode = CommandLine.CreateFromArguments("/?")
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOfFailure = false;
+					config.WriteHelpOnFailure = false;
 					config.HelpExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
@@ -392,11 +392,11 @@ namespace deniszykov.CommandLine.Tests
 			var testConsole = new TestConsole(this.output);
 			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
 			var expectedExitCode = 11;
-			var exitCode = CommandLine.CreateFromArguments(new[] { nameof(DescribeTestApi.TestSubVerb), "/?" })
+			var exitCode = CommandLine.CreateFromArguments(nameof(DescribeTestApi.TestSubVerb), "/?")
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOfFailure = false;
+					config.WriteHelpOnFailure = false;
 					config.HelpExitCode = expectedExitCode;
 				})
 				.UseServiceProvider(() =>
@@ -422,11 +422,11 @@ namespace deniszykov.CommandLine.Tests
 			var expectedExitCode = 11;
 			var testConsole = new TestConsole(this.output);
 			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
-			var exitCode = CommandLine.CreateFromArguments(new string[0])
+			var exitCode = CommandLine.CreateFromArguments()
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOfFailure = true;
+					config.WriteHelpOnFailure = true;
 					config.HelpExitCode = 1;
 					config.FailureExitCode = expectedExitCode;
 				})
@@ -452,11 +452,11 @@ namespace deniszykov.CommandLine.Tests
 			var expectedExitCode = 11;
 			var testConsole = new TestConsole(this.output);
 			var helpTextProvider = new TestHelpTextProvider(TEST_HELP_HEADER_TEXT, TEST_HELP_FOOTER_TEXT);
-			var exitCode = CommandLine.CreateFromArguments(new[] { NOT_EXISTENT_VERB_NAME })
+			var exitCode = CommandLine.CreateFromArguments(NOT_EXISTENT_VERB_NAME)
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOfFailure = true;
+					config.WriteHelpOnFailure = true;
 					config.HelpExitCode = 1;
 					config.FailureExitCode = expectedExitCode;
 				})

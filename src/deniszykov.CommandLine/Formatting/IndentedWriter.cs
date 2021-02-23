@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Formatting
 {
@@ -10,7 +9,8 @@ namespace deniszykov.CommandLine.Formatting
 	{
 		private class Indent : IDisposable
 		{
-			private IndentedWriter indentedWriter;
+			private IndentedWriter? indentedWriter;
+
 			public Indent(IndentedWriter indentedWriter)
 			{
 				this.indentedWriter = indentedWriter;
@@ -24,12 +24,12 @@ namespace deniszykov.CommandLine.Formatting
 			}
 		}
 
-		[NotNull] private readonly StringBuilder output;
-		[NotNull] private readonly Stack<int> indents;
-		[NotNull] private readonly string newLine;
+		private readonly StringBuilder output;
+		private readonly Stack<int> indents;
+		private readonly string newLine;
 		private int indent;
 
-		public IndentedWriter([NotNull] string newLine)
+		public IndentedWriter(string newLine)
 		{
 			if (newLine == null) throw new ArgumentNullException(nameof(newLine));
 
@@ -39,13 +39,13 @@ namespace deniszykov.CommandLine.Formatting
 			this.indent = 0;
 		}
 
-		public void Write(object textObj = null)
+		public void Write(object? textObj = null)
 		{
 			this.EnsureIndent();
 
 			this.AppendTextAndCountIndent(textObj);
 		}
-		public void WriteLine(object textObj = null)
+		public void WriteLine(object? textObj = null)
 		{
 			this.EnsureIndent();
 
@@ -55,7 +55,7 @@ namespace deniszykov.CommandLine.Formatting
 			this.indent = 0;
 		}
 
-		public IDisposable KeepIndent(string padding = null)
+		public IDisposable KeepIndent(string? padding = null)
 		{
 			if (!string.IsNullOrEmpty(padding))
 			{
@@ -89,7 +89,7 @@ namespace deniszykov.CommandLine.Formatting
 			this.output.Append(' ', requiredIndent);
 			this.indent += requiredIndent;
 		}
-		private void AppendTextAndCountIndent(object text)
+		private void AppendTextAndCountIndent(object? text)
 		{
 			var str = Convert.ToString(text, CultureInfo.InvariantCulture) ?? string.Empty;
 			var offset = 0;

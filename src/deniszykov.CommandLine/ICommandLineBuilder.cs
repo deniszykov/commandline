@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
+	[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 	public interface ICommandLineBuilder
 	{
 		/// <summary>
@@ -57,6 +59,6 @@ namespace deniszykov.CommandLine
 		/// Run <see cref="CommandLine"/> asynchronously with specified parameters and return exit code.
 		/// </summary>
 		/// <returns>Verb's exit code.</returns>
-		Task<int> RunAsync();
+		Task<int> RunAsync(CancellationToken cancellationToken);
 	}
 }

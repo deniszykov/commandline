@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Parsing
 {
 	internal struct ParsedArguments
 	{
-		[NotNull]
 		public readonly IDictionary<string, OptionValue> ShortOptions;
-		[NotNull]
 		public readonly IDictionary<string, OptionValue> LongOptions;
-		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<string> Values;
 		public bool HasHelpOption;
 
 		public ParsedArguments(IDictionary<string, OptionValue> shortOptions, IDictionary<string, OptionValue> longOptions, IReadOnlyCollection<string> values, bool hasHelpOption)
 		{
+			if (shortOptions == null) throw new ArgumentNullException(nameof(shortOptions));
+			if (longOptions == null) throw new ArgumentNullException(nameof(longOptions));
+			if (values == null) throw new ArgumentNullException(nameof(values));
+
 			this.ShortOptions = shortOptions;
 			this.LongOptions = longOptions;
 			this.Values = values;

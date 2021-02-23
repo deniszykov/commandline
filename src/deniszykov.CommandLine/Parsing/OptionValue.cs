@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Parsing
 {
 	internal readonly struct OptionValue
 	{
-		[NotNull, ItemNotNull]
 		public readonly IReadOnlyCollection<string> Raw;
 		public readonly int Count;
 

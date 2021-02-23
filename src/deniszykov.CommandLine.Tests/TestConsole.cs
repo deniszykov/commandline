@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using System.Threading;
 using Xunit.Abstractions;
@@ -28,7 +26,7 @@ namespace deniszykov.CommandLine.Tests
 
 
 		/// <inheritdoc />
-		public void WriteLine(object text = null)
+		public void WriteLine(object? text = null)
 		{
 			var textStr = Convert.ToString(text) ?? string.Empty;
 			this.testOutputHelper.WriteLine(textStr);
@@ -36,7 +34,7 @@ namespace deniszykov.CommandLine.Tests
 		}
 
 		/// <inheritdoc />
-		public void WriteErrorLine(object text = null)
+		public void WriteErrorLine(object? text = null)
 		{
 			var textStr = Convert.ToString(text) ?? string.Empty;
 			this.testOutputHelper.WriteLine(textStr);
