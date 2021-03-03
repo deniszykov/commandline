@@ -69,11 +69,11 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public bool TreatUnknownOptionsAsValues { get; set; }
 		/// <summary>
-		/// List of prefixes for short options. Should be at least one prefix for short options.
+		/// List of prefixes for short options. Defaults to: "-", "/". Should be at least one prefix for short options.
 		/// </summary>
 		public string[]? ShortOptionNamePrefixes { get; set; }
 		/// <summary>
-		/// List of prefixes for short options. Should be at least one prefix for long options.
+		/// List of prefixes for short options. Defaults to: "--", "/". Should be at least one prefix for long options.
 		/// </summary>
 		public string[]? LongOptionNamePrefixes { get; set; }
 		/// <summary>
@@ -81,11 +81,11 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public string[]? OptionsBreaks { get; set; }
 		/// <summary>
-		/// List of options used to request help. Could be empty list.
+		/// List of options used to request help for verb/verbs. Defaults to: "-h", "/h", "--help", "-?", "/?". Could be empty list.
 		/// </summary>
 		public string[]? HelpOptions { get; set; }
 		/// <summary>
-		/// Splitter chars used to separate option's name from value. Could be empty list.
+		/// Splitter chars used to separate option's name from value. Defaults to: ' ', '='. Could be empty list.
 		/// </summary>
 		public char[]? OptionArgumentSplitters { get; set; }
 

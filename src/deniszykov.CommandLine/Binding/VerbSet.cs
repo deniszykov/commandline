@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -12,7 +22,7 @@ namespace deniszykov.CommandLine.Binding
 	/// Set of <see cref="Verbs"/>.
 	/// </summary>
 	/// 
-	[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+	[PublicAPI]
 	public sealed class VerbSet
 	{
 		/// <summary>

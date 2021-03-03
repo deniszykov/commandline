@@ -1,11 +1,23 @@
-﻿using System.Threading;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System.Threading;
 using deniszykov.CommandLine.Binding;
+using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
 	/// <summary>
 	/// A console instance used to output help and errors messages.
 	/// </summary>
+	[PublicAPI]
 	public interface IConsole
 	{
 		/// <summary>

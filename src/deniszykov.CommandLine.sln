@@ -14,12 +14,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{624BBC79-F9B4-4F56-843C-2ACBFE25424F}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
 		sign.snk = sign.snk
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "deniszykov.CommandLine.Hosted.Example", "deniszykov.CommandLine.Hosted.Example\deniszykov.CommandLine.Hosted.Example.csproj", "{A0C02027-0002-4D97-8690-3D1217DB1217}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "deniszykov.CommandLine.Hosted.Example", "deniszykov.CommandLine.Hosted.Example\deniszykov.CommandLine.Hosted.Example.csproj", "{A0C02027-0002-4D97-8690-3D1217DB1217}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "deniszykov.CommandLine.Hosted", "deniszykov.CommandLine.Hosted\deniszykov.CommandLine.Hosted.csproj", "{1EF447E9-D8CD-4BBA-B8D1-783412FE7DC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "deniszykov.CommandLine.Hosted", "deniszykov.CommandLine.Hosted\deniszykov.CommandLine.Hosted.csproj", "{1EF447E9-D8CD-4BBA-B8D1-783412FE7DC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

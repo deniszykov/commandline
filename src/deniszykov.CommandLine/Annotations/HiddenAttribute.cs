@@ -9,6 +9,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Annotations
 {
@@ -16,6 +17,7 @@ namespace deniszykov.CommandLine.Annotations
 	/// Attribute used to hide member from help option (/?, --help, -h, etc...).
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
+	[PublicAPI]
 	public sealed class HiddenAttribute : Attribute
 	{
 	}

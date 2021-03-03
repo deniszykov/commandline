@@ -168,7 +168,7 @@ namespace deniszykov.CommandLine.Tests
 			}
 			Assert.Equal(0, await ((VerbBindingResult.Bound)bindingResult).InvokeAsync());
 
-			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
+			var expectedPropertyValue = testApi.GetType().GetField(propertyName)!.GetValue(testApi);
 			Assert.Equal(propertyValue, expectedPropertyValue);
 		}
 
@@ -209,7 +209,7 @@ namespace deniszykov.CommandLine.Tests
 			}
 			Assert.Equal(0, await ((VerbBindingResult.Bound)bindingResult).InvokeAsync());
 
-			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
+			var expectedPropertyValue = testApi.GetType().GetField(propertyName)!.GetValue(testApi);
 			Assert.Equal(propertyValue, expectedPropertyValue);
 		}
 
@@ -259,7 +259,7 @@ namespace deniszykov.CommandLine.Tests
 			}
 			Assert.Equal(0, await ((VerbBindingResult.Bound)bindingResult).InvokeAsync());
 
-			var expectedPropertyValue = testApi.GetType().GetField(propertyName).GetValue(testApi);
+			var expectedPropertyValue = testApi.GetType().GetField(propertyName)!.GetValue(testApi);
 
 			if (propertyValue is IEnumerable enumExpected && expectedPropertyValue is IEnumerable actualPropertyValue &&
 				propertyValue is string == false && expectedPropertyValue is string == false)

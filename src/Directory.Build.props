@@ -18,10 +18,11 @@
 		<Nullable>enable</Nullable>
 		<NetFrameworkBottomTarget>net45</NetFrameworkBottomTarget>
 		<NetFrameworkTopTarget>net461</NetFrameworkTopTarget>
-		<NetCoreAppTarget>netcoreapp2.1</NetCoreAppTarget>
+		<NetCoreAppBottomTarget>netcoreapp2.1</NetCoreAppBottomTarget>
+		<NetCoreAppTopTarget>netcoreapp3.0</NetCoreAppTopTarget>
 		<NetStandardBottomTarget>netstandard1.6</NetStandardBottomTarget>
-		<NetStandardTopTarget>netstandard2.0</NetStandardTopTarget>
-		<NetTargetPlatforms>$(NetFrameworkBottomTarget);$(NetFrameworkTopTarget);$(NetStandardBottomTarget);$(NetStandardTopTarget);$(NetCoreAppTarget);</NetTargetPlatforms>
-		<NetEndPlatforms>$(NetFrameworkTopTarget);$(NetCoreAppTarget);</NetEndPlatforms>
+		<NetStandardTopTarget>netstandard2.1</NetStandardTopTarget>
+		<NetTargetPlatforms>$(NetFrameworkBottomTarget);$(NetFrameworkTopTarget);$(NetStandardBottomTarget);$(NetStandardTopTarget);$(NetCoreAppBottomTarget);$(NetCoreAppTopTarget);</NetTargetPlatforms>
+		<NetEndPlatforms>$(NetFrameworkTopTarget);$(NetCoreAppTopTarget);</NetEndPlatforms>
 	</PropertyGroup>
 </Project>

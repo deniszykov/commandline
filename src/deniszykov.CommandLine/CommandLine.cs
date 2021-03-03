@@ -17,6 +17,7 @@ using deniszykov.CommandLine.Binding;
 using deniszykov.CommandLine.Builders;
 using deniszykov.CommandLine.Formatting;
 using deniszykov.TypeConversion;
+using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
@@ -24,6 +25,7 @@ namespace deniszykov.CommandLine
 	/// Utility class for building command-line styled applications.
 	/// Provides action routing and parameters parsing features for called code.
 	/// </summary>
+	[PublicAPI]
 	public sealed class CommandLine
 	{
 		/// <summary>
@@ -169,7 +171,7 @@ namespace deniszykov.CommandLine
 				error = CommandLineException.InvalidVerbParameters(bestMatchMethod, bindResult.BindingFailures[bestMatchMethod]);
 			}
 
-			if (this.configuration.WriteHelpOnFailure)
+			if (this.configuration.OutputHelpOnFailure)
 			{
 				var verbChain = this.properties.GetVerbChain().ToList();
 
@@ -191,7 +193,7 @@ namespace deniszykov.CommandLine
 		// ReSharper disable once UnusedParameter.Local
 		private int WriteBindingError(VerbBindingResult.NoVerbSpecified _, VerbSet verbSet)
 		{
-			if (!this.configuration.WriteHelpOnFailure)
+			if (!this.configuration.OutputHelpOnFailure)
 			{
 				throw CommandLineException.NoVerbSpecified();
 			}

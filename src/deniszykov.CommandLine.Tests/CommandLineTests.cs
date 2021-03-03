@@ -143,20 +143,20 @@ namespace deniszykov.CommandLine.Tests
 		public class DescribeTestApi
 		{
 
-			[Description("This is test verb description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. \r\nNunc sit amet turpis at ex malesuada facilisis sed ac eros. \r\nSuspendisse pretium congue quam non dapibus. Pellentesque vel consequat mi. Vestibulum id bibendum augue, a pellentesque erat. Integer vel tempor lacus. Duis ut sapien non nulla interdum cursus. Maecenas vel laoreet lectus. ")]
+			[Description("This is test verb description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. \r\nNunc sit amet turpis at ex malesuada facilisis sed ac eros. \r\n\r\nSuspendisse pretium congue quam non dapibus. Pellentesque vel consequat mi. Vestibulum id bibendum augue, a pellentesque erat. Integer vel tempor lacus. Duis ut sapien non nulla interdum cursus. Maecenas vel laoreet lectus. END.")]
 			public static int TestVerb()
 			{
 				return 0;
 			}
 
-			[Description("This is test verb description.")]
+			[Description("This is test verb description. END.")]
 			public static int TestVerb(int param1)
 			{
 				Assert.Equal(1, param1);
 				return 0;
 			}
 
-			[Description("This is test sub verb description.")]
+			[Description("This is test sub verb description. END.")]
 			public static int TestSubVerb(ICommandLineBuilder subVerbBuilder)
 			{
 				return subVerbBuilder
@@ -164,7 +164,7 @@ namespace deniszykov.CommandLine.Tests
 					.Run();
 			}
 
-			[Description("This is test verb description.")]
+			[Description("This is test verb description. END.")]
 			public static int TestVerbOneParam(int param1)
 			{
 				Assert.Equal(1, param1);
@@ -172,20 +172,20 @@ namespace deniszykov.CommandLine.Tests
 			}
 
 
-			[Description("This is test verb with multiple params description.")]
+			[Description("This is test verb with multiple params description. END.")]
 			public static int MultiParamVerb(
-				[Description("This is parameter1 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet turpis at ex malesuada facilisis sed ac eros.")]
+				[Description("This is parameter1 description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sit amet turpis at ex malesuada facilisis sed ac eros. END.")]
 				[Alias("p")]
 				[Name("param-renamed")]
 				int param1,
 				string param2,
-				[Description("This is parameter3 description.")]
+				[Description("This is parameter3 description. END.")]
 				MyFlags param3,
-				[Description("This is parameter4 description.")]
+				[Description("This is parameter4 description. END.")]
 				MyFlags param4 = MyFlags.One,
-				[Description("This is parameter3 description.")]
+				[Description("This is parameter3 description. END.")]
 				string? param5 = null,
-				[Description("This is parameter3 description."), Hidden]
+				[Description("This is parameter3 description. END."), Hidden]
 				string? param6Hidden = null,
 				[Description("This is rest parameters.")]
 				params string[] otherParams
@@ -246,7 +246,7 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOnFailure = false;
+					config.OutputHelpOnFailure = false;
 					config.DefaultVerbName = verbName;
 				})
 				.UseServiceProvider(() =>
@@ -272,7 +272,7 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOnFailure = true;
+					config.OutputHelpOnFailure = true;
 					config.HelpExitCode = 1;
 					config.FailureExitCode = expectedExitCode;
 				})
@@ -304,8 +304,9 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOnFailure = false;
+					config.OutputHelpOnFailure = false;
 					config.HelpExitCode = expectedExitCode;
+					config.MaxOutputWidth = 120;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -334,8 +335,9 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOnFailure = false;
+					config.OutputHelpOnFailure = false;
 					config.HelpExitCode = expectedExitCode;
+					config.MaxOutputWidth = 130;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -363,8 +365,9 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOnFailure = false;
+					config.OutputHelpOnFailure = false;
 					config.HelpExitCode = expectedExitCode;
+					config.MaxOutputWidth = 100;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -396,8 +399,9 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOnFailure = false;
+					config.OutputHelpOnFailure = false;
 					config.HelpExitCode = expectedExitCode;
+					config.MaxOutputWidth = 150;
 				})
 				.UseServiceProvider(() =>
 				{
@@ -426,7 +430,7 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOnFailure = true;
+					config.OutputHelpOnFailure = true;
 					config.HelpExitCode = 1;
 					config.FailureExitCode = expectedExitCode;
 				})
@@ -456,7 +460,7 @@ namespace deniszykov.CommandLine.Tests
 				.Configure(config =>
 				{
 					config.UnhandledExceptionHandler += (sender, args) => this.output.WriteLine(args.Exception.ToString());
-					config.WriteHelpOnFailure = true;
+					config.OutputHelpOnFailure = true;
 					config.HelpExitCode = 1;
 					config.FailureExitCode = expectedExitCode;
 				})

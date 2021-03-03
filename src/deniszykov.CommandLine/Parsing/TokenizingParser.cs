@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections.Generic;
 using deniszykov.CommandLine.Binding;
 
@@ -9,8 +19,8 @@ namespace deniszykov.CommandLine.Parsing
 		private static readonly Action<string> IgnoreArgument = _ => { };
 		private static readonly string[] EmptyArguments = new string[0];
 
-		public abstract StringComparison ShortNameMatchingMode { get; }
-		public abstract StringComparison LongNameMatchingMode { get; }
+		protected abstract StringComparison ShortNameMatchingMode { get; }
+		protected abstract StringComparison LongNameMatchingMode { get; }
 
 		/// <inheritdoc />
 		public ParsedArguments Parse(string[] arguments, Func<string, ValueArity?> getOptionArity)

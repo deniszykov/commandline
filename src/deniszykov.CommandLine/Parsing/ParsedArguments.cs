@@ -1,15 +1,26 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace deniszykov.CommandLine.Parsing
 {
-	internal struct ParsedArguments
+	internal readonly struct ParsedArguments
 	{
-		public readonly IDictionary<string, OptionValue> ShortOptions;
-		public readonly IDictionary<string, OptionValue> LongOptions;
+		private readonly IDictionary<string, OptionValue> shortOptions;
+		private readonly IDictionary<string, OptionValue> longOptions;
+
 		public readonly IReadOnlyCollection<string> Values;
-		public bool HasHelpOption;
+		public readonly bool HasHelpOption;
 
 		public ParsedArguments(IDictionary<string, OptionValue> shortOptions, IDictionary<string, OptionValue> longOptions, IReadOnlyCollection<string> values, bool hasHelpOption)
 		{
@@ -17,8 +28,8 @@ namespace deniszykov.CommandLine.Parsing
 			if (longOptions == null) throw new ArgumentNullException(nameof(longOptions));
 			if (values == null) throw new ArgumentNullException(nameof(values));
 
-			this.ShortOptions = shortOptions;
-			this.LongOptions = longOptions;
+			this.shortOptions = shortOptions;
+			this.longOptions = longOptions;
 			this.Values = values;
 			this.HasHelpOption = hasHelpOption;
 		}
@@ -52,12 +63,12 @@ namespace deniszykov.CommandLine.Parsing
 			optionValue = default;
 
 			// ReSharper disable once ConditionIsAlwaysTrueOrFalse
-			if (this.ShortOptions == null)
+			if (this.shortOptions == null)
 			{
 				return false;
 			}
 
-			return this.ShortOptions.TryGetValue(name, out optionValue);
+			return this.shortOptions.TryGetValue(name, out optionValue);
 		}
 
 		public bool TryGetLongOption(string name, out OptionValue optionValue)
@@ -65,12 +76,12 @@ namespace deniszykov.CommandLine.Parsing
 			optionValue = default;
 
 			// ReSharper disable once ConditionIsAlwaysTrueOrFalse
-			if (this.LongOptions == null)
+			if (this.longOptions == null)
 			{
 				return false;
 			}
 
-			return this.LongOptions.TryGetValue(name, out optionValue);
+			return this.longOptions.TryGetValue(name, out optionValue);
 		}
 	}
 }

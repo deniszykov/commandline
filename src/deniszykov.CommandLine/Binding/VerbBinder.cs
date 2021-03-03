@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +24,9 @@ namespace deniszykov.CommandLine.Binding
 		private readonly IArgumentsParser parser;
 		private readonly IServiceProvider serviceProvider;
 
-		public StringComparison LongOptionNameMatchingMode { get; }
-		public StringComparison ShortOptionNameMatchingMode { get; }
-		public StringComparison VerbNameMatchingMode { get; }
+		private readonly StringComparison longOptionNameMatchingMode;
+		private readonly StringComparison shortOptionNameMatchingMode;
+		private readonly StringComparison verbNameMatchingMode;
 
 		public VerbBinder(
 			 CommandLineConfiguration configuration,
@@ -27,9 +37,9 @@ namespace deniszykov.CommandLine.Binding
 			if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
 			if (typeConversionProvider == null) throw new ArgumentNullException(nameof(typeConversionProvider));
 
-			this.LongOptionNameMatchingMode = configuration.LongOptionNameMatchingMode;
-			this.ShortOptionNameMatchingMode = configuration.ShortOptionNameMatchingMode;
-			this.VerbNameMatchingMode = configuration.VerbNameMatchingMode;
+			this.longOptionNameMatchingMode = configuration.LongOptionNameMatchingMode;
+			this.shortOptionNameMatchingMode = configuration.ShortOptionNameMatchingMode;
+			this.verbNameMatchingMode = configuration.VerbNameMatchingMode;
 			this.typeConversionProvider = typeConversionProvider;
 			this.parser = new GetOptParser(configuration);
 			this.serviceProvider = serviceProvider;
@@ -102,12 +112,12 @@ namespace deniszykov.CommandLine.Binding
 			var failedVerbs = new Dictionary<Verb, ParameterBindingResult[]>();
 			foreach (var verb in verbs)
 			{
-				if (!string.Equals(verbName, verb.Name, this.VerbNameMatchingMode))
+				if (!string.Equals(verbName, verb.Name, this.verbNameMatchingMode))
 				{
 					continue;
 				}
 
-				var getOptionArity = new Func<string, ValueArity?>(optionName => verb.FindBoundParameter(optionName, optionName.Length > 1 ? this.LongOptionNameMatchingMode : this.ShortOptionNameMatchingMode)?.ValueArity);
+				var getOptionArity = new Func<string, ValueArity?>(optionName => verb.FindBoundParameter(optionName, optionName.Length > 1 ? this.longOptionNameMatchingMode : this.shortOptionNameMatchingMode)?.ValueArity);
 				var parsedArguments = this.parser.Parse(arguments, getOptionArity);
 
 				if (parsedArguments.HasHelpOption && !verb.HasSubVerbs)
@@ -154,7 +164,7 @@ namespace deniszykov.CommandLine.Binding
 					verbArguments[argumentIndex] = this.ResolveService(verb, serviceParameter.ValueType.AsType(), serviceParameter.IsOptional);
 				}
 
-				return new VerbBindingResult.Bound(verb, target, verbArguments, parsedArguments.HasHelpOption);
+				return new VerbBindingResult.Bound(verb, target, verbArguments);
 			}
 
 			return new VerbBindingResult.FailedToBind(verbName, failedVerbs);
@@ -194,7 +204,7 @@ namespace deniszykov.CommandLine.Binding
 					else if (parameter.ValueType.IsGenericType && parameter.ValueType.GetGenericTypeDefinition() == typeof(List<>))
 					{
 						var elementType = parameter.ValueType.GetGenericArguments()[0];
-						var values = (IList)Activator.CreateInstance(parameter.ValueType.AsType());
+						var values = (IList)(Activator.CreateInstance(parameter.ValueType.AsType()) ?? throw new InvalidOperationException($"Unable to instantiate list type '{parameter.ValueType.AssemblyQualifiedName}'."));
 						for (var i = 0; i < values.Count; i++)
 						{
 							var item = this.Convert(raw.ElementAt(i), elementType, parameter);

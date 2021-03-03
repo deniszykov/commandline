@@ -21,27 +21,26 @@ namespace deniszykov.CommandLine.Binding
 
 		public sealed class Bound : VerbBindingResult
 		{
-			public object? Target { get; }
+			private readonly object? target;
+
 			public Verb Verb { get; }
 			public object?[] Arguments { get; }
-			public bool HasHelpOption { get; }
 			/// <inheritdoc />
 			public override string VerbName => this.Verb.Name;
 
-			public Bound(Verb verb, object? target, object?[] arguments, bool hasHelpOption)
+			public Bound(Verb verb, object? target, object?[] arguments)
 			{
 				if (verb == null) throw new ArgumentNullException(nameof(verb));
 				if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
-				this.Target = target;
+				this.target = target;
 				this.Arguments = arguments;
-				this.HasHelpOption = hasHelpOption;
 				this.Verb = verb;
 			}
 
 			public Task<int> InvokeAsync()
 			{
-				return this.Verb.Invoker(this.Target, this.Arguments);
+				return this.Verb.Invoker(this.target, this.Arguments);
 			}
 
 			/// <inheritdoc />
@@ -90,6 +89,7 @@ namespace deniszykov.CommandLine.Binding
 			public override string ToString() => "No verb specified.";
 		}
 
+		// ReSharper disable once UnusedMemberInSuper.Global
 		public abstract string VerbName { get; }
 	}
 }

@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using deniszykov.CommandLine.Binding;
@@ -7,14 +17,15 @@ namespace deniszykov.CommandLine.Parsing
 {
 	internal sealed class GetOptParser : TokenizingParser
 	{
-		public override StringComparison LongNameMatchingMode { get; }
-		public override StringComparison ShortNameMatchingMode { get; }
-		public string[] ShortNamePrefixes { get; }
-		public string[] LongNamePrefixes { get; }
-		public string[] OptionsBreaks { get; }
-		public string[] HelpOptions { get; }
-		public char[] OptionArgumentSplitter { get; }
-		public bool TreatUnknownOptionsAsValues { get; }
+		private readonly string[] shortNamePrefixes;
+		private readonly string[] longNamePrefixes;
+		private readonly string[] optionsBreaks;
+		private readonly string[] helpOptions;
+		private readonly char[] optionArgumentSplitter;
+		private readonly bool treatUnknownOptionsAsValues;
+
+		protected override StringComparison LongNameMatchingMode { get; }
+		protected override StringComparison ShortNameMatchingMode { get; }
 
 		public GetOptParser(CommandLineConfiguration configuration)
 		{
@@ -22,12 +33,12 @@ namespace deniszykov.CommandLine.Parsing
 
 			this.LongNameMatchingMode = configuration.LongOptionNameMatchingMode;
 			this.ShortNameMatchingMode = configuration.ShortOptionNameMatchingMode;
-			this.ShortNamePrefixes = configuration.ShortOptionNamePrefixes ?? new string[0];
-			this.LongNamePrefixes = configuration.LongOptionNamePrefixes ?? new string[0];
-			this.OptionsBreaks = configuration.OptionsBreaks ?? new string[0];
-			this.HelpOptions = configuration.HelpOptions ?? new string[0];
-			this.OptionArgumentSplitter = configuration.OptionArgumentSplitters ?? new char[0];
-			this.TreatUnknownOptionsAsValues = configuration.TreatUnknownOptionsAsValues;
+			this.shortNamePrefixes = configuration.ShortOptionNamePrefixes ?? new string[0];
+			this.longNamePrefixes = configuration.LongOptionNamePrefixes ?? new string[0];
+			this.optionsBreaks = configuration.OptionsBreaks ?? new string[0];
+			this.helpOptions = configuration.HelpOptions ?? new string[0];
+			this.optionArgumentSplitter = configuration.OptionArgumentSplitters ?? new char[0];
+			this.treatUnknownOptionsAsValues = configuration.TreatUnknownOptionsAsValues;
 		}
 
 		protected override IEnumerable<ArgumentToken> Tokenize(string[] arguments, Func<string, ValueArity?> getOptionArity)
@@ -101,7 +112,7 @@ namespace deniszykov.CommandLine.Parsing
 										longName = shortNameLetters.Substring(l);
 									}
 
-									if (this.TreatUnknownOptionsAsValues || longName.All(char.IsDigit))
+									if (this.treatUnknownOptionsAsValues || longName.All(char.IsDigit))
 									{
 										yield return new ArgumentToken(TokenType.Value, l == 0 ? argument : longName!);
 										l = shortNameLetters.Length;
@@ -212,7 +223,7 @@ namespace deniszykov.CommandLine.Parsing
 			optionName = default;
 			optionArgument = default;
 
-			var valueSplitterIndex = argument.IndexOfAny(this.OptionArgumentSplitter);
+			var valueSplitterIndex = argument.IndexOfAny(this.optionArgumentSplitter);
 			foreach (var optionPrefix in prefixes)
 			{
 				if (argument.Length <= optionPrefix.Length ||
@@ -236,19 +247,19 @@ namespace deniszykov.CommandLine.Parsing
 		}
 		private bool IsShortNameOption(string argument, out string? optionName, out string? optionArgument)
 		{
-			return this.IsOption(this.ShortNamePrefixes, argument, out optionName, out optionArgument);
+			return this.IsOption(this.shortNamePrefixes, argument, out optionName, out optionArgument);
 		}
 		private bool IsLongNameOption(string argument, out string? optionName, out string? optionArgument)
 		{
-			return this.IsOption(this.LongNamePrefixes, argument, out optionName, out optionArgument);
+			return this.IsOption(this.longNamePrefixes, argument, out optionName, out optionArgument);
 		}
 		private bool IsOptionsBreak(string argument)
 		{
-			return IsExactOption(argument, this.OptionsBreaks, StringComparison.Ordinal);
+			return IsExactOption(argument, this.optionsBreaks, StringComparison.Ordinal);
 		}
 		private bool IsHelpOption(string argument)
 		{
-			return IsExactOption(argument, this.HelpOptions, StringComparison.Ordinal);
+			return IsExactOption(argument, this.helpOptions, StringComparison.Ordinal);
 		}
 	}
 }

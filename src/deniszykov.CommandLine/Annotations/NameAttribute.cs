@@ -1,5 +1,16 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Reflection;
+using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Annotations
 {
@@ -7,6 +18,7 @@ namespace deniszykov.CommandLine.Annotations
 	/// Verb or option's name. If not set then <see cref="MethodInfo"/> or <see cref="Type"/> name is used instead.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Parameter)]
+	[PublicAPI]
 	public class NameAttribute : Attribute
 	{
 		/// <summary>

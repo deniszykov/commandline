@@ -9,6 +9,7 @@
 */
 
 using System;
+using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine.Annotations
 {
@@ -16,6 +17,7 @@ namespace deniszykov.CommandLine.Annotations
 	/// Attribute used to provide help text for verb set, verb or parameter.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method | AttributeTargets.Class)]
+	[PublicAPI]
 	public class HelpTextAttribute : Attribute
 	{
 		/// <summary>

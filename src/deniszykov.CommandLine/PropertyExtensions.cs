@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using deniszykov.CommandLine.Binding;
@@ -10,7 +20,7 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Name of property with list of preceding verbs of current <see cref="IVerbSetBuilder"/>. Type is array of <see cref="Verb"/>.
 		/// </summary>
-		public const string VERB_CHAIN_PROPERTY_NAME = "__verb_chain__";
+		private const string VERB_CHAIN_PROPERTY_NAME = "__verb_chain__";
 
 		public static IEnumerable<Verb> GetVerbChain(this IDictionary<object, object> properties)
 		{

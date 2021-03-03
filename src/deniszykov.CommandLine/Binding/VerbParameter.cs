@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,7 +20,7 @@ namespace deniszykov.CommandLine.Binding
 	/// <summary>
 	/// Verb's parameter. It is an option, values or bound service.
 	/// </summary>
-	[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+	[PublicAPI]
 	public sealed class VerbParameter
 	{
 		/// <summary>
@@ -109,7 +119,7 @@ namespace deniszykov.CommandLine.Binding
 		{
 			if (parameterInfo == null) throw new ArgumentNullException(nameof(parameterInfo));
 
-			this.Name = parameterInfo.GetName() ?? parameterInfo.Name;
+			this.Name = parameterInfo.GetName() ?? parameterInfo.Name ?? ("argument" + parameterInfo.Position);
 			this.Alias = parameterInfo.GetAlias();
 			this.Description = parameterInfo.GetDescription() ?? string.Empty;
 			this.Position = position;
@@ -136,8 +146,8 @@ namespace deniszykov.CommandLine.Binding
 			if (typeConverterAttribute != null)
 			{
 				var typeConverterType = Type.GetType(((System.ComponentModel.TypeConverterAttribute)typeConverterAttribute).ConverterTypeName, throwOnError: true);
-				var typeConverter = (System.ComponentModel.TypeConverter)Activator.CreateInstance(typeConverterType);
-				if (typeConverter.GetType() != typeof(System.ComponentModel.TypeConverter))
+				var typeConverter = (System.ComponentModel.TypeConverter?)Activator.CreateInstance(typeConverterType!);
+				if (typeConverter != null && typeConverter.GetType() != typeof(System.ComponentModel.TypeConverter))
 				{
 					this.TypeConverter = typeConverter;
 				}

@@ -372,7 +372,7 @@ namespace deniszykov.CommandLine.Formatting
 					parameterUsage.Append("<");
 					if (!this.helpTextProvider.TryGetParameterTypeFriendlyName(parameter, out var parameterTypeFriendlyName))
 						parameterTypeFriendlyName = GetParameterTypeFriendlyName(parameter);
-					parameterUsage.Append(parameterTypeFriendlyName!.ToUpperInvariant());
+					parameterUsage.Append((parameterTypeFriendlyName ?? parameter.Name).ToUpperInvariant());
 					parameterUsage.Append(">");
 					if (parameter.ValueArity == ValueArity.ZeroOrMany || parameter.ValueArity == ValueArity.ZeroOrOne)
 					{
