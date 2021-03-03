@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -18,11 +28,12 @@ namespace deniszykov.CommandLine.Formatting
 		private readonly IHelpTextProvider helpTextProvider;
 		private readonly ITypeConversionProvider typeConversionProvider;
 
-		public StringComparison VerbNameMatchingMode { get; }
-		public string ShortOptionNamePrefix { get; }
-		public string LongOptionNamePrefix { get; }
-		public char OptionArgumentSplitter { get; }
-		public bool DetailedBindFailureMessage { get; }
+		private readonly StringComparison verbNameMatchingMode;
+		private readonly string shortOptionNamePrefix;
+		private readonly string longOptionNamePrefix;
+		private readonly char optionArgumentSplitter;
+		private readonly bool detailedBindFailureMessage;
+		private readonly int maxOutputWidth;
 
 		public HelpFormatter(
 			 CommandLineConfiguration configuration,
@@ -32,25 +43,27 @@ namespace deniszykov.CommandLine.Formatting
 		{
 			if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 			if (console == null) throw new ArgumentNullException(nameof(console));
-			if (typeConversionProvider == null) throw new ArgumentNullException(nameof(typeConversionProvider));
+			if (helpTextProvider == null) throw new ArgumentNullException(nameof(helpTextProvider));
 			if (typeConversionProvider == null) throw new ArgumentNullException(nameof(typeConversionProvider));
 
 			this.console = console;
 			this.helpTextProvider = helpTextProvider;
 			this.typeConversionProvider = typeConversionProvider;
-			this.VerbNameMatchingMode = configuration.VerbNameMatchingMode;
-			this.ShortOptionNamePrefix = (configuration.ShortOptionNamePrefixes ?? EmptyValues).DefaultIfEmpty("").First();
-			this.LongOptionNamePrefix = (configuration.LongOptionNamePrefixes ?? EmptyValues).DefaultIfEmpty("").First();
-			this.OptionArgumentSplitter = (configuration.OptionArgumentSplitters ?? EmptyChars).DefaultIfEmpty(' ').First();
-			this.DetailedBindFailureMessage = configuration.WriteFailureErrors;
+			this.verbNameMatchingMode = configuration.VerbNameMatchingMode;
+			this.shortOptionNamePrefix = (configuration.ShortOptionNamePrefixes ?? EmptyValues).DefaultIfEmpty("").First();
+			this.longOptionNamePrefix = (configuration.LongOptionNamePrefixes ?? EmptyValues).DefaultIfEmpty("").First();
+			this.optionArgumentSplitter = (configuration.OptionArgumentSplitters ?? EmptyChars).DefaultIfEmpty(' ').First();
+			this.detailedBindFailureMessage = configuration.OutputDetailedErrors;
+			this.maxOutputWidth = configuration.MaxOutputWidth;
 		}
 
 		public void VerbDescription(VerbSet verbSet, Verb foundVerb, IList<Verb> callChain)
 		{
+			if (verbSet == null) throw new ArgumentNullException(nameof(verbSet));
 			if (foundVerb == null) throw new ArgumentNullException(nameof(foundVerb));
 			if (callChain == null) throw new ArgumentNullException(nameof(callChain));
 
-			var writer = new IndentedWriter(Environment.NewLine);
+			var writer = new IndentedWriter(Environment.NewLine, this.maxOutputWidth);
 			if (!string.IsNullOrEmpty(this.helpTextProvider.HelpHeaderText))
 			{
 				writer.WriteLine(this.helpTextProvider.HelpHeaderText);
@@ -58,16 +71,16 @@ namespace deniszykov.CommandLine.Formatting
 			}
 			using (writer.KeepIndent("  "))
 			{
-				var namePrefix = GetNamePrefix(callChain, this.VerbNameMatchingMode);
+				var namePrefix = GetNamePrefix(callChain, this.verbNameMatchingMode);
 				foreach (var verb in verbSet.GetNonHiddenVerbs())
 				{
-					if (string.Equals(verb.Name, foundVerb.Name, this.VerbNameMatchingMode) == false)
+					if (string.Equals(verb.Name, foundVerb.Name, this.verbNameMatchingMode) == false)
 						continue;
 
 					writer.WriteLine(this.helpTextProvider.VerbUsageText);
 					using (writer.KeepIndent("  "))
 					{
-						writer.Write($"{namePrefix}{GetVerbName(verb.Name, this.VerbNameMatchingMode)} ");
+						writer.Write($"{namePrefix}{GetVerbName(verb.Name, this.verbNameMatchingMode)} ");
 						using (writer.KeepIndent())
 						{
 							var parameterUsage = string.Join(" ", verb.GetNonHiddenBoundParameter().Select(this.GetParameterUsage));
@@ -139,7 +152,7 @@ namespace deniszykov.CommandLine.Formatting
 		}
 		public void VerbNotFound(VerbSet verbSet, string verbToDescribe, IList<Verb> callChain)
 		{
-			var writer = new IndentedWriter(Environment.NewLine);
+			var writer = new IndentedWriter(Environment.NewLine, this.maxOutputWidth);
 			if (!string.IsNullOrEmpty(this.helpTextProvider.HelpHeaderText))
 			{
 				writer.WriteLine(this.helpTextProvider.HelpHeaderText);
@@ -154,7 +167,7 @@ namespace deniszykov.CommandLine.Formatting
 					writer.WriteLine();
 				}
 
-				var namePrefix = GetNamePrefix(callChain.Take(Math.Max(0, callChain.Count - 1)), this.VerbNameMatchingMode);
+				var namePrefix = GetNamePrefix(callChain.Take(Math.Max(0, callChain.Count - 1)), this.verbNameMatchingMode);
 				var currentVerb = callChain.LastOrDefault();
 
 				if (verbSet.GetNonHiddenVerbs().Any(verb => verb != currentVerb))
@@ -170,7 +183,7 @@ namespace deniszykov.CommandLine.Formatting
 								continue;
 							}
 
-							var verbName = GetPaddedString(GetVerbName(verb.Name, this.VerbNameMatchingMode), maxVerbNameLength);
+							var verbName = GetPaddedString(GetVerbName(verb.Name, this.verbNameMatchingMode), maxVerbNameLength);
 							writer.Write($"{namePrefix}{verbName}");
 							using (writer.KeepIndent("    "))
 							{
@@ -189,7 +202,7 @@ namespace deniszykov.CommandLine.Formatting
 		}
 		public void VerbList(VerbSet verbSet, IList<Verb> callChain, bool includeTypeHelpText)
 		{
-			var writer = new IndentedWriter(Environment.NewLine);
+			var writer = new IndentedWriter(Environment.NewLine, this.maxOutputWidth);
 			if (!string.IsNullOrEmpty(this.helpTextProvider.HelpHeaderText))
 			{
 				writer.WriteLine(this.helpTextProvider.HelpHeaderText);
@@ -207,14 +220,14 @@ namespace deniszykov.CommandLine.Formatting
 				{
 					writer.WriteLine(this.helpTextProvider.VerbSetAvailableVerbsText);
 
-					var verbPrefix = GetNamePrefix(callChain, this.VerbNameMatchingMode);
+					var verbPrefix = GetNamePrefix(callChain, this.verbNameMatchingMode);
 					var maxVerbNameLength = verbSet.GetNonHiddenVerbs().Max(verb => verb.Name.Length);
 
 					using (writer.KeepIndent("  "))
 					{
 						foreach (var verb in verbSet.GetNonHiddenVerbs())
 						{
-							var verbName = GetPaddedString(GetVerbName(verb.Name, this.VerbNameMatchingMode), maxVerbNameLength);
+							var verbName = GetPaddedString(GetVerbName(verb.Name, this.verbNameMatchingMode), maxVerbNameLength);
 							writer.Write($"{verbPrefix}{verbName}");
 							using (writer.KeepIndent("    "))
 							{
@@ -233,7 +246,7 @@ namespace deniszykov.CommandLine.Formatting
 		}
 		public void InvalidVerbParameters(Verb verb, ParameterBindingResult[] parameters, Exception error)
 		{
-			var writer = new IndentedWriter(Environment.NewLine);
+			var writer = new IndentedWriter(Environment.NewLine, this.maxOutputWidth);
 			if (!string.IsNullOrEmpty(this.helpTextProvider.HelpHeaderText))
 			{
 				writer.WriteLine(this.helpTextProvider.HelpHeaderText);
@@ -277,7 +290,7 @@ namespace deniszykov.CommandLine.Formatting
 
 			this.console.WriteLine(writer);
 
-			if (this.DetailedBindFailureMessage)
+			if (this.detailedBindFailureMessage)
 			{
 				this.console.WriteErrorLine(error);
 				this.console.WriteErrorLine();
@@ -286,7 +299,7 @@ namespace deniszykov.CommandLine.Formatting
 
 		public void VerbNotSpecified(VerbSet verbSet, IList<Verb> callChain)
 		{
-			var writer = new IndentedWriter(Environment.NewLine);
+			var writer = new IndentedWriter(Environment.NewLine, this.maxOutputWidth);
 			if (!string.IsNullOrEmpty(this.helpTextProvider.HelpHeaderText))
 			{
 				writer.WriteLine(this.helpTextProvider.HelpHeaderText);
@@ -305,14 +318,14 @@ namespace deniszykov.CommandLine.Formatting
 				{
 					writer.WriteLine(this.helpTextProvider.VerbSetAvailableVerbsText);
 
-					var namePrefix = GetNamePrefix(callChain, this.VerbNameMatchingMode);
+					var namePrefix = GetNamePrefix(callChain, this.verbNameMatchingMode);
 					var maxVerbNameLength = verbSet.GetNonHiddenVerbs().Max(verb => verb.Name.Length);
 
 					using (writer.KeepIndent("  "))
 					{
 						foreach (var verb in verbSet.GetNonHiddenVerbs())
 						{
-							var verbName = GetPaddedString(GetVerbName(verb.Name, this.VerbNameMatchingMode), maxVerbNameLength);
+							var verbName = GetPaddedString(GetVerbName(verb.Name, this.verbNameMatchingMode), maxVerbNameLength);
 							writer.Write($"{namePrefix}{verbName}");
 							using (writer.KeepIndent("    "))
 							{
@@ -351,7 +364,7 @@ namespace deniszykov.CommandLine.Formatting
 				case ValueArity.ZeroOrMany:
 				case ValueArity.One:
 				case ValueArity.OneOrMany:
-					parameterUsage.Append(this.OptionArgumentSplitter);
+					parameterUsage.Append(this.optionArgumentSplitter);
 					if (parameter.ValueArity == ValueArity.ZeroOrMany || parameter.ValueArity == ValueArity.ZeroOrOne)
 					{
 						parameterUsage.Append('[');
@@ -400,11 +413,11 @@ namespace deniszykov.CommandLine.Formatting
 
 			if (optionName.Length == 1)
 			{
-				return this.ShortOptionNamePrefix + optionName;
+				return this.shortOptionNamePrefix + optionName;
 			}
 			else
 			{
-				return this.LongOptionNamePrefix + optionName;
+				return this.longOptionNamePrefix + optionName;
 			}
 		}
 

@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -27,13 +37,16 @@ namespace deniszykov.CommandLine.Formatting
 		private readonly StringBuilder output;
 		private readonly Stack<int> indents;
 		private readonly string newLine;
+		private readonly int maxWidth;
 		private int indent;
 
-		public IndentedWriter(string newLine)
+		public IndentedWriter(string newLine, int maxWidth = int.MaxValue)
 		{
 			if (newLine == null) throw new ArgumentNullException(nameof(newLine));
+			if (maxWidth <= newLine.Length + 1) throw new ArgumentOutOfRangeException(nameof(maxWidth));
 
 			this.newLine = newLine;
+			this.maxWidth = maxWidth - newLine.Length;
 			this.output = new StringBuilder();
 			this.indents = new Stack<int>();
 			this.indent = 0;
@@ -91,22 +104,46 @@ namespace deniszykov.CommandLine.Formatting
 		}
 		private void AppendTextAndCountIndent(object? text)
 		{
-			var str = Convert.ToString(text, CultureInfo.InvariantCulture) ?? string.Empty;
+			var textValue = Convert.ToString(text, CultureInfo.InvariantCulture) ?? string.Empty;
 			var offset = 0;
-			var newLineIndex = -1;
-			while ((newLineIndex = str.IndexOf(this.newLine, offset, StringComparison.Ordinal)) >= 0)
+			var newLineIndex = textValue.IndexOf(this.newLine, offset, StringComparison.Ordinal);
+			var endOfText = false;
+			do
 			{
+				if (newLineIndex < 0)
+				{
+					newLineIndex = textValue.Length;
+					endOfText = true;
+				}
+
 				this.EnsureIndent();
 
-				this.output.Append(str, offset, newLineIndex - offset);
-				this.output.Append(this.newLine);
-				this.indent = 0;
-				offset = newLineIndex + this.newLine.Length;
-			}
+				var length = newLineIndex - offset;
+				var limited = false;
+				if (length > this.maxWidth - this.indent)
+				{
+					length = this.maxWidth - this.indent;
+					limited = true;
+				}
 
-			this.EnsureIndent();
-			this.indent += str.Length - offset;
-			this.output.Append(str, offset, str.Length - offset);
+				this.output.Append(textValue, offset, length);
+				this.indent += length;
+				offset += length;
+
+				if (endOfText && offset >= textValue.Length)
+				{
+					break;
+				}
+				else
+				{
+					this.output.Append(this.newLine);
+					this.indent = 0;
+					if (!limited)
+					{
+						offset += this.newLine.Length;
+					}
+				}
+			} while ((newLineIndex = textValue.IndexOf(this.newLine, offset, StringComparison.Ordinal)) < textValue.Length);
 		}
 
 		/// <inheritdoc />

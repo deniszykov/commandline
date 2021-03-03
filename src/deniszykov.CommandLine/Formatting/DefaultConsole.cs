@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Threading;
 
 namespace deniszykov.CommandLine.Formatting
@@ -8,22 +18,11 @@ namespace deniszykov.CommandLine.Formatting
 		private readonly CancellationTokenSource interruptTokenSource;
 		private ConsoleCancelEventHandler? cancelKeyHandler;
 
-		public int Width { get; }
+		/// <inheritdoc />
 		public CancellationToken InterruptToken => this.interruptTokenSource.Token;
 
 		public DefaultConsole(bool hookCancelKey)
 		{
-
-			// Author: @MarcStan
-			// fix when output is redirected, assume we can print any length and redirected
-			// output takes care of formatting
-			try
-			{
-				this.Width = Console.WindowWidth;
-			}
-			catch { /*ignore error*/ }
-
-			if (this.Width <= 0) this.Width = int.MaxValue;
 
 			this.interruptTokenSource = new CancellationTokenSource();
 			if (hookCancelKey)

@@ -1,11 +1,23 @@
-﻿using System;
+﻿/*
+	Copyright (c) 2021 Denis Zykov
+	
+	This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+	License: https://opensource.org/licenses/MIT
+*/
+
+using System;
 using System.Threading;
+using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
 	/// <summary>
 	/// Configuration for <see cref="CommandLine"/>.
 	/// </summary>
+	[PublicAPI]
 	public sealed class CommandLineConfiguration
 	{
 		/// <summary>
@@ -15,11 +27,11 @@ namespace deniszykov.CommandLine
 		/// <summary>
 		/// Try to describe API into <see cref="IConsole.WriteLine"/> when bind error occurs (verb name mistype or wrong arguments).
 		/// </summary>
-		public bool WriteHelpOnFailure { get; set; }
+		public bool OutputHelpOnFailure { get; set; }
 		/// <summary>
 		/// Output whole error message to <see cref="IConsole.WriteErrorLine"/> when bind error occurs (verb name mistype or wrong arguments).
 		/// </summary>
-		public bool WriteFailureErrors { get; set; }
+		public bool OutputDetailedErrors { get; set; }
 		/// <summary>
 		/// Exit code returned when unable to find verb and help text is displayed instead. Defaults to <c>1</c>.
 		/// </summary>
@@ -32,6 +44,10 @@ namespace deniszykov.CommandLine
 		/// Set default action name to use if non are passed.
 		/// </summary>
 		public string? DefaultVerbName { get; set; }
+		/// <summary>
+		/// Get maximum width of terminal window in characters. Used to limit width of help text.
+		/// </summary>
+		public int MaxOutputWidth { get; set; }
 		/// <summary>
 		/// Set to true to hook <see cref="Console.CancelKeyPress"/> event and redirect it as <see cref="CancellationToken"/> for running verb.
 		/// </summary>
@@ -75,7 +91,7 @@ namespace deniszykov.CommandLine
 
 		public CommandLineConfiguration()
 		{
-			this.WriteHelpOnFailure = true;
+			this.OutputHelpOnFailure = true;
 			this.FailureExitCode = 1;
 			this.HelpExitCode = 2;
 			this.ShortOptionNameMatchingMode = StringComparison.Ordinal;
@@ -86,6 +102,17 @@ namespace deniszykov.CommandLine
 			this.OptionsBreaks = new[] { "--" };
 			this.OptionArgumentSplitters = new[] { ' ', '=' };
 			this.HelpOptions = new[] { "-h", "/h", "--help", "-?", "/?" };
+
+			// Author: @MarcStan
+			// fix when output is redirected, assume we can print any length and redirected
+			// output takes care of formatting
+			try
+			{
+				this.MaxOutputWidth = Console.WindowWidth;
+			}
+			catch { /*ignore error*/ }
+
+			if (this.MaxOutputWidth <= 0) this.MaxOutputWidth = int.MaxValue;
 		}
 
 		internal void CopyTo(CommandLineConfiguration config)
@@ -93,8 +120,8 @@ namespace deniszykov.CommandLine
 			if (config == null) throw new ArgumentNullException(nameof(config));
 
 			config.UnhandledExceptionHandler = this.UnhandledExceptionHandler ?? config.UnhandledExceptionHandler;
-			config.WriteHelpOnFailure = this.WriteHelpOnFailure;
-			config.WriteFailureErrors = this.WriteFailureErrors;
+			config.OutputHelpOnFailure = this.OutputHelpOnFailure;
+			config.OutputDetailedErrors = this.OutputDetailedErrors;
 			config.FailureExitCode = this.FailureExitCode;
 			config.HelpExitCode = this.HelpExitCode;
 			config.DefaultVerbName = this.DefaultVerbName ?? config.DefaultVerbName;
@@ -107,6 +134,7 @@ namespace deniszykov.CommandLine
 			config.LongOptionNamePrefixes = this.LongOptionNamePrefixes;
 			config.OptionsBreaks = this.OptionsBreaks;
 			config.HelpOptions = this.HelpOptions;
+			config.MaxOutputWidth = this.MaxOutputWidth;
 			config.OptionArgumentSplitters = this.OptionArgumentSplitters;
 		}
 	}
