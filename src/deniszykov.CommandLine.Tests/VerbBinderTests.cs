@@ -50,14 +50,84 @@ namespace deniszykov.CommandLine.Tests
 				return 0;
 			}
 
-			public int PositionalBindVerb
+			public int PositionalBindVerb1
 			(
-				int param1 = default,
-				bool param2 = default,
-				int param3 = default,
-				string[]? param4 = default,
-				int param5 = default,
-				string? param6 = default
+				int param1
+			)
+			{
+				this.Param1 = param1;
+
+				return 0;
+			}
+
+			public int PositionalBindVerb2
+			(
+				int param1,
+				bool param2
+			)
+			{
+				this.Param1 = param1;
+				this.Param2 = param2;
+
+				return 0;
+			}
+
+			public int PositionalBindVerb3
+			(
+				int param1,
+				bool param2,
+				int param3
+			)
+			{
+				this.Param1 = param1;
+				this.Param2 = param2;
+				this.Param3Value = param3;
+
+				return 0;
+			}
+
+			public int PositionalBindVerb4
+			(
+				int param1,
+				bool param2 ,
+				int param3,
+				string[]? param4
+			)
+			{
+				this.Param1 = param1;
+				this.Param2 = param2;
+				this.Param3Value = param3;
+				this.Param4 = param4;
+
+				return 0;
+			}
+
+			public int PositionalBindVerb5
+			(
+				int param1,
+				bool param2,
+				int param3,
+				string[]? param4,
+				int param5
+			)
+			{
+				this.Param1 = param1;
+				this.Param2 = param2;
+				this.Param3Value = param3;
+				this.Param4 = param4;
+				this.Param5Value = param5;
+
+				return 0;
+			}
+
+			public int PositionalBindVerb6
+			(
+				int param1 ,
+				bool param2,
+				int param3,
+				string[]? param4,
+				int param5,
+				string? param6
 			)
 			{
 				this.Param1 = param1;
@@ -216,16 +286,16 @@ namespace deniszykov.CommandLine.Tests
 
 		[Theory]
 		// positional bindings - fn(int, bool, int, string[], int, string);
-		[InlineData(new[] { "100500" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param1), 100500, true)]
-		[InlineData(new[] { "1", "true" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param2), true, true)]
-		[InlineData(new[] { "1", "true", "1" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param3Value), 1, true)]
-		[InlineData(new[] { "1", "true", "1", "string value" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param4), new[] { "string value" }, true)]
-		[InlineData(new[] { "1", "true", "1", "string value", "1" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param5Value), 1, true)]
-		[InlineData(new[] { "1", "true", "1", "string value", "1", "another=str" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param6), "another=str", true)]
+		[InlineData(new[] { "100500" }, nameof(TestApi.PositionalBindVerb1), nameof(TestApi.Param1), 100500, true)]
+		[InlineData(new[] { "1", "true" }, nameof(TestApi.PositionalBindVerb2), nameof(TestApi.Param2), true, true)]
+		[InlineData(new[] { "1", "true", "1" }, nameof(TestApi.PositionalBindVerb3), nameof(TestApi.Param3Value), 1, true)]
+		[InlineData(new[] { "1", "true", "1", "string value" }, nameof(TestApi.PositionalBindVerb4), nameof(TestApi.Param4), new[] { "string value" }, true)]
+		[InlineData(new[] { "1", "true", "1", "string value", "1" }, nameof(TestApi.PositionalBindVerb5), nameof(TestApi.Param5Value), 1, true)]
+		[InlineData(new[] { "1", "true", "1", "string value", "1", "another=str" }, nameof(TestApi.PositionalBindVerb6), nameof(TestApi.Param6), "another=str", true)]
 		// invalid argument types
-		[InlineData(new[] { "1", "0", "1", "a", "1", "a" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param6), "", false)]
-		[InlineData(new[] { "any", "0", "1", "a", "1", "a" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param6), "", false)]
-		[InlineData(new[] { "999999999999999999", "0", "1", "a", "1", "a" }, nameof(TestApi.PositionalBindVerb), nameof(TestApi.Param6), "", false)]
+		[InlineData(new[] { "1", "0", "1", "a", "1", "a" }, nameof(TestApi.PositionalBindVerb6), nameof(TestApi.Param6), "", false)]
+		[InlineData(new[] { "any", "0", "1", "a", "1", "a" }, nameof(TestApi.PositionalBindVerb6), nameof(TestApi.Param6), "", false)]
+		[InlineData(new[] { "999999999999999999", "0", "1", "a", "1", "a" }, nameof(TestApi.PositionalBindVerb6), nameof(TestApi.Param6), "", false)]
 		// binding intersection with named parameters
 		[InlineData(new[] { "100500", "--param-1-int", "120" }, nameof(TestApi.TwoParamBindVerb), nameof(TestApi.Param1), 120, false)]
 		// binding rest parameters

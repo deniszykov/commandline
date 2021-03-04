@@ -179,7 +179,7 @@ namespace deniszykov.CommandLine.Binding
 			{
 				if (parsedArguments.TryGetLongOption(parameter.Name, out var optionValue) ||
 					parsedArguments.TryGetShortOption(parameter.Alias ?? string.Empty, out optionValue) ||
-					TryGetPositionalArgument(parameter, parsedArguments, takenValues, out optionValue))
+					(!parameter.IsOptional && TryGetPositionalArgument(parameter, parsedArguments, takenValues, out optionValue)))
 				{
 					var raw = optionValue.Raw;
 
