@@ -103,7 +103,7 @@ namespace deniszykov.CommandLine.Binding
 			if (method == null) throw new ArgumentNullException(nameof(method));
 
 			return (method.ReturnType != typeof(int) && method.ReturnType != typeof(Task<int>)) ||
-				method.IsGenericMethod && method.IsSpecialName;
+				method.IsGenericMethod && method.IsSpecialName || method.IsNonVerb();
 		}
 
 		private static int CompareMethods(MethodInfo x, MethodInfo y)

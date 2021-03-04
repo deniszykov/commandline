@@ -51,6 +51,13 @@ namespace deniszykov.CommandLine.Annotations
 				parameterInfo.ParameterType == typeof(ICommandLineBuilder) ||
 				parameterInfo.ParameterType == typeof(CancellationToken);
 		}
+		public static bool IsNonVerb(this ICustomAttributeProvider customAttributeProvider)
+		{
+			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
+
+			var isNonVerb = customAttributeProvider.GetCustomAttributes(typeof(NonVerbAttribute), true).FirstOrDefault() is NonVerbAttribute;
+			return isNonVerb;
+		}
 		public static string? GetName(this ICustomAttributeProvider customAttributeProvider)
 		{
 			if (customAttributeProvider == null) throw new ArgumentNullException(nameof(customAttributeProvider));
