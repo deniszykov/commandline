@@ -8,14 +8,17 @@ namespace deniszykov.CommandLine.Example
 	[Description("This test application. Type /? for help.")]
 	public class Program
 	{
-		[Browsable(false)] // hide it from Describe method
-		public static int Main(string[] arguments)
+		private static int Main(string[] arguments)
 		{
-			var result = CommandLine
+			var exitCode = CommandLine
 				.CreateFromArguments(arguments)
+				.Configure(config =>
+				{
+					config.UnhandledExceptionHandler += (sender, args) => Console.Error.WriteLine(args.Exception.ToString());
+				})
 				.Use<Program>()
 				.Run();
-			return result;
+			return exitCode;
 		}
 
 		// ### Basic Verb ###

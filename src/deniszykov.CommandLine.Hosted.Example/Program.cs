@@ -12,7 +12,7 @@ namespace deniszykov.CommandLine.Hosted.Example
 			await CreateHostBuilder(args).Build().RunAsync();
 		}
 
-		public static IHostBuilder CreateHostBuilder(string[] args) =>
+		private static IHostBuilder CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
 				.ConfigureServices((context, services) =>
 				{
