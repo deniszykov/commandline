@@ -1,0 +1,26 @@
+name: dotnet_build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+        
+    steps:
+    - uses: actions/checkout@v1
+    
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+
+    - name: dotnet restore
+      working-directory: ./src/
+      run: dotnet restore
+    
+    - name: Build with MSBuild
+      working-directory: ./src/
+      run: dotnet msbuild -t:Pack
+      
+    - name: Run rests
+      working-directory: ./src/deniszykov.CommandLine.Tests/
+      run: dotnet test -f netcoreapp3.0
