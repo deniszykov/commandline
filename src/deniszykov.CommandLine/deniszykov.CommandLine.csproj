@@ -3,7 +3,20 @@
 	<PropertyGroup>
 		<TargetFrameworks>$(NetTargetPlatforms);</TargetFrameworks>
 		<Description>Command line application utility package. Provides API for parsing and binding command line arguments to .NET methods.</Description>
-		<PackageReleaseNotes># 1.3.1 - 1.3.2
+		<PackageReleaseNotes>
+			# 2.0.0
+- Rewritten as a service
+- Commands, Parameters are now Verbs, Options, Values
+- Now follows getOpt syntax
+- Services could be injected in parameters
+- Verbs are now could be async and cancelled
+- Configuration is now in separate class
+- Help request is build-in and doesn't require custom 'Help' command
+- Console has been abstracted and could be replaced
+- Help text is now localizable
+- Fixed bugs with help text and sub-verbs
+
+			# 1.3.1 - 1.3.2
 - TypeConvert dependecy update (bug fixes)
 
 # 1.3.0
@@ -61,7 +74,8 @@
 - fixed bug with positional parameters binding
 
 # 1.0.0
-- initial release</PackageReleaseNotes>
+- initial release
+		</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="deniszykov.TypeConversion" Version="3.0.1">
