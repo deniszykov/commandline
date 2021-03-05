@@ -50,7 +50,7 @@ Asynchronous entry points and methods are also supported. To do this, use method
 
 When you could request help for your application:
 ```console
-myapp /?
+> myapp /?
 
 This test application. Type /? for help.
 
@@ -60,7 +60,7 @@ This test application. Type /? for help.
 
 Or invoke `Hello(string name)` with following command:
 ```console
-myapp hello --name Jake
+> myapp hello --name Jake
 
 Hello Jake!
 ```
