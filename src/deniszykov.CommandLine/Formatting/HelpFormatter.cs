@@ -90,11 +90,12 @@ namespace deniszykov.CommandLine.Formatting
 						writer.WriteLine();
 					}
 
-					if (!string.IsNullOrEmpty(verb.Description))
+					var description = this.GetOrSubstituteHelpText(verb.Description);
+					if (!string.IsNullOrEmpty(description))
 					{
 						using (writer.KeepIndent("  "))
 						{
-							writer.WriteLine(verb.Description);
+							writer.WriteLine(description);
 							writer.WriteLine();
 						}
 					}
@@ -129,7 +130,7 @@ namespace deniszykov.CommandLine.Formatting
 								}
 
 								var paramName = GetPaddedString(this.GetParameterNames(parameter), maxNameLength);
-								var paramDescriptionText = parameter.Description;
+								var paramDescriptionText = GetOrSubstituteHelpText(parameter.Description);
 								if (paramDescriptionText.Length > 0 && paramDescriptionText.EndsWith(".", StringComparison.OrdinalIgnoreCase) == false)
 									paramDescriptionText += ".";
 
@@ -187,7 +188,7 @@ namespace deniszykov.CommandLine.Formatting
 							writer.Write($"{namePrefix}{verbName}");
 							using (writer.KeepIndent("    "))
 							{
-								writer.WriteLine(verb.Description);
+								writer.WriteLine(this.GetOrSubstituteHelpText(verb.Description));
 							}
 						}
 					}
@@ -212,7 +213,7 @@ namespace deniszykov.CommandLine.Formatting
 			{
 				if (includeTypeHelpText)
 				{
-					writer.WriteLine(verbSet.Description);
+					writer.WriteLine(GetOrSubstituteHelpText(verbSet.Description));
 					writer.WriteLine();
 				}
 
@@ -231,7 +232,7 @@ namespace deniszykov.CommandLine.Formatting
 							writer.Write($"{verbPrefix}{verbName}");
 							using (writer.KeepIndent("    "))
 							{
-								writer.WriteLine(verb.Description);
+								writer.WriteLine(GetOrSubstituteHelpText(verb.Description));
 							}
 						}
 					}
@@ -329,7 +330,7 @@ namespace deniszykov.CommandLine.Formatting
 							writer.Write($"{namePrefix}{verbName}");
 							using (writer.KeepIndent("    "))
 							{
-								writer.WriteLine(verb.Description);
+								writer.WriteLine(GetOrSubstituteHelpText(verb.Description));
 							}
 						}
 					}
@@ -419,6 +420,17 @@ namespace deniszykov.CommandLine.Formatting
 			{
 				return this.longOptionNamePrefix + optionName;
 			}
+		}
+		private string GetOrSubstituteHelpText(string? helpText)
+		{
+			helpText ??= "";
+
+			if (!string.IsNullOrEmpty(helpText) && this.helpTextProvider.TrySubstituteHelpTextFor(helpText, out var newHelpText))
+			{
+				return newHelpText ?? helpText;
+			}
+
+			return helpText;
 		}
 
 		private static string GetParameterTypeFriendlyName(VerbParameter parameter)

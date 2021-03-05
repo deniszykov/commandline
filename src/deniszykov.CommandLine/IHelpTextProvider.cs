@@ -86,6 +86,14 @@ namespace deniszykov.CommandLine
 		string HelpFooterText { get; }
 
 		/// <summary>
+		/// Tries to substitute one help text with another.
+		/// </summary>
+		/// <param name="helpText">Help text to substitute.</param>
+		/// <param name="newHelpText">A new help text.</param>
+		/// <returns>True if substitute is successful and <paramref name="newHelpText"/> is set.</returns>
+		bool TrySubstituteHelpTextFor(string helpText, out string? newHelpText);
+
+		/// <summary>
 		/// Tries to provide friendly name of parameter's type.
 		/// </summary>
 		bool TryGetParameterTypeFriendlyName(VerbParameter parameter, out string? friendlyName);

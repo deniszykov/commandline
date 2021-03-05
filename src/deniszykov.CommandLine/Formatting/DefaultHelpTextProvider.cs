@@ -48,6 +48,12 @@ namespace deniszykov.CommandLine.Formatting
 		public string HelpFooterText => "";
 
 		/// <inheritdoc />
+		public bool TrySubstituteHelpTextFor(string helpText, out string? newHelpText)
+		{
+			newHelpText = default;
+			return false;
+		}
+		/// <inheritdoc />
 		public bool TryGetParameterTypeFriendlyName(VerbParameter parameter, out string? friendlyName)
 		{
 			friendlyName = default;
