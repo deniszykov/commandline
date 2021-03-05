@@ -18,13 +18,12 @@ Quick Start
 ============
 
 # Basics
-To start, you need to configure the entry point to the application. 
+To start, you need to configure the entry point to the application.
 ```csharp
 using System;
 using System.ComponentModel;
 using deniszykov.CommandLine;
 
-[Description("This is an expample application. Type /? for help.")]
 public class Program
 {
   private static int Main(string[] arguments)
@@ -36,7 +35,6 @@ public class Program
     return exitCode;
   }
 
-  [Description("Says hello to specified 'name'.")]
   public static int Hello(string name)
   {
     Console.WriteLine("Hello " + name + "!");
@@ -45,10 +43,10 @@ public class Program
 }
 ```
 `CommandLine` relies on reflection to find method to invoke.  
-This method should return `int` value which is interpreted as [Exit Code](https://en.wikipedia.org/wiki/Exit_status) of application.
-Asynchronous entry points and methods are also supported. To do this, use method `RunAsync()` and `Task<int>` as return type. 
+This method should return `int` value which is interpreted as [Exit Code](https://en.wikipedia.org/wiki/Exit_status) of application.  
+Asynchronous entry points and methods are also supported. To do this, use method `RunAsync()` and `Task<int>` as return type.  
 
-When you could request help for your application:
+When you could request help for your application:  
 ```console
 > myapp /?
 
