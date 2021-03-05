@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/deniszykov/commandline.svg?branch=master)](https://travis-ci.org/deniszykov/commandline)
+[![dotnet_build](https://github.com/deniszykov/commandline/actions/workflows/dotnet_build.yml/badge.svg)](https://github.com/deniszykov/commandline/actions/workflows/dotnet_build.yml)
 
 Introduction
 ============
@@ -13,17 +13,14 @@ For .NET Core Hosted environment:
 ```
 Install-Package deniszykov.CommandLine.Hosted
 ```
+[Example](commandline/blob/master/src/deniszykov.CommandLine.Hosted.Example/Program.cs)  
 
 Quick Start
 ============
 
 # Basics
-To start, you need to configure the entry point to the application.
+To start, you need to configure the entry point to the application: 
 ```csharp
-using System;
-using System.ComponentModel;
-using deniszykov.CommandLine;
-
 public class Program
 {
   private static int Main(string[] arguments)
@@ -42,6 +39,9 @@ public class Program
   }
 }
 ```
+[Full Example Code](commandline/blob/master/src/deniszykov.CommandLine.Example/Program.cs)  
+
+
 `CommandLine` relies on reflection to find method to invoke.  
 This method should return `int` value which is interpreted as [Exit Code](https://en.wikipedia.org/wiki/Exit_status) of application.  
 Asynchronous entry points and methods are also supported. To do this, use method `RunAsync()` and `Task<int>` as return type.  
