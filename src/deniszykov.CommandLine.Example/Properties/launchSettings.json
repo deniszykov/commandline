@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CommandLine.Example": {
+      "commandName": "Project",
+      "commandLineArgs": "HELLO /?"
+    }
+  }
+}

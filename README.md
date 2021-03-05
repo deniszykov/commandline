@@ -2,199 +2,87 @@
 
 Introduction
 ============
-Tools for building console application.
+A simple [getopt](https://man7.org/linux/man-pages/man3/getopt.3.html) styled command line library.
 
 Installation
 ============
 ```
-Install-Package ConsoleApp.CommandLine
+Install-Package deniszykov.CommandLine
+```
+For .NET Core Hosted environment:
+```
+Install-Package deniszykov.CommandLine.Hosted
 ```
 
 Quick Start
 ============
+
 # Basics
-To start, you need to configure the entry point to the application. Where "ConsoleApp" will be your class with a command handler.
+To start, you need to configure the entry point to the application.
 ```csharp
-using System
-
-class Program
-{
-	public static int Main()
-	{
-		return CommandLine.Run<Program>(CommandLine.Arguments, defaultCommandName: "SayHello")
-	}	
-	public static int SayHello()
-	{
-		Console.WriteLine("Hello!");
-		return 0;
-	}
-}
-```
-CommandLine.Run relies on reflection to find methods. So they should be **static** and return **int** which is [Exit Code](https://en.wikipedia.org/wiki/Exit_status)
-
-Now you can test your application:
-```bash
-myapp.exe SayHello 
-#>Hello!
-myapp.exe SAYHELLO
-#>Hello! -- command name is case-insensitive (parameters are not!)
-myapp.exe 
-#>Hello! - Too because 'defaultCommandName' is set to 'SayHello'
-```
-## Parameter bindings
-### Positional and named parameters
-You can add parameters to your command which is automatically binds by name or position
-```csharp
-public static int SayHello(string name)
-{
-	Console.WriteLine("Hello " + name + "!");
-	return 0;
-}
-```
-Testing:
-```bash
-myapp.exe SayHello Mike 
-#>Hello Mike!
-myapp.exe SayHello --name Jake
-#>Hello Jake!
-```
-
-### List  parameters
-You can add array parameter to collect multiple values as shown below:
-```csharp
-public static int SayHello(string[] names)
-{
-	Console.WriteLine("Hello " + string.Join(", ", names) + "!");
-	return 0;
-}
-```
-Testing:
-```bash
-myapp.exe SayHello --names Mike Jake
-#>Hello Mike, Jake!
-```
-Parameter accepting multiple values can be only named.
-
-### Optional parameters
-You can make any parameter optional by specifying default value.
-```csharp
-public static int ShowOptionalParameter(int myOptionalParam = 100)
-{
-	Console.WriteLine("My optional parameter is " + myOptionalParam);
-	return 0;
-}
-```
-Testing:
-```bash
-myapp.exe ShowOptionalParameter --myOptionalParam 200
-#>My optional parameter is 200
-myapp.exe ShowOptionalParameter 300
-#>My optional parameter is 300
-myapp.exe ShowOptionalParameter
-#>My optional parameter is 100
-```
-
-### Flag parameters
-You can have a flag(true/false) parameter. It's presence is considered to be "True" and absence is "False".
-```csharp
-public static int ShowFlag(bool myFlag)
-{
-	Console.WriteLine(myFlag ? "Flag is set" : "Flag is not set");
-	return 0;
-}
-```
-Testing:
-```bash
-myapp.exe ShowFlag --myFlag
-#>Flag is set
-myapp.exe ShowFlag
-#>Flag is not set
-```
-
-### Parameters values starting with hyphen(-) symbol
-Negative numbers (such as -1000) are interpreted as values by default. But strings like "-a", "-hello" are interpreted as named parameters. 
-To stop this interpretation you could place bare hyphen: 
-```bash
-myapp.exe - --message -hello --class -a
-```
-### Enforcing positional parameters
-You could pass bare double hyphen(--) and anything after it will be threated as positional parameters.
-```bash
-myapp.exe --type message -- value1 value2 value3
-```
-No special symbols are interpeted after double hyphen(--) even another double hypthen:
-```bash
-myapp.exe --type message -- -value1 --value2 --value3-- --
-```
-
-### Supported Parameter Types
-* Primitive types (int, byte, char ...)
-* BCL types (String, DateTime, Decimal)
-* Nullable types
-* Enum types
-* Types with [TypeConverterAttribute](https://msdn.microsoft.com/en-us/library/system.componentmodel.typeconverterattribute(v=vs.110).aspx) (Point, Guid, Version, TimeSpan ...)
-* Types with Parse(string value) method (IpAddress, Guid ...)
-* Types with explicit/implicit conversion from string
-
-# Сommands Hierarchy
-Suppose you want to build a complex API where commands are grouped by purpose. 
-
-Example:
-```bash
-myfinance.exe Account Show --id 0a0e0000000
-```
-
-Each group must be defined as method(command) with **one** CommandLineArguments argument.
-```csharp
-public static int Account(CommandLineArguments arguments)
-{
-	return CommandLine.Run<AccountCommands>(arguments);
-}
-
-class AccountCommands
-{
-	public static int Show()
-	{
-		// ...
-	}
-}
-```
-where AccountCommands is class with list of commands as described in "Basics". 
-
-# Commands Description
-Your command line application can generate help for the user. This requires to define *Help* method with following code inside
-```csharp
-public static int Help()
-{
-	return CommandLine.Describe<ConsoleApp>();
-}
-```
-Testing:
-```bash
-myapp.exe Help
->	HELP
-```
-Not too much information :)
-
-You can decorate the method with **DescriptionAttribute** attributes to expand 'Help' information.
-```csharp
+using System;
 using System.ComponentModel;
+using deniszykov.CommandLine;
 
-[Description("Display this help.")]
-public static int Help()
+public class Program
 {
-	return CommandLine.Describe<ConsoleApp>();
+  private static int Main(string[] arguments)
+  {
+    var exitCode = CommandLine
+      .CreateFromArguments(arguments)
+      .Use<Program>() // set class with verbs/commands
+      .Run();
+    return exitCode;
+  }
+
+  public static int Hello(string name)
+  {
+    Console.WriteLine("Hello " + name + "!");
+    return 0; // exit code
+  }
 }
 ```
-Testing:
-```bash
-myapp.exe Help
->	HELP - Display this help.
-```
-You can add these attributes to the methods, parameters and classes. All of them are involved in the generation of reference.
+`CommandLine` relies on reflection to find method to invoke.  
+This method should return `int` value which is interpreted as [Exit Code](https://en.wikipedia.org/wiki/Exit_status) of application.  
+Asynchronous entry points and methods are also supported. To do this, use method `RunAsync()` and `Task<int>` as return type.  
 
-# Handling Errors
-To catch and handle binding or execution errors you could subscribe on **CommandLine.UnhandledException** method.
-```csharp
-CommandLine.UnhandledException += (sender, args) => Console.WriteLine(args.Exception.ToString());
+When you could request help for your application:  
+```console
+> myapp /?
+
+This test application. Type /? for help.
+
+  Verbs:
+    HELLO    Says hello to specified 'name'.
 ```
+
+Or invoke `Hello(string name)` with following command:
+```console
+> myapp hello --name Jake
+
+Hello Jake!
+```
+
+Documentation
+============
+* [Syntax](https://github.com/deniszykov/commandline/wiki/Syntax)
+  * [Verbs](https://github.com/deniszykov/commandline/wiki/Syntax#Verbs)
+  * [Sub-verbs](https://github.com/deniszykov/commandline/wiki/Syntax#Sub-verbs)
+  * [Options](https://github.com/deniszykov/commandline/wiki/Syntax#Options)
+  * [Values](https://github.com/deniszykov/commandline/wiki/Syntax#Values)
+* [Binding](https://github.com/deniszykov/commandline/wiki/Binding)
+  * [Verbs binding](https://github.com/deniszykov/commandline/wiki/Binding#Verbs-binding)
+  * [Options binding](https://github.com/deniszykov/commandline/wiki/Binding#Options-binding)
+  * [Values binding](https://github.com/deniszykov/commandline/wiki/Binding#Values-binding)
+  * [Service resolution and DI](https://github.com/deniszykov/commandline/wiki/Binding#Service-resolution-and-DI)
+  * [Cancellation](https://github.com/deniszykov/commandline/wiki/Binding#Cancellation)
+  * [Supported .NET types](https://github.com/deniszykov/commandline/wiki/Binding#Supported-NET-types)
+* [Sub-Verbs](https://github.com/deniszykov/commandline/wiki/Sub_Verbs)
+* [.NET Core hosting](https://github.com/deniszykov/commandline/wiki/NET_Core_Hosting)
+* [Configuration](https://github.com/deniszykov/commandline/wiki/Configuration)
+* [Help Text](https://github.com/deniszykov/commandline/wiki/Help_Text)
+  * [Localization](https://github.com/deniszykov/commandline/wiki/Help_Text#Localization)
+
+  License
+  ============
+  MIT
