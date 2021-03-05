@@ -22,14 +22,11 @@ To start, you need to configure the entry point to the application:
 ```csharp
 public class Program
 {
-  private static int Main(string[] arguments)
-  {
-    var exitCode = CommandLine
+  private static int Main(string[] arguments) =>
+    CommandLine
       .CreateFromArguments(arguments)
       .Use<Program>() // set class with verbs/commands
       .Run();
-    return exitCode;
-  }
 
   public static int Hello(string name)
   {
