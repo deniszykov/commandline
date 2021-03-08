@@ -2,6 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp3.0</TargetFramework>
+		<Description>.NET Core hosted command line parser and binder. Provides API for parsing and binding command line arguments to .NET methods.</Description>
+		<PackageReleaseNote/>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -12,4 +14,15 @@
 	  <ProjectReference Include="..\deniszykov.CommandLine\deniszykov.CommandLine.csproj" />
 	</ItemGroup>
 
+	<Target Name="ReadPackageMetadataromFile" BeforeTargets="GenerateNuspec">
+		<ItemGroup>
+			<ReleaseNotesFile Include="..\..\RELEASE_NOTES.md" />
+		</ItemGroup>
+		<ReadLinesFromFile File="@(ReleaseNotesFile)">
+			<Output TaskParameter="Lines" ItemName="PackageReleaseNotesLines" />
+		</ReadLinesFromFile>
+		<CreateProperty Value="@(PackageReleaseNotesLines->'%(Identity)', '%0D%0A')">
+			<Output PropertyName="PackageReleaseNotes" TaskParameter="Value" />
+		</CreateProperty>
+	</Target>
 </Project>

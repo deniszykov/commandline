@@ -13,6 +13,7 @@
 		<PackageProjectUrl>https://github.com/deniszykov/commandline</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Copyright>(c) Denis Zykov 2021</Copyright>
+		<PackageTags>command line command_line parse terminal console getopt options</PackageTags>
 		<RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Nullable>enable</Nullable>
