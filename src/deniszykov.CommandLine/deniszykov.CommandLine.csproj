@@ -3,10 +3,10 @@
 	<PropertyGroup>
 		<TargetFrameworks>$(NetTargetPlatforms);</TargetFrameworks>
 		<Description>Command line parser and binder. Provides API for parsing and binding command line arguments to .NET methods.</Description>
-		<PackageReleaseNote/>
+		<PackageReleaseNote />
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="deniszykov.TypeConversion" Version="3.0.1">
+		<PackageReference Include="deniszykov.TypeConversion" Version="3.0.4">
 		</PackageReference>
 	</ItemGroup>
 
