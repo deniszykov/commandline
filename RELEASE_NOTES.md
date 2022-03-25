@@ -1,3 +1,9 @@
+# 2.0.2
+- updated dependencies
+
+# 2.0.1
+- updated target frameworks for 'Hosted' version of package to include .NET Framework 4.6.1
+
 # 2.0.0
 - rewritten as a service
 - commands, Parameters are now Verbs, Options, Values

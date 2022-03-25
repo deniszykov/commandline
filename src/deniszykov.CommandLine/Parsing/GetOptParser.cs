@@ -112,14 +112,16 @@ namespace deniszykov.CommandLine.Parsing
 										longName = shortNameLetters.Substring(l);
 									}
 
+									longName ??= "";
+
 									if (this.treatUnknownOptionsAsValues || longName.All(char.IsDigit))
 									{
-										yield return new ArgumentToken(TokenType.Value, l == 0 ? argument : longName!);
+										yield return new ArgumentToken(TokenType.Value, l == 0 ? argument : longName);
 										l = shortNameLetters.Length;
 									}
 									else
 									{
-										yield return new ArgumentToken(TokenType.UnknownOption, longName!);
+										yield return new ArgumentToken(TokenType.UnknownOption, longName);
 										mode = MODE_ZERO_OR_MORE_EXPLICIT_ARGUMENTS;
 										l = shortNameLetters.Length;
 									}

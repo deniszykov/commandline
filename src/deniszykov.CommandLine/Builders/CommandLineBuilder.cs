@@ -88,9 +88,9 @@ namespace deniszykov.CommandLine.Builders
 			if (this.verbSetBuilder == null) throw new InvalidOperationException("No verb list are set. Call one of ICommandLineBuilder.Use() methods before calling Run()/Build().");
 
 			var serviceProvider = this.serviceProviderFactory?.Invoke() ?? CreateDefaultServiceProviderFactory();
-			var typeConversionProvider = (ITypeConversionProvider)serviceProvider.GetService(typeof(ITypeConversionProvider)) ?? new TypeConversionProvider();
-			var console = (IConsole)serviceProvider.GetService(typeof(IConsole)) ?? new DefaultConsole(this.configuration.HookConsoleCancelKeyPress);
-			var helpTextProvider = (IHelpTextProvider)serviceProvider.GetService(typeof(IHelpTextProvider)) ?? new DefaultHelpTextProvider();
+			var typeConversionProvider = (ITypeConversionProvider?)serviceProvider.GetService(typeof(ITypeConversionProvider)) ?? new TypeConversionProvider();
+			var console = (IConsole?)serviceProvider.GetService(typeof(IConsole)) ?? new DefaultConsole(this.configuration.HookConsoleCancelKeyPress);
+			var helpTextProvider = (IHelpTextProvider?)serviceProvider.GetService(typeof(IHelpTextProvider)) ?? new DefaultHelpTextProvider();
 
 			var scopedServiceProvider = new ServiceProvider(serviceProvider);
 			scopedServiceProvider.RegisterInstance(typeof(ITypeConversionProvider), typeConversionProvider);
