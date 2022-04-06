@@ -1,4 +1,4 @@
-# 2.0.2
+# 2.0.2 - 2.0.4
 - updated dependencies
 
 # 2.0.1
