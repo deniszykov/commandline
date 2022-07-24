@@ -24,7 +24,7 @@ namespace deniszykov.CommandLine.Builders
 		private readonly Dictionary<object, object> properties;
 		private readonly string[] arguments;
 		private readonly CommandLineConfiguration configuration;
-		private IVerbSetBuilder? verbSetBuilder;
+		private readonly List<IVerbSetBuilder> verbSetBuilders;
 		private Func<IServiceProvider> serviceProviderFactory;
 
 		/// <inheritdoc />
@@ -36,7 +36,7 @@ namespace deniszykov.CommandLine.Builders
 
 			this.properties = new Dictionary<object, object>();
 			this.arguments = arguments;
-			this.verbSetBuilder = default;
+			this.verbSetBuilders = new List<IVerbSetBuilder>();
 			this.configuration = new CommandLineConfiguration();
 			this.serviceProviderFactory = CreateDefaultServiceProviderFactory;
 		}
@@ -61,7 +61,7 @@ namespace deniszykov.CommandLine.Builders
 		public ICommandLineBuilder Use<VerbSetT>()
 		{
 			var builder = new VerbsFromTypeBuilder(typeof(VerbSetT).GetTypeInfo());
-			this.verbSetBuilder = builder;
+			this.verbSetBuilders.Add(builder);
 			return this;
 		}
 		/// <inheritdoc />
@@ -70,7 +70,7 @@ namespace deniszykov.CommandLine.Builders
 			if (verSetType == null) throw new ArgumentNullException(nameof(verSetType));
 
 			var builder = new VerbsFromTypeBuilder(verSetType.GetTypeInfo());
-			this.verbSetBuilder = builder;
+			this.verbSetBuilders.Add(builder);
 			return this;
 		}
 		/// <inheritdoc />
@@ -79,13 +79,16 @@ namespace deniszykov.CommandLine.Builders
 			if (buildDelegate == null) throw new ArgumentNullException(nameof(buildDelegate));
 
 			var builder = buildDelegate();
-			this.verbSetBuilder = builder;
+			this.verbSetBuilders.Add(builder);
 			return this;
 		}
 		/// <inheritdoc />
 		public CommandLine Build()
 		{
-			if (this.verbSetBuilder == null) throw new InvalidOperationException("No verb list are set. Call one of ICommandLineBuilder.Use() methods before calling Run()/Build().");
+			if (this.verbSetBuilders.Count == 0)
+			{
+				throw new InvalidOperationException("No verb list are set. Call one of ICommandLineBuilder.Use() methods before calling Run()/Build().");
+			}
 
 			var serviceProvider = this.serviceProviderFactory?.Invoke() ?? CreateDefaultServiceProviderFactory();
 			var typeConversionProvider = (ITypeConversionProvider?)serviceProvider.GetService(typeof(ITypeConversionProvider)) ?? new TypeConversionProvider();
@@ -98,7 +101,7 @@ namespace deniszykov.CommandLine.Builders
 			scopedServiceProvider.RegisterInstance(typeof(IHelpTextProvider), helpTextProvider);
 
 			var commandLine = new CommandLine(
-				this.verbSetBuilder,
+				CombinedVerbsBuilder.Create(this.verbSetBuilders),
 				this.arguments,
 				this.configuration,
 				typeConversionProvider,

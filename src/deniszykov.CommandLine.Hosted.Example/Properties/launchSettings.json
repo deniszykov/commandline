@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "deniszykov.CommandLine.Hosted.Example": {
+      "commandName": "Project",
+      "commandLineArgs": "/?"
+    }
+  }
+}

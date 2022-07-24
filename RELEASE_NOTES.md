@@ -1,4 +1,5 @@
-# 2.0.2 - 2.0.4
+# 2.0.2 - 2.0.5
+- added posibility to use multiple c# classes as combined source of verbs
 - updated dependencies
 
 # 2.0.1
