@@ -65,7 +65,7 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public StringComparison VerbNameMatchingMode { get; set; }
 		/// <summary>
-		/// Set to <code>true</code> to threat unknown options as values. Over-wise they will be ignored during binding.
+		/// Set to <code>true</code> to threat unknown options as values. Otherwise they will be ignored during binding.
 		/// </summary>
 		public bool TreatUnknownOptionsAsValues { get; set; }
 		/// <summary>

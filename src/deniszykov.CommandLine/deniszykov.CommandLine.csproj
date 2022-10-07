@@ -6,7 +6,7 @@
 		<PackageReleaseNote />
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="deniszykov.TypeConversion" Version="3.0.6">
+		<PackageReference Include="deniszykov.TypeConversion" Version="3.0.8">
 		</PackageReference>
 	</ItemGroup>
 
