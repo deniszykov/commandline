@@ -14,6 +14,7 @@ using System.Linq;
 
 namespace deniszykov.CommandLine.Example
 {
+	[Description("Some math functions. (!) Set 'CommandLineConfiguration.OutputSubVerbHelpTitle=true' to display this text with --help.")]
 	public class MathVerbs
 	{
 		// ### Basic Verb ###
@@ -25,10 +26,10 @@ namespace deniszykov.CommandLine.Example
 		}
 
 		// ### Basic Verb ###
-		[Description("Adds numbers and print result.")]
-		public static int Add(int[] values)
+		[Description("Multiplies numbers and print result.")]
+		public static int Multiply(int[] values)
 		{
-			Console.WriteLine(values.Sum());
+			Console.WriteLine(values.Aggregate(1, (x,y) => x * y));
 			return 0;
 		}
 	}

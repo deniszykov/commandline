@@ -9,6 +9,7 @@
 */
 
 using System;
+using System.Linq;
 using System.Reflection;
 using deniszykov.CommandLine.Binding;
 
@@ -30,6 +31,12 @@ namespace deniszykov.CommandLine.Builders
 		public VerbSet Build()
 		{
 			return this.verbSet ??= new VerbSet(this.verbSetType);
+		}
+
+		/// <inheritdoc />
+		public override string ToString()
+		{
+			return $"Set, Type: {this.verbSetType.Name}, Verbs: {string.Join(", ", this.verbSet?.Verbs.Select(v => v.Name) ?? Enumerable.Empty<string>())}";
 		}
 	}
 }

@@ -239,10 +239,7 @@ namespace deniszykov.CommandLine
 			{
 				commandLineBuilder.Properties[contextProperty.Key] = contextProperty.Value;
 			}
-
-			// copy verb set
-			commandLineBuilder.Use(() => context.VerbSetBuilder);
-
+			
 			return commandLineBuilder;
 		}
 

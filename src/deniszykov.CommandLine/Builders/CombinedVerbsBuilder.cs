@@ -50,5 +50,11 @@ namespace deniszykov.CommandLine.Builders
 			}
 			return new CombinedVerbsBuilder(verbSetBuilders);
 		}
+
+		/// <inheritdoc />
+		public override string ToString()
+		{
+			return $"Combined Verbs, ({string.Join(", ", this.verbSetBuilders)})";
+		}
 	}
 }
