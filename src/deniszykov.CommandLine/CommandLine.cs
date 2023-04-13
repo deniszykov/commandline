@@ -127,7 +127,7 @@ namespace deniszykov.CommandLine
 		private int WriteHelp(string? verbName)
 		{
 			try
-			{
+			{ 
 				var verbSet = this.verbSetBuilder.Build();
 				var verbChain = this.properties.GetVerbChain().ToList();
 				var verb = string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UNKNOWN_VERB_NAME) ? default : verbSet.FindVerb(verbName!);
@@ -137,7 +137,7 @@ namespace deniszykov.CommandLine
 				}
 				else if (string.IsNullOrEmpty(verbName) || ReferenceEquals(verbName, UNKNOWN_VERB_NAME))
 				{
-					this.verbRenderer.VerbList(verbSet, verbChain, includeTypeHelpText: verbChain.Count == 0);
+					this.verbRenderer.VerbList(verbSet, verbChain, includeTypeHelpText: this.configuration.OutputSubVerbHelpTitle || verbChain.Count == 0);
 				}
 				else
 				{

@@ -29,6 +29,10 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public bool OutputHelpOnFailure { get; set; }
 		/// <summary>
+		/// Output title help text for sub-verbs. Usually it is taken from <see cref="Type"/> where verbs are declared.
+		/// </summary>
+		public bool OutputSubVerbHelpTitle { get; set; }
+		/// <summary>
 		/// Output whole error message to <see cref="IConsole.WriteErrorLine"/> when bind error occurs (verb name mistype or wrong arguments).
 		/// </summary>
 		public bool OutputDetailedErrors { get; set; }
