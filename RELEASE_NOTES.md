@@ -1,3 +1,7 @@
+# 2.1.7
+- added option to display title text for sub-verbs
+- fixed help text generation for sub-verbs
+
 # 2.0.2 - 2.0.6
 - added posibility to use multiple c# classes as combined source of verbs
 - updated dependencies
