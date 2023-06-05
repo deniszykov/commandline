@@ -22,17 +22,24 @@ To start, you need to configure the entry point to the application:
 ```csharp
 public class Program
 {
+
   private static int Main(string[] arguments) =>
     CommandLine
       .CreateFromArguments(arguments)
       .Use<Program>() // set class with verbs/commands
       .Run();
 
+  //
+  // Usage: myapp.exe hello --name <name>
+  // 
   public static int Hello(string name)
+  //                  ^            ^
+  //                 Verb        Option
   {
     Console.WriteLine("Hello " + name + "!");
     return 0; // exit code
-  }
+  }  
+
 }
 ```
 [Full Example Code](src/deniszykov.CommandLine.Example/Program.cs)  
