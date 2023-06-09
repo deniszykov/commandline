@@ -9,6 +9,8 @@ Installation
 ```
 Install-Package deniszykov.CommandLine
 ```
+[.NET Framework Example](src/deniszykov.CommandLine.Hosted.Example/Program.cs)  
+
 For .NET Core Hosted environment:
 ```
 Install-Package deniszykov.CommandLine.Hosted
@@ -42,7 +44,7 @@ public class Program
 
 }
 ```
-[Full Example Code](src/deniszykov.CommandLine.Example/Program.cs)  
+[Example Code](src/deniszykov.CommandLine.Example/Program.cs) / [.NET Hosted Example Code](src/deniszykov.CommandLine.Hosted.Example/Program.cs)
 
 `CommandLine` relies on reflection to find method to invoke.  
 This method should return `int` value which is interpreted as [Exit Code](https://en.wikipedia.org/wiki/Exit_status) of application.  
