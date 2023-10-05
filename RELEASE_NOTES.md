@@ -1,3 +1,7 @@
+# 2.1.8
+- updated dependencies
+- feature: added alernative ExceptionEventHandler registration via `services.AddTransient<ExceptionEventHandler>()`
+
 # 2.1.7
 - added option to display title text for sub-verbs
 - fixed help text generation for sub-verbs

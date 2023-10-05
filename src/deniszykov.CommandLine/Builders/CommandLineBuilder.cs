@@ -94,7 +94,7 @@ namespace deniszykov.CommandLine.Builders
 			var typeConversionProvider = (ITypeConversionProvider?)serviceProvider.GetService(typeof(ITypeConversionProvider)) ?? new TypeConversionProvider();
 			var console = (IConsole?)serviceProvider.GetService(typeof(IConsole)) ?? new DefaultConsole(this.configuration.HookConsoleCancelKeyPress);
 			var helpTextProvider = (IHelpTextProvider?)serviceProvider.GetService(typeof(IHelpTextProvider)) ?? new DefaultHelpTextProvider();
-			var errorHandlers = (IEnumerable<ExceptionEventHandler>?)serviceProvider.GetService(typeof(IEnumerable<ExceptionEventHandler>)) ?? Array.Empty<ExceptionEventHandler>();
+			var errorHandlers = (IEnumerable<ExceptionEventHandler>?)serviceProvider.GetService(typeof(IEnumerable<ExceptionEventHandler>)) ?? new ExceptionEventHandler[0];
 
 			var scopedServiceProvider = new ServiceProvider(serviceProvider);
 			scopedServiceProvider.RegisterInstance(typeof(ITypeConversionProvider), typeConversionProvider);
