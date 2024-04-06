@@ -21,7 +21,7 @@
 		<NetFrameworkTopTarget>net461</NetFrameworkTopTarget>
 		<NetFrameworkHostedTarget>net461</NetFrameworkHostedTarget>
 		<NetCoreAppBottomTarget>netcoreapp3.1</NetCoreAppBottomTarget>
-		<NetCoreAppTopTarget>net5</NetCoreAppTopTarget>
+		<NetCoreAppTopTarget>net6</NetCoreAppTopTarget>
 		<NetStandardBottomTarget>netstandard1.6</NetStandardBottomTarget>
 		<NetStandardTopTarget>netstandard2.1</NetStandardTopTarget>
 		<NetTargetPlatforms>$(NetFrameworkBottomTarget);$(NetFrameworkTopTarget);$(NetStandardBottomTarget);$(NetStandardTopTarget);$(NetCoreAppBottomTarget);$(NetCoreAppTopTarget);</NetTargetPlatforms>

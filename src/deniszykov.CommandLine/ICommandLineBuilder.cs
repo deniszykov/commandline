@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -41,13 +42,13 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		/// <typeparam name="VerbSetT">Type of verb class. Used to look-up verbs by name.</typeparam>
 		/// <returns>The same instance of the <see cref="ICommandLineBuilder"/> for chaining.</returns>
-		ICommandLineBuilder Use<VerbSetT>();
+		ICommandLineBuilder Use<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] VerbSetT>();
 		/// <summary>
 		/// Use methods from specified <paramref name="verSetType"/> type as verbs. Each call override previous <see cref="Use(Type)"/>.
 		/// </summary>
 		/// <param name="verSetType">Type of verb class. Used to look-up verbs by name.</param>
 		/// <returns>The same instance of the <see cref="ICommandLineBuilder"/> for chaining.</returns>
-		ICommandLineBuilder Use(Type verSetType);
+		ICommandLineBuilder Use([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type verSetType);
 		/// <summary>
 		/// Use specified verb list builder to declare verbs. Each call override previous <see cref="Use(Type)"/>.
 		/// </summary>

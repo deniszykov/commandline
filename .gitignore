@@ -21,3 +21,4 @@ bin/
 obj/
 packages/
 .vs
+/src/.idea

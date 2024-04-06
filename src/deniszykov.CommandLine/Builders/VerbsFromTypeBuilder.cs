@@ -9,6 +9,7 @@
 */
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using deniszykov.CommandLine.Binding;
@@ -20,7 +21,7 @@ namespace deniszykov.CommandLine.Builders
 		private readonly TypeInfo verbSetType;
 		private VerbSet? verbSet;
 
-		public VerbsFromTypeBuilder(TypeInfo verbSetType)
+		public VerbsFromTypeBuilder([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TypeInfo verbSetType)
 		{
 			if (verbSetType == null) throw new ArgumentNullException(nameof(verbSetType));
 

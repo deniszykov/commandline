@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -58,14 +59,14 @@ namespace deniszykov.CommandLine.Builders
 			return this;
 		}
 		/// <inheritdoc />
-		public ICommandLineBuilder Use<VerbSetT>()
+		public ICommandLineBuilder Use<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] VerbSetT>()
 		{
 			var builder = new VerbsFromTypeBuilder(typeof(VerbSetT).GetTypeInfo());
 			this.verbSetBuilders.Add(builder);
 			return this;
 		}
 		/// <inheritdoc />
-		public ICommandLineBuilder Use(Type verSetType)
+		public ICommandLineBuilder Use([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type verSetType)
 		{
 			if (verSetType == null) throw new ArgumentNullException(nameof(verSetType));
 

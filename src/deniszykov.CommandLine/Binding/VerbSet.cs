@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -54,7 +55,7 @@ namespace deniszykov.CommandLine.Binding
 		/// <summary>
 		/// Constructor of <see cref="VerbSet"/> from <see cref="TypeInfo"/>.
 		/// </summary>
-		public VerbSet(TypeInfo type)
+		public VerbSet([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TypeInfo type)
 		{
 			if (type == null) throw new ArgumentNullException(nameof(type));
 
