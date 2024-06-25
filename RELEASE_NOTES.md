@@ -1,4 +1,4 @@
-# 2.1.9
+# 2.1.10
 - updated dependencies
 - feature: added `CommandLineConfiguration.AllowPrefixesInOptionValues` which allow to have `--unknown-options` after known ones. If set to true then such `--unknown-options` will be captured as values of known option. 
 

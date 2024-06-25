@@ -1,7 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<Authors>Denis Zykov</Authors>
-		<Version>2.1.9</Version>
+		<Version>2.1.10</Version>
 		<AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)sign.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>True</SignAssembly>
 		<LangVersion>latest</LangVersion>
@@ -12,7 +12,7 @@
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<PackageProjectUrl>https://github.com/deniszykov/commandline</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Copyright>(c) Denis Zykov 2023</Copyright>
+		<Copyright>(c) Denis Zykov 2024</Copyright>
 		<PackageTags>command line command_line parse terminal console getopt options</PackageTags>
 		<RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
