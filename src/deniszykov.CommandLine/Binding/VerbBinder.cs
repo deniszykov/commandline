@@ -188,8 +188,8 @@ namespace deniszykov.CommandLine.Binding
 						switch (raw.Count)
 						{
 							case 0: throw new InvalidOperationException("Option requires an argument.");
-							case 1: throw new InvalidOperationException($"Option expects no arguments but received ${raw.Count}.");
-							default: throw new InvalidOperationException($"Option expects a single argument but received ${raw.Count}.");
+							case 1: throw new InvalidOperationException($"Option expects no arguments but received {raw.Count}.");
+							default: throw new InvalidOperationException($"Option expects a single argument but received {raw.Count}.");
 						}
 					}
 
