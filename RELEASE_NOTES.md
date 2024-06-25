@@ -1,6 +1,10 @@
+# 2.1.9
+- updated dependencies
+- feature: added `CommandLineConfiguration.AllowPrefixesInOptionValues` which allow to have `--unknown-options` after known ones. If set to true then such `--unknown-options` will be captured as values of known option. 
+
 # 2.1.8
 - updated dependencies
-- feature: added alernative ExceptionEventHandler registration via `services.AddTransient<ExceptionEventHandler>()`
+- feature: added alternative ExceptionEventHandler registration via `services.AddTransient<ExceptionEventHandler>()`
 
 # 2.1.7
 - added option to display title text for sub-verbs

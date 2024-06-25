@@ -1,7 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<Authors>Denis Zykov</Authors>
-		<Version>2.1.8</Version>
+		<Version>2.1.9</Version>
 		<AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)sign.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>True</SignAssembly>
 		<LangVersion>latest</LangVersion>
