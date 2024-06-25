@@ -105,9 +105,16 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "--unknown-param=true" }, "unknown-param", new[] { "true" }, 1)]
 		[InlineData(new[] { "--unknown-param=true", "--unknown-param" }, "unknown-param", new[] { "true" }, 2)]
 		[InlineData(new[] { "--unknown-param=true", "false" }, "unknown-param", new[] { "true", "false" }, 1)]
+		// unknown options after known
+		[InlineData(new[] { "--one-or-zero-param", "--unknown-param=true" }, "one-or-zero-param", new string[0], 1)]
+		[InlineData(new[] { "--zero-or-more-param", "--unknown-param true" }, "zero-or-more-param", new string[0], 1)]
+		[InlineData(new[] { "--zero-param", "--unknown-param=true" }, "zero-param", new string[0], 1)]
+		[InlineData(new[] { "--one-param", "1", "--unknown-param", "false" }, "one-param", new[] { "1" }, 1)]
 		public void ParseLongOptions(string[] args, string optionName, string[] expectedArguments, int expectedCount)
 		{
-			var configuration = new CommandLineConfiguration();
+			var configuration = new CommandLineConfiguration {
+				AllowPrefixesInOptionValues = false
+			};
 
 			var parser = new GetOptParser(configuration);
 			var verb = new VerbSet(typeof(TestApi).GetTypeInfo()).FindVerb(nameof(TestApi.Test));
@@ -119,6 +126,7 @@ namespace deniszykov.CommandLine.Tests
 			Assert.Equal(expectedArguments, optionValue.Raw.ToArray());
 			Assert.Equal(expectedCount, optionValue.Count);
 		}
+
 
 		[Theory]
 		[InlineData(new[] { "a" }, new[] { "a" })]

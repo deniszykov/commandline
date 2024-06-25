@@ -92,7 +92,12 @@ namespace deniszykov.CommandLine
 		/// Splitter chars used to separate option's name from value. Defaults to: ' ', '='. Could be empty list.
 		/// </summary>
 		public char[]? OptionArgumentSplitters { get; set; }
-
+		/// <summary>
+		/// Allow option values starting with LongOptionNamePrefixes ('--', '/') prefixes.
+		/// If set to false these values will be captures as unknown options.
+		/// </summary>
+		public bool AllowPrefixesInOptionValues { get; set; }
+		
 		public CommandLineConfiguration()
 		{
 			this.OutputHelpOnFailure = true;
@@ -101,6 +106,7 @@ namespace deniszykov.CommandLine
 			this.ShortOptionNameMatchingMode = StringComparison.Ordinal;
 			this.LongOptionNameMatchingMode = StringComparison.OrdinalIgnoreCase;
 			this.VerbNameMatchingMode = StringComparison.OrdinalIgnoreCase;
+			this.AllowPrefixesInOptionValues = true; 
 			this.ShortOptionNamePrefixes = new[] { "-", "/" };
 			this.LongOptionNamePrefixes = new[] { "--", "/" };
 			this.OptionsBreaks = new[] { "--" };

@@ -23,6 +23,7 @@ namespace deniszykov.CommandLine.Parsing
 		private readonly string[] helpOptions;
 		private readonly char[] optionArgumentSplitter;
 		private readonly bool treatUnknownOptionsAsValues;
+		private readonly bool allowPrefixesInOptionValues;
 
 		protected override StringComparison LongNameMatchingMode { get; }
 		protected override StringComparison ShortNameMatchingMode { get; }
@@ -39,6 +40,7 @@ namespace deniszykov.CommandLine.Parsing
 			this.helpOptions = configuration.HelpOptions ?? new string[0];
 			this.optionArgumentSplitter = configuration.OptionArgumentSplitters ?? new char[0];
 			this.treatUnknownOptionsAsValues = configuration.TreatUnknownOptionsAsValues;
+			this.allowPrefixesInOptionValues = configuration.AllowPrefixesInOptionValues;
 		}
 
 		protected override IEnumerable<ArgumentToken> Tokenize(string[] arguments, Func<string, ValueArity?> getOptionArity)
@@ -183,8 +185,8 @@ namespace deniszykov.CommandLine.Parsing
 						mode = MODE_ZERO_OR_MORE_ARGUMENTS;
 						continue;
 					case MODE_ZERO_OR_MORE_ARGUMENTS:
-						if ((this.IsLongNameOption(argument, out longName, out _) && getOptionArity(longName!) != null) ||
-							(this.IsShortNameOption(argument, out shortNameLetters, out _) && getOptionArity(shortNameLetters![0].ToString()) != null) ||
+						if ((this.IsLongNameOption(argument, out longName, out _) && (!this.allowPrefixesInOptionValues || getOptionArity(longName!) != null)) ||
+							(this.IsShortNameOption(argument, out shortNameLetters, out _) && (!this.allowPrefixesInOptionValues || getOptionArity(shortNameLetters![0].ToString()) != null)) ||
 							this.IsOptionsBreak(argument) ||
 							this.IsHelpOption(argument))
 						{
