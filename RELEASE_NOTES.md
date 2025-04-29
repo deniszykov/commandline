@@ -1,3 +1,6 @@
+# 2.1.11
+- made `enum` binding case-insensitive.
+
 # 2.1.10
 - updated dependencies
 - feature: added `CommandLineConfiguration.AllowPrefixesInOptionValues` which allow to have `--unknown-options` after known ones. If set to true then such `--unknown-options` will be captured as values of known option. 
@@ -11,7 +14,7 @@
 - fixed help text generation for sub-verbs
 
 # 2.0.2 - 2.0.6
-- added posibility to use multiple c# classes as combined source of verbs
+- added possibility to use multiple c# classes as combined source of verbs
 - updated dependencies
 
 # 2.0.1
@@ -30,7 +33,7 @@
 - fixed bugs with help text and sub-verbs
 
 # 1.3.1 - 1.3.2
-- TypeConvert dependecy update (bug fixes)
+- TypeConvert dependency update (bug fixes)
 
 # 1.3.0
 - added TypeConverterAttribute support on command parameters. It's takes precendence before any other types of type conversions.

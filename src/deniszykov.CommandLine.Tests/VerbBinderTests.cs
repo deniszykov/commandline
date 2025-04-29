@@ -216,6 +216,7 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "--param-1-int", "-1" }, nameof(TestApi.Param6), null, true)]
 		[InlineData(new[] { "--param-1-int", "-1", "--param-4-string-array", "param", "-", "--" }, nameof(TestApi.Param4), new[] { "param", "-" }, true)]
 		[InlineData(new[] { "--param-1-int", "-1", "--param-6-string", "param" }, nameof(TestApi.Param6), "param", true)]
+		[InlineData(new[] { "--param-1-int", "-1", "--param-6-string", "" }, nameof(TestApi.Param6), "", true)]
 		// enum binding
 		[InlineData(new[] { "--param-7-enum", "DarkMagenta" }, nameof(TestApi.Param7Value), ConsoleColor.DarkMagenta, true)]
 		[InlineData(new[] { "--param-7-enum", "green" }, nameof(TestApi.Param7Value), ConsoleColor.Green, true)]
