@@ -12,6 +12,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using deniszykov.CommandLine.Parsing;
 using deniszykov.TypeConversion;
@@ -258,7 +259,9 @@ namespace deniszykov.CommandLine.Binding
 				}
 
 				if (value != null && value.GetType() != parameter.ValueType.AsType())
-					value = this.typeConversionProvider.Convert(value.GetType(), parameter.ValueType.AsType(), value);
+				{
+					value = this.Convert(value, parameter.ValueType.AsType(), parameter);
+				}
 			}
 			catch (Exception bindingError)
 			{
@@ -323,7 +326,14 @@ namespace deniszykov.CommandLine.Binding
 			}
 #endif
 
-			if (value != null && this.typeConversionProvider.TryConvert(value.GetType(), toType, value, out var result))
+			var isToEnum = (Nullable.GetUnderlyingType(toType) ?? toType).GetTypeInfo().IsEnum;
+			var fromType = value?.GetType() ?? typeof(object);
+			var converter = this.typeConversionProvider.GetConverter(fromType, toType);
+			if (value != null && isToEnum && converter.TryConvert(value, out var result, TypeConversionProvider.IgnoreCaseFormat))
+			{
+				return result;
+			}
+			else if (value != null && converter.TryConvert(value, out result))
 			{
 				return result;
 			}

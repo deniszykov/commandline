@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Reflection;
@@ -23,6 +24,7 @@ namespace deniszykov.CommandLine.Tests
 			public string? Param6;
 			public int[]? ExtraIntegersParam;
 			public string[]? ExtraStringsParam;
+			public ConsoleColor? Param7Value;
 
 			public int NamedBindVerb
 			(
@@ -37,7 +39,9 @@ namespace deniszykov.CommandLine.Tests
 				[Alias("Z"), Name("param-5-count")]
 				OptionCount param5 = default,
 				[Alias("s"), Name("param-6-string")]
-				string? param6 = default
+				string? param6 = default,
+				[Alias("e"), Name("param-7-enum")]
+				ConsoleColor? param7 = default
 			)
 			{
 				this.Param1 = param1;
@@ -46,6 +50,7 @@ namespace deniszykov.CommandLine.Tests
 				this.Param4 = param4;
 				this.Param5Value = param5.Value;
 				this.Param6 = param6;
+				this.Param7Value = param7;
 
 				return 0;
 			}
@@ -211,6 +216,9 @@ namespace deniszykov.CommandLine.Tests
 		[InlineData(new[] { "--param-1-int", "-1" }, nameof(TestApi.Param6), null, true)]
 		[InlineData(new[] { "--param-1-int", "-1", "--param-4-string-array", "param", "-", "--" }, nameof(TestApi.Param4), new[] { "param", "-" }, true)]
 		[InlineData(new[] { "--param-1-int", "-1", "--param-6-string", "param" }, nameof(TestApi.Param6), "param", true)]
+		// enum binding
+		[InlineData(new[] { "--param-7-enum", "DarkMagenta" }, nameof(TestApi.Param7Value), ConsoleColor.DarkMagenta, true)]
+		[InlineData(new[] { "--param-7-enum", "green" }, nameof(TestApi.Param7Value), ConsoleColor.Green, true)]
 		// count binding
 		[InlineData(new[] { "--param-3-count", "--param-3-count", "--param-3-count", "--param-3-count" }, nameof(TestApi.Param3Value), 4, true)]
 		[InlineData(new[] { "--param-3-count", "--param-5-count", "--param-3-count", "--param-3-count" }, nameof(TestApi.Param5Value), 1, true)]
