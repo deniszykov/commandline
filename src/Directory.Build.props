@@ -18,7 +18,7 @@
 		<RepositoryType>git</RepositoryType>
 		<Nullable>enable</Nullable>
 		<NetFrameworkBottomTarget>net45</NetFrameworkBottomTarget>
-		<NetFrameworkTopTarget>net461</NetFrameworkTopTarget>
+		<NetFrameworkTopTarget>net48</NetFrameworkTopTarget>
 		<NetFrameworkHostedTarget>net48</NetFrameworkHostedTarget>
 		<NetCoreAppBottomTarget>net7</NetCoreAppBottomTarget>
 		<NetCoreAppTopTarget>net8</NetCoreAppTopTarget>
