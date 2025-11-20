@@ -20,7 +20,7 @@
 		<NetFrameworkBottomTarget>net45</NetFrameworkBottomTarget>
 		<NetFrameworkTopTarget>net461</NetFrameworkTopTarget>
 		<NetFrameworkHostedTarget>net461</NetFrameworkHostedTarget>
-		<NetCoreAppBottomTarget>netcoreapp3.1</NetCoreAppBottomTarget>
+		<NetCoreAppBottomTarget>net7</NetCoreAppBottomTarget>
 		<NetCoreAppTopTarget>net7</NetCoreAppTopTarget>
 		<NetStandardBottomTarget>netstandard1.6</NetStandardBottomTarget>
 		<NetStandardTopTarget>netstandard2.1</NetStandardTopTarget>
