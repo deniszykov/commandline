@@ -1,3 +1,6 @@
+# 2.1.12
+- bumped framework support to .NET 10
+
 # 2.1.11
 - made `enum` binding case-insensitive.
 

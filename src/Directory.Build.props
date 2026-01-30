@@ -1,7 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<Authors>Denis Zykov</Authors>
-		<Version>2.1.11</Version>
+		<Version>2.1.12</Version>
 		<AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)sign.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>True</SignAssembly>
 		<LangVersion>latest</LangVersion>
@@ -19,12 +19,13 @@
 		<Nullable>enable</Nullable>
 		<NetFrameworkBottomTarget>net45</NetFrameworkBottomTarget>
 		<NetFrameworkTopTarget>net461</NetFrameworkTopTarget>
-		<NetFrameworkHostedTarget>net461</NetFrameworkHostedTarget>
+		<NetFrameworkLatestTarget>net48</NetFrameworkLatestTarget>
 		<NetCoreAppBottomTarget>netcoreapp3.1</NetCoreAppBottomTarget>
-		<NetCoreAppTopTarget>net6</NetCoreAppTopTarget>
+		<NetCoreAppTopTarget>net6.0</NetCoreAppTopTarget>
+		<NetLatestTarget>net10.0</NetLatestTarget>
 		<NetStandardBottomTarget>netstandard1.6</NetStandardBottomTarget>
 		<NetStandardTopTarget>netstandard2.1</NetStandardTopTarget>
-		<NetTargetPlatforms>$(NetFrameworkBottomTarget);$(NetFrameworkTopTarget);$(NetStandardBottomTarget);$(NetStandardTopTarget);$(NetCoreAppBottomTarget);$(NetCoreAppTopTarget);</NetTargetPlatforms>
-		<NetEndPlatforms>$(NetFrameworkTopTarget);$(NetCoreAppTopTarget);</NetEndPlatforms>
+		<NetTargetPlatforms>$(NetFrameworkBottomTarget);$(NetFrameworkTopTarget);$(NetStandardBottomTarget);$(NetStandardTopTarget);$(NetCoreAppBottomTarget);$(NetCoreAppTopTarget);$(NetFrameworkLatestTarget);$(NetLatestTarget);</NetTargetPlatforms>
+		<NetEndPlatforms>$(NetFrameworkLatestTarget);$(NetLatestTarget);</NetEndPlatforms>
 	</PropertyGroup>
 </Project>
