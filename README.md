@@ -1,21 +1,35 @@
 [![dotnet_build](https://github.com/deniszykov/commandline/actions/workflows/dotnet_build.yml/badge.svg)](https://github.com/deniszykov/commandline/actions/workflows/dotnet_build.yml)
+[![NuGet](https://img.shields.io/nuget/v/deniszykov.CommandLine.svg)](https://www.nuget.org/packages/deniszykov.CommandLine)
 
 Introduction
 ============
-A simple [getopt](https://man7.org/linux/man-pages/man3/getopt.3.html) styled command line library.
+A simple [getopt](https://man7.org/linux/man-pages/man3/getopt.3.html) styled command line library for .NET.
+
+Features
+--------
+* `getopt`-style syntax: short (`-n`), long (`--name`), Windows-style (`/n`, `/name`), `--name=value` and bundled short options.
+* Verbs and sub-verbs discovered from your classes via reflection — no schema, no codegen.
+* Synchronous and asynchronous entry points (`int` or `Task<int>` return type).
+* Built-in help (`/?`, `-h`, `--help`) generated from `[Description]` / `[HelpText]` attributes.
+* Cancellation via `CancellationToken` (also driven by `Console.CancelKeyPress`).
+* Service injection into verb parameters via any `IServiceProvider` (works with `Microsoft.Extensions.DependencyInjection`).
+* First-class integration with the .NET Generic Host (`IHostBuilder.ConfigureCommandLineHost`).
+* Localizable help text via `IHelpTextProvider`.
+* Configurable name matching (case-sensitive/insensitive), prefixes, separators and help options.
+* Multi-targeted: .NET Framework 4.5+, .NET Standard 1.6 / 2.1, .NET Core 3.1, .NET 6, .NET 10.
 
 Installation
 ============
 ```
 Install-Package deniszykov.CommandLine
 ```
-[.NET Framework Example](src/deniszykov.CommandLine.Hosted.Example/Program.cs)  
+[.NET Framework / .NET Core Example](src/deniszykov.CommandLine.Example/Program.cs)
 
-For .NET Core Hosted environment:
+For .NET Generic Host environment:
 ```
 Install-Package deniszykov.CommandLine.Hosted
 ```
-[.NET Core Hosted Example](src/deniszykov.CommandLine.Hosted.Example/Program.cs)  
+[.NET Generic Host Example](src/deniszykov.CommandLine.Hosted.Example/Program.cs)
 
 Quick Start
 ============
@@ -66,6 +80,43 @@ Or invoke `Hello(string name)` with following command:
 
 Hello Jake!
 ```
+
+Async Entry Point
+-----------------
+```csharp
+public class Program
+{
+  private static Task<int> Main(string[] arguments) =>
+    CommandLine
+      .CreateFromArguments(arguments)
+      .Use<Program>()
+      .RunAsync(CancellationToken.None);
+
+  public static async Task<int> Hello(string name, CancellationToken cancellation)
+  {
+    await Task.Delay(100, cancellation);
+    Console.WriteLine("Hello " + name + "!");
+    return 0;
+  }
+}
+```
+
+.NET Generic Host
+-----------------
+```csharp
+await Host.CreateDefaultBuilder(args)
+  .ConfigureServices((ctx, services) =>
+  {
+    services.Configure<CommandLineConfiguration>(ctx.Configuration.GetSection("CommandLine"));
+  })
+  .ConfigureCommandLineHost(args, builder =>
+  {
+    builder.Use<Program>();
+  })
+  .Build()
+  .RunAsync();
+```
+The exit code returned by the executed verb is written to `Environment.ExitCode` automatically.
 
 Documentation
 ============

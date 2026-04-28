@@ -39,6 +39,12 @@ namespace deniszykov.CommandLine.Binding
 		/// </summary>
 		public readonly IReadOnlyCollection<Verb> Verbs;
 
+		/// <summary>
+		/// Constructor of <see cref="VerbSet"/>.
+		/// </summary>
+		/// <param name="name">Name of verb's set.</param>
+		/// <param name="description">Description or help text for this verb set.</param>
+		/// <param name="verbs">Collection of <see cref="Verb"/> in this set.</param>
 		public VerbSet(
 			 string name,
 			 string description,

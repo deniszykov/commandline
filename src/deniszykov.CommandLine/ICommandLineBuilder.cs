@@ -17,6 +17,10 @@ using JetBrains.Annotations;
 
 namespace deniszykov.CommandLine
 {
+	/// <summary>
+	/// Fluent builder for <see cref="CommandLine"/>. Created via <see cref="CommandLine.CreateFromArguments"/> and finalized with
+	/// <see cref="Run"/>, <see cref="RunAsync"/> or <see cref="Build"/>.
+	/// </summary>
 	[PublicAPI]
 	public interface ICommandLineBuilder
 	{

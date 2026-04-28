@@ -97,7 +97,10 @@ namespace deniszykov.CommandLine
 		/// If set to false these values will be captures as unknown options.
 		/// </summary>
 		public bool AllowPrefixesInOptionValues { get; set; }
-		
+
+		/// <summary>
+		/// Create new instance of <see cref="CommandLineConfiguration"/> populated with default values.
+		/// </summary>
 		public CommandLineConfiguration()
 		{
 			this.OutputHelpOnFailure = true;
