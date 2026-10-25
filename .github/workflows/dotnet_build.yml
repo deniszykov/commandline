@@ -8,10 +8,12 @@ jobs:
     runs-on: windows-latest
         
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
 
     - name: dotnet restore
       working-directory: ./src/
@@ -21,6 +23,6 @@ jobs:
       working-directory: ./src/
       run: dotnet msbuild -t:Pack
       
-    - name: Run rests
+    - name: Run tests
       working-directory: ./src/deniszykov.CommandLine.Tests/
-      run: dotnet test -f netcoreapp3.1
+      run: dotnet test
