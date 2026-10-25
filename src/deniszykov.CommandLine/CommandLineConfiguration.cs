@@ -37,15 +37,15 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public bool OutputDetailedErrors { get; set; }
 		/// <summary>
-		/// Exit code returned when unable to find verb and help text is displayed instead. Defaults to <c>1</c>.
+		/// Exit code returned when binding fails (unknown verb, invalid or unknown options, no verb specified) and <see cref="OutputHelpOnFailure"/> is <code>true</code>. Defaults to <c>1</c>.
 		/// </summary>
 		public int FailureExitCode { get; set; }
 		/// <summary>
-		/// Exit code used by <see cref="CommandLine.WriteHelp"/> method as return value. Defaults to <c>2</c>.
+		/// Exit code returned when help is requested with one of <see cref="HelpOptions"/>. Defaults to <c>2</c>.
 		/// </summary>
 		public int HelpExitCode { get; set; }
 		/// <summary>
-		/// Set default action name to use if non are passed.
+		/// Name of the verb to run when none is passed.
 		/// </summary>
 		public string? DefaultVerbName { get; set; }
 		/// <summary>
@@ -69,7 +69,7 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public StringComparison VerbNameMatchingMode { get; set; }
 		/// <summary>
-		/// Set to <code>true</code> to threat unknown options as values. Otherwise they will be ignored during binding.
+		/// Set to <code>true</code> to treat unknown options as values. Otherwise they will be ignored during binding.
 		/// </summary>
 		public bool TreatUnknownOptionsAsValues { get; set; }
 		/// <summary>
@@ -83,11 +83,11 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public string[]? ShortOptionNamePrefixes { get; set; }
 		/// <summary>
-		/// List of prefixes for short options. Defaults to: "--", "/". Should be at least one prefix for long options.
+		/// List of prefixes for long options. Defaults to: "--", "/". Should be at least one prefix for long options.
 		/// </summary>
 		public string[]? LongOptionNamePrefixes { get; set; }
 		/// <summary>
-		/// List of string used to separate options from values. Could be empty list.
+		/// List of strings used to separate options from values. Defaults to: "--". Could be empty list.
 		/// </summary>
 		public string[]? OptionsBreaks { get; set; }
 		/// <summary>
@@ -100,7 +100,7 @@ namespace deniszykov.CommandLine
 		public char[]? OptionArgumentSplitters { get; set; }
 		/// <summary>
 		/// Allow option values starting with LongOptionNamePrefixes ('--', '/') prefixes.
-		/// If set to false these values will be captures as unknown options.
+		/// If set to false these values will be captured as unknown options. Defaults to <code>true</code>.
 		/// </summary>
 		public bool AllowPrefixesInOptionValues { get; set; }
 
