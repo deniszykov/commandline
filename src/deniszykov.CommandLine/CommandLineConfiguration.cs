@@ -141,6 +141,7 @@ namespace deniszykov.CommandLine
 			config.UnhandledExceptionHandler = this.UnhandledExceptionHandler ?? config.UnhandledExceptionHandler;
 			config.OutputHelpOnFailure = this.OutputHelpOnFailure;
 			config.OutputDetailedErrors = this.OutputDetailedErrors;
+			config.OutputSubVerbHelpTitle = this.OutputSubVerbHelpTitle;
 			config.FailureExitCode = this.FailureExitCode;
 			config.HelpExitCode = this.HelpExitCode;
 			config.DefaultVerbName = this.DefaultVerbName ?? config.DefaultVerbName;
