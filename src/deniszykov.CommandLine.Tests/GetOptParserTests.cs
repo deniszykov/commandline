@@ -101,6 +101,8 @@ namespace deniszykov.CommandLine.Tests
 		// explicit arg
 		[InlineData(new[] { "--one-or-zero-param=true" }, "one-or-zero-param", new[] { "true" }, 1)]
 		[InlineData(new[] { "--one-or-zero-param=true", "false" }, "one-or-zero-param", new[] { "true", "false" }, 1)]
+		[InlineData(new[] { "--one-param=1", "--zero-param" }, "one-param", new[] { "1" }, 1)]
+		[InlineData(new[] { "--one-param=1", "--one-or-zero-param", "true" }, "one-param", new[] { "1" }, 1)]
 		// unknown options
 		[InlineData(new[] { "--unknown-param=true" }, "unknown-param", new[] { "true" }, 1)]
 		[InlineData(new[] { "--unknown-param=true", "--unknown-param" }, "unknown-param", new[] { "true" }, 2)]

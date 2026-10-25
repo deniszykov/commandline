@@ -22,6 +22,9 @@ namespace deniszykov.CommandLine.Parsing
 		public readonly IReadOnlyCollection<string> Values;
 		public readonly bool HasHelpOption;
 
+		public IEnumerable<string> ShortOptionNames => this.shortOptions?.Keys ?? Enumerable.Empty<string>();
+		public IEnumerable<string> LongOptionNames => this.longOptions?.Keys ?? Enumerable.Empty<string>();
+
 		public ParsedArguments(IDictionary<string, OptionValue> shortOptions, IDictionary<string, OptionValue> longOptions, IReadOnlyCollection<string> values, bool hasHelpOption)
 		{
 			if (shortOptions == null) throw new ArgumentNullException(nameof(shortOptions));

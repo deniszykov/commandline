@@ -40,7 +40,8 @@ namespace deniszykov.CommandLine.Parsing
 			this.helpOptions = configuration.HelpOptions ?? new string[0];
 			this.optionArgumentSplitter = configuration.OptionArgumentSplitters ?? new char[0];
 			this.treatUnknownOptionsAsValues = configuration.TreatUnknownOptionsAsValues;
-			this.allowPrefixesInOptionValues = configuration.AllowPrefixesInOptionValues;
+			// a value swallowed by the previous option would hide the unknown option from FailOnUnknownOptions
+			this.allowPrefixesInOptionValues = configuration.AllowPrefixesInOptionValues && !configuration.FailOnUnknownOptions;
 		}
 
 		protected override IEnumerable<ArgumentToken> Tokenize(string[] arguments, Func<string, ValueArity?> getOptionArity)
@@ -97,6 +98,11 @@ namespace deniszykov.CommandLine.Parsing
 									break;
 								default:
 									throw new ArgumentOutOfRangeException();
+							}
+
+							if (!string.IsNullOrEmpty(optionArgument) && mode == MODE_ONE_OR_MORE_ARGUMENTS)
+							{
+								mode = MODE_ZERO_OR_MORE_ARGUMENTS;
 							}
 						}
 						else if (this.IsShortNameOption(argument, out shortNameLetters, out optionArgument))

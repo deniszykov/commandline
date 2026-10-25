@@ -63,6 +63,25 @@ namespace deniszykov.CommandLine.Binding
 			public override string ToString() => $"Failure binding to verb '{this.VerbName}'." +
 				string.Join(Environment.NewLine, this.BindingFailures.Select(kv => $"{kv.Key.Name}: {string.Join(", ", kv.Value.Where(p => !p.IsSuccess).Select(p => p.ToString()))}")) + ".";
 		}
+		public sealed class UnknownOptions : VerbBindingResult
+		{
+			public Verb Verb { get; }
+			public IReadOnlyList<string> OptionNames { get; }
+			/// <inheritdoc />
+			public override string VerbName => this.Verb.Name;
+
+			public UnknownOptions(Verb verb, IReadOnlyList<string> optionNames)
+			{
+				if (verb == null) throw new ArgumentNullException(nameof(verb));
+				if (optionNames == null) throw new ArgumentNullException(nameof(optionNames));
+
+				this.Verb = verb;
+				this.OptionNames = optionNames;
+			}
+
+			/// <inheritdoc />
+			public override string ToString() => $"Unknown options '{string.Join("', '", this.OptionNames)}' for verb '{this.VerbName}'.";
+		}
 		public sealed class HelpRequested : VerbBindingResult
 		{
 			public override string VerbName { get; }

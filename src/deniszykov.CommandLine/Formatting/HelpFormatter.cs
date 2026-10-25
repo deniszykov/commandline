@@ -298,6 +298,54 @@ namespace deniszykov.CommandLine.Formatting
 			}
 		}
 
+		public void UnknownVerbOptions(Verb verb, IReadOnlyList<string> optionNames, Exception error)
+		{
+			var writer = new IndentedWriter(Environment.NewLine, this.maxOutputWidth);
+			if (!string.IsNullOrEmpty(this.helpTextProvider.HelpHeaderText))
+			{
+				writer.WriteLine(this.helpTextProvider.HelpHeaderText);
+				writer.WriteLine();
+			}
+			using (writer.KeepIndent("  "))
+			{
+				writer.WriteLine(this.helpTextProvider.InvalidVerbOptionsErrorText);
+
+				using (writer.KeepIndent("  "))
+				{
+					writer.WriteLine(string.Format(this.helpTextProvider.InvalidVerbOptionsMessageText, verb.Name));
+				}
+
+				var maxNameLength = optionNames.Max(optionName => optionName.Length);
+
+				writer.WriteLine();
+				writer.WriteLine(this.helpTextProvider.InvalidVerbOptionsText);
+				using (writer.KeepIndent("  "))
+				{
+					foreach (var optionName in optionNames)
+					{
+						writer.Write(GetPaddedString(optionName, maxNameLength));
+						using (writer.KeepIndent("    "))
+						{
+							writer.WriteLine("Unknown option.");
+						}
+					}
+				}
+				writer.WriteLine();
+			}
+			if (!string.IsNullOrEmpty(this.helpTextProvider.HelpFooterText))
+			{
+				writer.WriteLine(this.helpTextProvider.HelpFooterText);
+			}
+
+			this.console.WriteLine(writer);
+
+			if (this.detailedBindFailureMessage)
+			{
+				this.console.WriteErrorLine(error);
+				this.console.WriteErrorLine();
+			}
+		}
+
 		public void VerbNotSpecified(VerbSet verbSet, IList<Verb> callChain)
 		{
 			var writer = new IndentedWriter(Environment.NewLine, this.maxOutputWidth);

@@ -1,3 +1,7 @@
+# 2.2.0
+- feature: added `CommandLineConfiguration.FailOnUnknownOptions`. When `true`, an option that matches no parameter of the verb fails binding with an "Unknown option" error instead of being ignored. Off by default. Sub-verbs inherit it, and `ICommandLineBuilder.Configure` on a sub-verb builder turns it on or off for that sub-verb set only. Verbs with sub-verbs are not checked. While it is on, `AllowPrefixesInOptionValues` is treated as `false`.
+- fixed `--option=value` followed by another option: the next option was taken as a second value (`--name=a --flag` failed with "Option expects a single argument but received 2").
+
 # 2.1.12
 - bumped framework support to .NET 10
 

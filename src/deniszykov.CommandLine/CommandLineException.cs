@@ -19,7 +19,7 @@ namespace deniszykov.CommandLine
 {
 	/// <summary>
 	/// Exception type which is raised while executing verb.
-	/// There is extra information in <see cref="Exception.Data"/> dictionary under "verb", and "bindingErrors" keys.
+	/// There is extra information in <see cref="Exception.Data"/> dictionary under "verb", "bindingErrors" and "unknownOptions" keys.
 	/// </summary>
 #if !NETSTANDARD1_6
 	[Serializable]
@@ -122,6 +122,16 @@ namespace deniszykov.CommandLine
 			var error = new CommandLineException(builder.ToString());
 			error.Data["verb"] = verb.Name;
 			error.Data["bindingErrors"] = bindingErrors;
+			return error;
+		}
+		internal static CommandLineException UnknownVerbOptions(Verb verb, IReadOnlyList<string> optionNames)
+		{
+			if (verb == null) throw new ArgumentNullException(nameof(verb));
+			if (optionNames == null) throw new ArgumentNullException(nameof(optionNames));
+
+			var error = new CommandLineException($"Unknown options for verb {verb.Name}: {string.Join(", ", optionNames)}.");
+			error.Data["verb"] = verb.Name;
+			error.Data["unknownOptions"] = optionNames;
 			return error;
 		}
 		internal static CommandLineException UnableToResolveService(Verb verb, Type serviceType)

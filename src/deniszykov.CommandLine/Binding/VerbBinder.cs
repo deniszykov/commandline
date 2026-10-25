@@ -28,6 +28,9 @@ namespace deniszykov.CommandLine.Binding
 		private readonly StringComparison longOptionNameMatchingMode;
 		private readonly StringComparison shortOptionNameMatchingMode;
 		private readonly StringComparison verbNameMatchingMode;
+		private readonly bool failOnUnknownOptions;
+		private readonly string longOptionNamePrefix;
+		private readonly string shortOptionNamePrefix;
 
 		public VerbBinder(
 			 CommandLineConfiguration configuration,
@@ -41,6 +44,9 @@ namespace deniszykov.CommandLine.Binding
 			this.longOptionNameMatchingMode = configuration.LongOptionNameMatchingMode;
 			this.shortOptionNameMatchingMode = configuration.ShortOptionNameMatchingMode;
 			this.verbNameMatchingMode = configuration.VerbNameMatchingMode;
+			this.failOnUnknownOptions = configuration.FailOnUnknownOptions;
+			this.longOptionNamePrefix = configuration.LongOptionNamePrefixes?.FirstOrDefault() ?? "--";
+			this.shortOptionNamePrefix = configuration.ShortOptionNamePrefixes?.FirstOrDefault() ?? "-";
 			this.typeConversionProvider = typeConversionProvider;
 			this.parser = new GetOptParser(configuration);
 			this.serviceProvider = serviceProvider;
@@ -79,7 +85,7 @@ namespace deniszykov.CommandLine.Binding
 			{
 				result = this.FindAndBindVerb(verbSet.Verbs, verbName!, arguments.Skip(1).ToArray());
 
-				if (isHelpRequested && result is VerbBindingResult.FailedToBind)
+				if (isHelpRequested && result is VerbBindingResult.FailedToBind or VerbBindingResult.UnknownOptions)
 				{
 					return new VerbBindingResult.HelpRequested(verbName!);
 				}
@@ -111,6 +117,7 @@ namespace deniszykov.CommandLine.Binding
 			if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
 			var failedVerbs = new Dictionary<Verb, ParameterBindingResult[]>();
+			var unknownOptionsResult = default(VerbBindingResult.UnknownOptions);
 			foreach (var verb in verbs)
 			{
 				if (!string.Equals(verbName, verb.Name, this.verbNameMatchingMode))
@@ -144,6 +151,16 @@ namespace deniszykov.CommandLine.Binding
 					continue;
 				}
 
+				if (this.failOnUnknownOptions && !verb.HasSubVerbs)
+				{
+					var unknownOptionNames = this.GetUnknownOptionNames(verb, parsedArguments);
+					if (unknownOptionNames.Count > 0)
+					{
+						unknownOptionsResult ??= new VerbBindingResult.UnknownOptions(verb, unknownOptionNames);
+						continue;
+					}
+				}
+
 				var target = verb.TargetType != null ? this.ResolveService(verb, verb.TargetType.AsType(), isOptional: true) ?? Activator.CreateInstance(verb.TargetType.AsType()) : null;
 				var verbArguments = new object?[boundParameters.Count + verb.ServiceParameters.Count];
 				for (var i = 0; i < boundParameters.Count; i++)
@@ -168,7 +185,31 @@ namespace deniszykov.CommandLine.Binding
 				return new VerbBindingResult.Bound(verb, target, verbArguments);
 			}
 
+			if (unknownOptionsResult != null)
+			{
+				return unknownOptionsResult;
+			}
+
 			return new VerbBindingResult.FailedToBind(verbName, failedVerbs);
+		}
+		private List<string> GetUnknownOptionNames(Verb verb, ParsedArguments parsedArguments)
+		{
+			var unknownOptionNames = new List<string>();
+			foreach (var longOptionName in parsedArguments.LongOptionNames)
+			{
+				if (verb.FindBoundParameter(longOptionName, this.longOptionNameMatchingMode) == null)
+				{
+					unknownOptionNames.Add(this.longOptionNamePrefix + longOptionName);
+				}
+			}
+			foreach (var shortOptionName in parsedArguments.ShortOptionNames)
+			{
+				if (verb.FindBoundParameter(shortOptionName, this.shortOptionNameMatchingMode) == null)
+				{
+					unknownOptionNames.Add(this.shortOptionNamePrefix + shortOptionName);
+				}
+			}
+			return unknownOptionNames;
 		}
 		private ParameterBindingResult BindParameter(VerbParameter parameter, ParsedArguments parsedArguments, HashSet<int> takenValues)
 		{

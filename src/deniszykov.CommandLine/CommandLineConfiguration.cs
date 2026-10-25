@@ -73,6 +73,12 @@ namespace deniszykov.CommandLine
 		/// </summary>
 		public bool TreatUnknownOptionsAsValues { get; set; }
 		/// <summary>
+		/// Set to <code>true</code> to fail binding when an option matches no parameter of the verb, instead of ignoring it.
+		/// Verbs with sub-verbs are not checked. Sub-verbs inherit this value; set it on the sub-verb's <see cref="ICommandLineBuilder.Configure"/> to enable it for one sub-verb set only.
+		/// When enabled, <see cref="AllowPrefixesInOptionValues"/> is treated as <code>false</code>, so an unknown option is never captured as a value of the preceding option.
+		/// </summary>
+		public bool FailOnUnknownOptions { get; set; }
+		/// <summary>
 		/// List of prefixes for short options. Defaults to: "-", "/". Should be at least one prefix for short options.
 		/// </summary>
 		public string[]? ShortOptionNamePrefixes { get; set; }
@@ -143,6 +149,7 @@ namespace deniszykov.CommandLine
 			config.ShortOptionNameMatchingMode = this.ShortOptionNameMatchingMode;
 			config.VerbNameMatchingMode = this.VerbNameMatchingMode;
 			config.TreatUnknownOptionsAsValues = this.TreatUnknownOptionsAsValues;
+			config.FailOnUnknownOptions = this.FailOnUnknownOptions;
 			config.ShortOptionNamePrefixes = this.ShortOptionNamePrefixes;
 			config.LongOptionNamePrefixes = this.LongOptionNamePrefixes;
 			config.OptionsBreaks = this.OptionsBreaks;

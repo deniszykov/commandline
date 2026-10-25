@@ -109,6 +109,8 @@ namespace deniszykov.CommandLine
 						return this.WriteBindingError(noVerb, verbSet);
 					case VerbBindingResult.FailedToBind failed:
 						return this.WriteBindingError(failed, verbSet);
+					case VerbBindingResult.UnknownOptions unknownOptions:
+						return this.WriteBindingError(unknownOptions);
 					case VerbBindingResult.HelpRequested help:
 						return this.WriteHelp(help.VerbName);
 					default:
@@ -188,6 +190,17 @@ namespace deniszykov.CommandLine
 			{
 				throw error;
 			}
+			return this.configuration.FailureExitCode;
+		}
+		private int WriteBindingError(VerbBindingResult.UnknownOptions bindResult)
+		{
+			var error = CommandLineException.UnknownVerbOptions(bindResult.Verb, bindResult.OptionNames);
+			if (!this.configuration.OutputHelpOnFailure)
+			{
+				throw error;
+			}
+
+			this.verbRenderer.UnknownVerbOptions(bindResult.Verb, bindResult.OptionNames, error);
 			return this.configuration.FailureExitCode;
 		}
 		// ReSharper disable once UnusedParameter.Local
