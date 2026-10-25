@@ -1,3 +1,9 @@
+# 2.2.1
+- fixed generic methods, property getters and operators returning `int` being discovered as verbs.
+- fixed `CommandLineConfiguration.OutputSubVerbHelpTitle` not being inherited by sub-verbs and being ignored when configured through .NET Generic Host.
+- fixed `IHostBuilder.ConfigureCommandLineHost(buildDelegate)` overload without arguments taking the executable path as a verb name.
+- documentation: added settings reference, unknown options, error handling and extensibility pages to the [wiki](https://github.com/deniszykov/commandline/wiki).
+
 # 2.2.0
 - feature: added `CommandLineConfiguration.FailOnUnknownOptions`. When `true`, an option that matches no parameter of the verb fails binding with an "Unknown option" error instead of being ignored. Off by default. Sub-verbs inherit it, and `ICommandLineBuilder.Configure` on a sub-verb builder turns it on or off for that sub-verb set only. Verbs with sub-verbs are not checked. While it is on, `AllowPrefixesInOptionValues` is treated as `false`.
 - fixed `--option=value` followed by another option: the next option was taken as a second value (`--name=a --flag` failed with "Option expects a single argument but received 2").
