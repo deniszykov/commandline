@@ -23,13 +23,13 @@ Installation
 ```
 Install-Package deniszykov.CommandLine
 ```
-[.NET Framework / .NET Core Example](src/deniszykov.CommandLine.Example/Program.cs)
+[.NET Framework / .NET Core Example](https://github.com/deniszykov/commandline/blob/master/src/deniszykov.CommandLine.Example/Program.cs)
 
 For .NET Generic Host environment:
 ```
 Install-Package deniszykov.CommandLine.Hosted
 ```
-[.NET Generic Host Example](src/deniszykov.CommandLine.Hosted.Example/Program.cs)
+[.NET Generic Host Example](https://github.com/deniszykov/commandline/blob/master/src/deniszykov.CommandLine.Hosted.Example/Program.cs)
 
 Quick Start
 ============
@@ -58,7 +58,7 @@ public class Program
 
 }
 ```
-[Example Code](src/deniszykov.CommandLine.Example/Program.cs) / [.NET Hosted Example Code](src/deniszykov.CommandLine.Hosted.Example/Program.cs)
+[Example Code](https://github.com/deniszykov/commandline/blob/master/src/deniszykov.CommandLine.Example/Program.cs) / [.NET Hosted Example Code](https://github.com/deniszykov/commandline/blob/master/src/deniszykov.CommandLine.Hosted.Example/Program.cs)
 
 `CommandLine` relies on reflection to find method to invoke.  
 This method should return `int` value which is interpreted as [Exit Code](https://en.wikipedia.org/wiki/Exit_status) of application.  
@@ -132,12 +132,17 @@ Documentation
   * [Service resolution and DI](https://github.com/deniszykov/commandline/wiki/Binding#Service-resolution-and-DI)
   * [Cancellation](https://github.com/deniszykov/commandline/wiki/Binding#Cancellation)
   * [Supported .NET types](https://github.com/deniszykov/commandline/wiki/Binding#Supported-NET-types)
+  * [Multiple verb classes](https://github.com/deniszykov/commandline/wiki/Binding#Multiple-verb-classes)
 * [Sub-Verbs](https://github.com/deniszykov/commandline/wiki/Sub_Verbs)
 * [.NET Core hosting](https://github.com/deniszykov/commandline/wiki/NET_Core_Hosting)
 * [Configuration](https://github.com/deniszykov/commandline/wiki/Configuration)
+  * [Settings reference](https://github.com/deniszykov/commandline/wiki/Configuration#Settings-reference)
+  * [Unknown options](https://github.com/deniszykov/commandline/wiki/Configuration#Unknown-options)
+  * [Error handling and exit codes](https://github.com/deniszykov/commandline/wiki/Configuration#Error-handling)
 * [Help Text](https://github.com/deniszykov/commandline/wiki/Help_Text)
   * [Localization](https://github.com/deniszykov/commandline/wiki/Help_Text#Localization)
+* [Extensibility](https://github.com/deniszykov/commandline/wiki/Extensibility)
 
-  License
-  ============
-  MIT
+License
+============
+[MIT](https://github.com/deniszykov/commandline/blob/master/LICENSE)
