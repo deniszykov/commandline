@@ -20,6 +20,7 @@
 		<Nullable>enable</Nullable>
 		<NetFrameworkBottomTarget>net45</NetFrameworkBottomTarget>
 		<NetFrameworkTopTarget>net461</NetFrameworkTopTarget>
+		<NetFrameworkHostedTarget>net462</NetFrameworkHostedTarget>
 		<NetFrameworkLatestTarget>net48</NetFrameworkLatestTarget>
 		<NetCoreAppBottomTarget>netcoreapp3.1</NetCoreAppBottomTarget>
 		<NetCoreAppTopTarget>net6.0</NetCoreAppTopTarget>
