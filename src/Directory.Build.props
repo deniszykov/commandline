@@ -12,6 +12,7 @@
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<PackageProjectUrl>https://github.com/deniszykov/commandline</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Copyright>(c) Denis Zykov 2024</Copyright>
 		<PackageTags>command line command_line parse terminal console getopt options</PackageTags>
 		<RepositoryUrl>https://github.com/deniszykov/commandline</RepositoryUrl>
@@ -28,4 +29,7 @@
 		<NetTargetPlatforms>$(NetFrameworkBottomTarget);$(NetFrameworkTopTarget);$(NetStandardBottomTarget);$(NetStandardTopTarget);$(NetCoreAppBottomTarget);$(NetCoreAppTopTarget);$(NetFrameworkLatestTarget);$(NetLatestTarget);</NetTargetPlatforms>
 		<NetEndPlatforms>$(NetFrameworkLatestTarget);$(NetLatestTarget);</NetEndPlatforms>
 	</PropertyGroup>
+	<ItemGroup>
+		<None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
+	</ItemGroup>
 </Project>
